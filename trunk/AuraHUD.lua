@@ -305,7 +305,7 @@ function AuraHUD:OnInitialize()
 	--LibButtonFacade = LibStub("LibButtonFacade",true) -- optional
 	-- initialize stored data
 --AuraHUD_DB = {}
-	self.db = AceDB:New(AuraHUD_DB, { profile = DB_DEFAULT })
+	self.db = AceDB:New("AuraHUD_DB", { profile = DB_DEFAULT })
 	-- reset corrupt data or roll-forward older schemes
 --self.db.profile.version = nil
 	if (not self.db.profile or not self.db.profile.version) then
