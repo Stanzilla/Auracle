@@ -281,6 +281,7 @@ function Window.prototype:AddTracker()
 	self.trackers[n] = Tracker(tdb, self, self.uiFrame)
 	self:UpdateLayout()
 	AuraHUD:UpdateOptionsTable()
+	AuraHUD:UpdateEventListeners()
 end -- AddTracker()
 
 function Window.prototype:RemoveTracker(tracker)
@@ -293,6 +294,7 @@ function Window.prototype:RemoveTracker(tracker)
 		tremove(self.trackers, tpos)
 		self:UpdateLayout()
 		AuraHUD:UpdateOptionsTable()
+		AuraHUD:UpdateEventListeners()
 		return true
 	end
 	return false
@@ -525,6 +527,7 @@ function Window.prototype:SetConfigOption(i, v1, v2, v3, v4)
 			self:UpdateAppearance()
 		elseif (i[2] == "vis") then
 			self.db.vis[i[3]][v1] = v2
+			AuraHUD:UpdateEventListeners()
 			self:UpdateVisibility()
 		elseif (i[2] == "layout") then
 			self.db.layout[i[3]] = v1
@@ -542,6 +545,7 @@ function Window.prototype:SetConfigOption(i, v1, v2, v3, v4)
 		AuraHUD:UpdateOptionsTable()
 	elseif (i[2] == "unit") then
 		self.db.unit = v1
+		AuraHUD:UpdateEventListeners()
 		self:UpdateUnitAuras()
 	elseif (i[2] == "locked") then
 		if (v1) then

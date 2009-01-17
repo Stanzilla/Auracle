@@ -304,7 +304,7 @@ function AuraHUD:OnInitialize()
 	--LibSharedMedia = LibStub("LibSharedMedia-3.0")
 	--LibButtonFacade = LibStub("LibButtonFacade",true) -- optional
 	-- initialize stored data
---AuraHUD_DB = {}
+--AuraHUD_DB = nil
 	self.db = AceDB:New("AuraHUD_DB", { profile = DB_DEFAULT })
 	-- reset corrupt data or roll-forward older schemes
 --self.db.profile.version = nil
@@ -570,70 +570,6 @@ end -- UpdatePlayerStatus()
 --[[ CONFIG METHODS ]]--
 
 function AuraHUD:ConvertDataStore(dbProfile)
-	-- TODO real roll-forward based on DB_VERSION
-	local t = dbProfile.windows[1].trackers
-	
-	--[[-- easy testing
-	dbProfile.windows[1].layout.wrap = 3
-	
-	t[1] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[1].label = "My Druid Buff"
-	t[1].filter.origin.other = false
-	t[1].auratype = "buff"
-	t[1].auras = { "Thorns", "Mark of the Wild", "Gift of the Wild" }
-	
-	t[2] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[2].label = "Not My Druid Buff"
-	t[2].filter.origin.me = false
-	t[2].auratype = "buff"
-	t[2].auras = { "Thorns", "Mark of the Wild", "Gift of the Wild" }
-	
-	t[3] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[3].label = "Persistent Druid Buff"
-	t[3].auratype = "buff"
-	t[3].auras = { "Leader of the Pack" }
-	
-	t[4] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[4].label = "Druid Debuff (Static Icon)"
-	t[4].icon.autoTexture = false
-	t[4].auras = { "Moonfire", "Entangling Roots" }
-	--]]--
-	
-	--[[-- feral druid ]]
-	dbProfile.windows[1].layout.wrap = 4
-	
-	t[1] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[1].label = "+ Bleed Dmg"
-	t[1].auras = { "Trauma", "Mangle - Bear", "Mangle - Cat" }
-	
-	t[2] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[2].label = "My Rake"
-	t[2].filter.origin.other = false
-	t[2].auras = { "Rake" }
-	
-	t[3] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[3].label = "My Rip"
-	t[3].filter.origin.other = false
-	t[3].auras = { "Rip" }
-	
-	t[4] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[4].label = "- AC (minor)"
-	t[4].auras = { "Curse of Recklessness", "Faerie Fire", "Faerie Fire (Feral)" }
-	
-	t[5] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[5].label = "My Lacerate"
-	t[5].filter.origin.other = false
-	t[5].auras = { "Lacerate" }
-	
-	t[6] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[6].label = "- Melee Spd"
-	t[6].auras = { "Icy Touch", "Infected Wounds", "Judgements of the Just", "Thunder Clap" }
-	
-	t[7] = cloneTable(DB_DEFAULT_TRACKER, true)
-	t[7].label = "- AP"
-	t[7].auras = { "Curse of Weakness", "Demoralizing Shout", "Demoralizing Roar" }
-	--]]--
-	
 	dbProfile.version = DB_VERSION
 	return true
 end -- ConvertDataStore()
@@ -695,6 +631,7 @@ function AuraHUD:AddWindow()
 	self.db.profile.windows[n] = wdb
 	self.windows[n] = Window(wdb)
 	self:UpdateOptionsTable()
+	self:UpdateEventListeners()
 end -- AddWindow()
 
 function AuraHUD:RemoveWindow(window)
@@ -709,6 +646,7 @@ function AuraHUD:RemoveWindow(window)
 			tremove(self.db.profile.windows, wpos)
 			tremove(self.windows, wpos)
 			self:UpdateOptionsTable()
+			self:UpdateEventListeners()
 			return true
 		end
 	end
