@@ -65,9 +65,7 @@ function Window:New(db)
 		window.uiFrame = CreateFrame("Frame", nil, UIParent)
 		window.uiFrame.AuraHUD_window = window
 		window.uiFrame:SetFrameStrata("LOW")
-		window.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
 		window.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
-		window.uiFrame:SetMovable(true) -- allows StartMoving
 	end
 	windowPool[window] = nil
 	
@@ -261,6 +259,8 @@ end -- IsLocked()
 
 function Window.prototype:Unlock()
 	self.locked = false
+	self.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+	self.uiFrame:SetMovable(true) -- allows StartMoving
 	self.uiFrame:SetScript("OnMouseDown", Window_OnMouseDown)
 	self.uiFrame:SetScript("OnMouseUp", Window_OnMouseUp)
 	self.uiFrame:SetScript("OnHide", Window_OnHide)
@@ -272,6 +272,8 @@ function Window.prototype:Lock()
 	self.uiFrame:SetScript("OnMouseDown", nil)
 	self.uiFrame:SetScript("OnMouseUp", nil)
 	self.uiFrame:SetScript("OnHide", nil)
+	self.uiFrame:SetMovable(false) -- allows StartMoving
+	self.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
 end -- Lock()
 
 function Window.prototype:AddTracker()

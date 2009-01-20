@@ -108,9 +108,7 @@ function Tracker:New(db, window, parentFrame)
 		tracker = self:Super("New")
 		tracker.uiFrame = CreateFrame("Frame") -- UIObject,Region
 		tracker.uiFrame:SetFrameStrata("LOW")
-		tracker.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
 		tracker.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
-		tracker.uiFrame:SetMovable(true) -- allows StartMoving
 		tracker.uiFrame.AuraHUD_tracker = tracker
 		tracker.uiIcon = tracker.uiFrame:CreateTexture(--[[nil, "BACKGROUND"]]) -- UIObject,Region,LayeredRegion
 		tracker.uiIcon:SetAllPoints()
@@ -402,6 +400,8 @@ end -- IsLocked()
 function Tracker.prototype:Unlock()
 	Tracker_OnLeave(self.uiFrame)
 	self.locked = false
+	self.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+	self.uiFrame:SetMovable(true) -- allows StartMoving
 	self.uiFrame:SetScript("OnMouseDown", Tracker_OnMouseDown)
 	self.uiFrame:SetScript("OnMouseUp", Tracker_OnMouseUp)
 	self.uiFrame:SetScript("OnHide", Tracker_OnMouseUp)
@@ -417,6 +417,8 @@ function Tracker.prototype:Lock()
 	self.uiFrame:SetScript("OnHide", nil)
 	self.uiFrame:SetScript("OnEnter", Tracker_OnEnter)
 	self.uiFrame:SetScript("OnLeave", Tracker_OnLeave)
+	self.uiFrame:SetMovable(false) -- allows StartMoving
+	self.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
 end -- Lock()
 
 function Tracker.prototype:UpdateFont()

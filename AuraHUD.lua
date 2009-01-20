@@ -373,8 +373,8 @@ function AuraHUD:PLAYER_TARGET_CHANGED()
 	self:UpdateUnitIdentity("targettarget")
 end -- PLAYER_TARGET_CHANGED()
 
-function AuraHUD:UNIT_TARGET(event, unit, arg3, arg4)
-	self:Print("UNIT_TARGET("..tostring(event)..","..tostring(unit)..","..tostring(arg3)..","..tostring(arg4)..")")
+function AuraHUD:UNIT_TARGET()
+	--self:Print("UNIT_TARGET("..tostring(event)..","..tostring(unit)..","..tostring(arg3)..","..tostring(arg4)..")")
 	if (unit == "player") then
 		self:UpdateUnitIdentity("target")
 		self:UpdateUnitIdentity("targettarget")
@@ -387,22 +387,22 @@ function AuraHUD:UNIT_TARGET(event, unit, arg3, arg4)
 	end
 end -- UNIT_TARGET()
 
-function AuraHUD:PLAYER_FOCUS_CHANGED(event, arg2, arg3, arg4)
-	self:Print("PLAYER_FOCUS_CHANGED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
+function AuraHUD:PLAYER_FOCUS_CHANGED()
+	--self:Print("PLAYER_FOCUS_CHANGED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
 	self:UpdateUnitIdentity("focus")
 	self:UpdateUnitIdentity("focustarget")
 end -- PLAYER_FOCUS_CHANGED()
 
-function AuraHUD:UNIT_PET(event, unit, arg3, arg4)
-	self:Print("UNIT_PET("..tostring(event)..","..tostring(unit)..","..tostring(arg3)..","..tostring(arg4)..")")
+function AuraHUD:UNIT_PET(event, unit)
+	--self:Print("UNIT_PET("..tostring(event)..","..tostring(unit)..","..tostring(arg3)..","..tostring(arg4)..")")
 	if (unit == "player") then
 		self:UpdateUnitIdentity("pet")
 		self:UpdateUnitIdentity("pettarget")
 	end
 end -- UNIT_PET()
 
-function AuraHUD:PARTY_MEMBERS_CHANGED(event, arg2, arg3, arg4)
-	self:Print("PARTY_MEMBERS_CHANGED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
+function AuraHUD:PARTY_MEMBERS_CHANGED()
+	--self:Print("PARTY_MEMBERS_CHANGED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
 	-- determine player's group status
 	self.plrGroup = "solo"
 	if (GetNumRaidMembers() > 0) then -- includes player
@@ -421,8 +421,8 @@ function AuraHUD:PARTY_MEMBERS_CHANGED(event, arg2, arg3, arg4)
 	end
 end -- PARTY_MEMBERS_CHANGED()
 
-function AuraHUD:PLAYER_REGEN_DISABLED(event, arg2, arg3, arg4)
-	self:Print("PLAYER_REGEN_DISABLED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
+function AuraHUD:PLAYER_REGEN_DISABLED()
+	--self:Print("PLAYER_REGEN_DISABLED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
 	self.plrCombat = "yes"
 	-- update windows
 	local nowVis
@@ -435,8 +435,8 @@ function AuraHUD:PLAYER_REGEN_DISABLED(event, arg2, arg3, arg4)
 	end
 end -- PLAYER_REGEN_DISABLED()
 
-function AuraHUD:PLAYER_REGEN_ENABLED(event, arg2, arg3, arg4)
-	self:Print("PLAYER_REGEN_ENABLED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
+function AuraHUD:PLAYER_REGEN_ENABLED()
+	--self:Print("PLAYER_REGEN_ENABLED("..tostring(event)..","..tostring(arg2)..","..tostring(arg3)..","..tostring(arg4)..")")
 	self.plrCombat = "no"
 	-- update windows
 	local nowVis
