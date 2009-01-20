@@ -5,7 +5,7 @@
 ## Author: Taleden
 ## SavedVariables: AuraHUD_DB
 ## OptionalDeps: Ace3
-## X-Category: Interface Enhancements 
+## X-Category: Buffs
 
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
