@@ -1,67 +1,96 @@
--- define and register class definition
-local LibOOP = LibStub("LibOOP-0.2")
+local LibOOP
+--@alpha@
+LibOOP = LibStub("LibOOP-1.0-alpha",true)
+--@end-alpha@
+LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("LibOOP not found")
 local Tracker = LibOOP:Class()
-AuraHUD:RegisterTracker(Tracker)
 
--- initialize local static data
+--[[ CONSTANTS ]]--
+
 local ICON_QM = "Interface\\Icons\\INV_Misc_QuestionMark"
+local DB_DEFAULT_TRACKER = {
+	label = false,
+	auratype = "debuff", -- buff|debuff
+	style = "Default",
+	auras = {},
+	trackOthers = true,
+	trackMine = true,
+	maxTime = false,
+	autoMaxTime = true,
+	maxStacks = false,
+	autoMaxStacks = true,
+	icon = ICON_QM,
+	autoIcon = true,
+	spiral = "time", -- off|time|stacks
+	spiralReverse = true,
+	text = "time", -- off|time|stacks
+	textColor = "time" -- time|timeRel|stacks
+}
+local S_TRACK = {                         others="trackOthers",  mine="trackMine" }
+local S_SHOW  = { [false]="showMissing",  others="showOthers",   mine="showMine"  }
+local S_SIZE  = { [false]="sizeMissing",  others="sizeOthers",   mine="sizeMine"  }
+local S_GRAY  = { [false]="grayMissing",  others="grayOthers",   mine="grayMine"  }
+local S_COLOR = { [false]="colorMissing", others="colorOthers",  mine="colorMine" }
 
--- initialize local runtime data
-local trackerPool = {}
+
+--[[ INIT ]]--
+
+Auracle:__tracker(Tracker, DB_DEFAULT_TRACKER)
+
+local ceil,GetTime,max,min,tostring = ceil,GetTime,max,min,tostring
+local objectPool = {}
 
 
---[[ LOCAL UTILITY FUNCTIONS ]]--
+--[[ UTILITY FUNCTIONS ]]--
 
-local cloneTable
+local cloneTable = false
 do
-	local assert,pairs,type = assert,pairs,type
 	local flag = {}
-	cloneTable = function(tbl, recurseValues, recurseKeys)
-		assert(not flag[tbl], "cloneTable(): table contains a reference to itself")
+	cloneTable = function(tbl, cloneV, cloneK)
+		assert(not flag[tbl], "cannot deep-clone table that contains reference to itself")
 		flag[tbl] = 1
 		local newtbl = {}
 		for k,v in pairs(tbl) do
-			if (recurseKeys and type(k) == "table") then
-				k = cloneTable(k, recurseValues, recurseKeys)
-			end
-			if (recurseValues and type(v) == "table") then
-				v = cloneTable(v, recurseValues, recurseKeys)
-			end
+			if (cloneK and type(k)=="table") then k = cloneTable(k, cloneV, cloneK) end
+			if (cloneV and type(v)=="table") then v = cloneTable(v, cloneV, cloneK) end
 			newtbl[k] = v
 		end
 		flag[tbl] = nil
 		return newtbl
 	end -- cloneTable()
 end
+local __auracle_debug_table = __auracle_debug_table or function() return "" end
+local __auracle_debug_array = __auracle_debug_array or function() return "" end
+local __auracle_debug_call = __auracle_debug_call or function() end
 
 
 --[[ EVENT HANDLERS ]]--
 
 local function Tracker_OnMouseDown(self, button)
 	if (button == "LeftButton") then
-		self.AuraHUD_tracker:StartMoving()
+		self.Auracle_tracker:StartMoving()
 	end
 end -- Tracker_OnMouseDown()
 
 local function Tracker_OnUpdate(self)
-	self.AuraHUD_tracker:UpdateMovingPosition()
+	self.Auracle_tracker:UpdateMovingPosition()
 end -- Tracker_OnUpdate()
 
 local function Tracker_OnMouseUp(self, button)
 	if (button == "LeftButton") then
-		self.AuraHUD_tracker:StopMoving()
+		self.Auracle_tracker:StopMoving()
 	end
 end -- Tracker_OnMouseUp()
 
 local function Tracker_OnHide(self)
-	self.AuraHUD_tracker:StopMoving()
+	self.Auracle_tracker:StopMoving()
 end -- Tracker_OnHide()
 
 local function Tracker_OnEnter(self)
-	local tracker = self.AuraHUD_tracker
+	local tracker = self.Auracle_tracker
 	if (self:IsVisible() and tracker.auraApplied) then
 		GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
-		GameTooltip:SetUnitAura(tracker.unit, tracker.auraIndex, tracker.flag)
+		GameTooltip:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, ((tracker.db.auratype == "buff") and "HELPFUL") or "HARMFUL")
 	end
 end -- Tracker_OnEnter()
 
@@ -71,88 +100,100 @@ local function Tracker_OnLeave(self)
 	end
 end -- Tracker_OnLeave()
 
-local function TrackerTextFrame_OnUpdate(self, elapsed)
-	if (self.AuraHUD_timeleft) then
-		self.AuraHUD_timeleft = self.AuraHUD_timeleft - elapsed
-		local timestr
-		if (self.AuraHUD_timeleft >= 3600) then
-			timestr = tostring(ceil(self.AuraHUD_timeleft / 3600)).."h"
-		elseif (self.AuraHUD_timeleft >= 60) then
-			timestr = tostring(ceil(self.AuraHUD_timeleft / 60)).."m"
-		elseif (self.AuraHUD_timeleft > 0) then
-			timestr = tostring(ceil(self.AuraHUD_timeleft)) -- TODO precision
+local function TrackerCooldown_OnUpdate_Stacks(self, elapsed)
+	self:SetCooldown(GetTime() - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.maxStacks)
+end -- TrackerCooldown_OnUpdate_Stacks()
+
+local function TrackerOverlay_OnUpdate(self, elapsed)
+	local tracker = self.Auracle_tracker
+	local auraTimeleft = tracker.auraTimeleft
+	if (auraTimeleft) then
+		auraTimeleft = max(0, auraTimeleft - elapsed)
+		tracker.auraTimeleft = auraTimeleft
+	else
+		auraTimeleft = 0
+	end
+	-- update text
+	if (tracker.db.text == "time") then
+		local text
+		if (auraTimeleft >= 3600) then
+			text = tostring(ceil(auraTimeleft / 3600)).."h"
+		elseif (auraTimeleft >= 60) then
+			text = tostring(ceil(auraTimeleft / 60)).."m"
+		else
+			text = tostring(ceil(auraTimeleft))
 		end
-		if (timestr ~= self.AuraHUD_timestr) then
-			self.AuraHUD_timestr = timestr
-			-- TODO color prefs
-			local text = self.AuraHUD_tracker.uiText
-			if (self.AuraHUD_timeleft > 10) then 
-				text:SetTextColor(0, 1, 0)
-			elseif (self.AuraHUD_timeleft > 5) then
-				text:SetTextColor(1, 0.5, 0)
-			else
-				text:SetTextColor(1, 0, 0)
+		if (text ~= tracker.text) then
+			tracker.text = text
+			tracker.uiText:SetText(text)
+			-- update color
+			if (tracker.db.textColor == "time") then
+				tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, false, auraTimeleft))
+			elseif (tracker.db.textColor == "timeRel") then
+				tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, true, auraTimeleft / (tracker.db.maxTime or 0.001)))
 			end
-			text:SetText(timestr)
+		end
+	else
+		-- update color
+		if (tracker.db.textColor == "time") then
+			tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, false, auraTimeleft))
+		elseif (tracker.db.textColor == "timeRel") then
+			tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, true, auraTimeleft / (tracker.db.maxTime or 0.001)))
 		end
 	end
-end -- TrackerTextFrame_OnUpdate()
+end -- TrackerOverlay_OnUpdate()
 
 
 --[[ CONSTRUCT & DESTRUCT ]]--
 
 function Tracker:New(db, window, parentFrame)
 	-- re-use a tracker from the pool, or create a new one
-	local tracker = next(trackerPool)
+	local tracker = next(objectPool)
 	if (not tracker) then
 		tracker = self:Super("New")
 		tracker.uiFrame = CreateFrame("Frame") -- UIObject,Region
 		tracker.uiFrame:SetFrameStrata("LOW")
 		tracker.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
-		tracker.uiFrame.AuraHUD_tracker = tracker
-		tracker.uiIcon = tracker.uiFrame:CreateTexture(--[[nil, "BACKGROUND"]]) -- UIObject,Region,LayeredRegion
+		tracker.uiFrame.Auracle_tracker = tracker
+		tracker.uiIcon = tracker.uiFrame:CreateTexture(nil, "BACKGROUND") -- UIObject,Region,LayeredRegion
 		tracker.uiIcon:SetAllPoints()
-		tracker.uiIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- left, right, top, bottom (0,0=UL) to strip the borders off the texture
 		tracker.uiCooldown = CreateFrame("Cooldown", nil, tracker.uiFrame) -- UIObject,Region,Frame
 		tracker.uiCooldown:SetAllPoints()
-		tracker.uiCooldown:SetReverse(true)
-		tracker.uiTextFrame = CreateFrame("Frame", nil, tracker.uiFrame) -- UIObject,Region
-		tracker.uiTextFrame:SetAllPoints()
-		tracker.uiTextFrame.AuraHUD_tracker = tracker
-		tracker.uiText = tracker.uiTextFrame:CreateFontString(--[[nil, "OVERLAY"]]) -- UIObject,FontInstance,Region,LayeredRegion
+		tracker.uiCooldown.Auracle_tracker = tracker
+		tracker.uiOverlay = CreateFrame("Frame", nil, tracker.uiFrame) -- UIObject,Region
+		tracker.uiOverlay:SetAllPoints()
+		tracker.uiOverlay.Auracle_tracker = tracker
+		tracker.uiText = tracker.uiOverlay:CreateFontString(nil, "OVERLAY") -- UIObject,FontInstance,Region,LayeredRegion
 		tracker.uiText:SetPoint("CENTER") -- SetAllPoints() makes it just display "..." if it would overflow
 		tracker.uiText:SetNonSpaceWrap(false)
 		tracker.uiText:SetJustifyH("CENTER")
 		tracker.uiText:SetJustifyV("MIDDLE")
 	end
-	trackerPool[tracker] = nil
+	objectPool[tracker] = nil
 	
 	-- (re?)initialize tracker
 	tracker.window = window
 	tracker.db = db
+	tracker.style = Auracle.trackerStyles[db.style]
 	tracker.locked = true
 	tracker.moving = false
-	tracker.unit = window.db.unit
-	tracker.flag = ((db.auratype == "buff") and "HELPFUL") or "HARMFUL"
-	tracker.size = 12
+	tracker.backdrop = { edgeFile="Interface\\Addons\\Auracle\\white", edgeSize=1 }
+	tracker.size = 4
+	tracker.text = ""
 	tracker.auraIndex = false
 	tracker.auraOrigin = false
 	tracker.auraApplied = false
 	tracker.auraExpires = false
+	tracker.auraStacks = false
+	tracker.auralist = false
 	
 	-- (re?)initialize frames
 	tracker.uiFrame:SetParent(parentFrame)
 	tracker.uiFrame:Show()
-	tracker.uiFrame:SetBackdrop({
-		edgeFile = "Interface\\Addons\\AuraHUD\\white", edgeSize = 1 -- TODO sharedmedia borders
-	--	insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	tracker.uiTextFrame:SetScript("OnUpdate", TrackerTextFrame_OnUpdate)
 	tracker:Lock()
 	
 	-- (re?)apply preferences
-	tracker:UpdateFont()
-	tracker:UpdateAppearance()
+	tracker:UpdateStyle()
 	
 	return tracker
 end -- New()
@@ -160,10 +201,11 @@ end -- New()
 function Tracker.prototype:Destroy()
 	self:StopMoving()
 	-- clean up frame
-	self.uiTextFrame:Hide()
-	self.uiTextFrame:SetScript("OnUpdate", nil)
+	self.uiOverlay:SetScript("OnUpdate", nil)
 	self.uiCooldown:Hide()
+	self.uiCooldown:SetScript("OnUpdate", nil)
 	self.uiFrame:Hide()
+	self.uiFrame:SetScript("OnUpdate", nil)
 	self.uiFrame:SetScript("OnMouseDown", nil)
 	self.uiFrame:SetScript("OnMouseUp", nil)
 	self.uiFrame:SetScript("OnHide", nil)
@@ -174,17 +216,20 @@ function Tracker.prototype:Destroy()
 	-- clean up tracker
 	self.window = nil
 	self.db = nil
+	self.style = nil
 	self.locked = nil
 	self.moving = nil
-	self.unit = nil
-	self.flag = nil
+	self.backdrop = nil
 	self.size = nil
+	self.text = nil
 	self.auraIndex = nil
 	self.auraOrigin = nil
 	self.auraApplied = nil
 	self.auraExpires = nil
-	-- add tracker to the pool for later re-use
-	trackerPool[self] = true
+	self.auraStacks = nil
+	self.auralist = nil
+	-- add object to the pool for later re-use
+	objectPool[self] = true
 end -- Destroy()
 
 function Tracker.prototype:Remove()
@@ -194,139 +239,7 @@ function Tracker.prototype:Remove()
 end -- Remove()
 
 
---[[ AURA UPDATE METHODS ]]--
-
-function Tracker.prototype:UpdateUnitAuras()
-	self.window:UpdateUnitAuras()
-end -- UpdateUnitAuras()
-
-function Tracker.prototype:ResetAuraState()
-	self:BeginAuraUpdate()
-	self:EndAuraUpdate()
-end -- ResetAuraState()
-
-function Tracker.prototype:BeginAuraUpdate(now)
-	self.update_index = false
-	self.update_icon = false
-	self.update_origin = false
-	self.update_applied = false
-	self.update_expires = false
-end -- BeginAuraUpdate()
-
-function Tracker.prototype:UpdateAura(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
-	-- TODO optimize
-	-- if we already have a qualifying, non-expiring aura, we don't care about anything else
-	if (self.update_applied and not self.update_expires) then
-		return
-	end
-	local ipairs = ipairs
-	for _,auraname in ipairs(self.db.auras) do
-		if (name == auraname) then
-			if (self.db.filter.origin[origin]) then
-				if (expires == 0 or not self.update_applied or expires > self.update_expires) then
-					self.update_index = index
-					self.update_icon = icon
-					self.update_origin = origin
-					if (duration > 0 and expires > 0) then
-						self.update_applied = expires - duration
-						self.update_expires = expires
-					else
-						self.update_applied = true
-						self.update_expires = false
-					end
-				end
-			end
-		end
-	end
-end -- UpdateAura()
-
-function Tracker.prototype:EndAuraUpdate(now,total)
-	-- if we're (now?) satisfied...
-	local unpack = unpack
-	if (self.update_applied) then
-		-- ...and we weren't satisfied before, or were satisfied from a different source:
-		if (not self.auraApplied or self.auraOrigin ~= self.update_origin) then
-			if (self.db.icon.desaturateMissing) then
-				self.uiIcon:SetDesaturated(false)
-			end
-			if (self.update_origin == "me") then
-				self.uiFrame:SetBackdropBorderColor(unpack(self.db.border.colorMine))
-				self.uiIcon:SetVertexColor(unpack(self.db.icon.colorMine))
-			else
-				self.uiFrame:SetBackdropBorderColor(unpack(self.db.border.colorOthers))
-				self.uiIcon:SetVertexColor(unpack(self.db.icon.colorOthers))
-			end
-		end
-		-- ...and the icon changed:
-		if (self.update_icon ~= self.db.icon.texture) then
-			if (self.db.icon.autoTexture or self.db.icon.texture == ICON_QM) then
-				self.db.icon.texture = self.update_icon
-				self.uiIcon:SetTexture(self.update_icon)
-			end
-		end
-		-- ...and the expiration changed...
-		if (self.update_expires ~= self.auraExpires) then
-			-- ...and the expiration isn't "never"...
-			if (self.update_expires) then
-				-- ...and our spiral shows expiration:
-				if (self.db.spiral.mode == "time") then
-					if (self.db.spiral.autoLength or self.db.spiral.length <= 0) then
-						self.db.spiral.length = self.update_expires - self.update_applied
-					end
-					self.uiCooldown.noCooldownCount = (self.db.spiral.noCC or nil)
-					self.uiCooldown.noOmniCC = (self.db.spiral.noCC or nil)
-					self.uiCooldown:Show()
-					self.uiCooldown:SetCooldown(self.update_applied, self.db.spiral.length)
-				end
-				-- ...and our text shows expiration:
-				if (self.db.text.mode == "time") then
-					self.uiTextFrame:Show()
-					self.uiTextFrame.AuraHUD_timeleft = self.update_expires - now
-				end
-			else -- ...or, if the expiration IS "never":
-				self.uiCooldown:Hide()
-				self.uiTextFrame:Hide()
-				self.uiTextFrame.AuraHUD_timeleft = nil
-				self.uiTextFrame.AuraHUD_timestr = nil
-			end
-		end
-	else -- ...or, we're (no longer?) satisfied...
-		-- ...and we were satisfied before:
-		if (self.auraApplied) then
-			self.uiFrame:SetBackdropBorderColor(unpack(self.db.border.colorMissing))
-			if (self.db.icon.desaturateMissing) then
-				self.uiIcon:SetDesaturated(true)
-			end
-			self.uiIcon:SetVertexColor(unpack(self.db.icon.colorMissing))
-		end
-		-- ...and we used to have an expiration:
-		if (self.auraExpires) then
-			-- ...and our spiral shows expiration:
-			if (self.db.spiral.mode == "time") then
-				self.uiCooldown:Hide()
-			end
-			-- ...and our text shows expiration:
-			if (self.db.text.mode == "time") then
-				self.uiTextFrame:Hide()
-				self.uiTextFrame.AuraHUD_timeleft = nil
-				self.uiTextFrame.AuraHUD_timestr = nil
-			end
-		end
-	end
-	-- update our state
-	self.auraIndex = self.update_index
-	self.auraOrigin = self.update_origin
-	self.auraApplied = self.update_applied
-	self.auraExpires = self.update_expires
-	self.update_index = nil
-	self.update_icon = nil
-	self.update_origin = nil
-	self.update_applied = nil
-	self.update_expires = nil
-end -- EndAuraUpdate()
-
-
---[[ UI METHODS ]]--
+--[[ INTERFACE METHODS ]]--
 
 function Tracker.prototype:StartMoving()
 	if (not self.locked and not self.moving) then
@@ -365,6 +278,7 @@ function Tracker.prototype:StopMoving()
 		self.uiFrame:SetFrameStrata("LOW")
 		self.uiFrame:StopMovingOrSizing()
 		self.window:UpdateLayout()
+		Auracle:UpdateConfig()
 		self.moving_frameX = nil
 		self.moving_frameY = nil
 		self.moving_screenX = nil
@@ -374,17 +288,240 @@ function Tracker.prototype:StopMoving()
 	end
 end -- StopMoving()
 
-function Tracker.prototype:SetLayout(x, y, borderSize, trackerSize)
+
+--[[ AURA UPDATE METHODS ]]--
+
+function Tracker.prototype:UpdateUnitAuras()
+	self.window:UpdateUnitAuras()
+end -- UpdateUnitAuras()
+
+function Tracker.prototype:ResetAuraState()
+	self:BeginAuraUpdate()
+	self:EndAuraUpdate()
+end -- ResetAuraState()
+
+function Tracker.prototype:BeginAuraUpdate(now)
+	self.update_index = false
+	self.update_icon = false
+	self.update_origin = false
+	self.update_applied = false
+	self.update_expires = false
+	self.update_stacks = false
+end -- BeginAuraUpdate()
+
+function Tracker.prototype:UpdateAura(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+	-- if we already have a qualifying, non-expiring aura, we don't care about anything else
+	if (self.update_applied and not self.update_expires) then
+		return
+	end
+	local ipairs = ipairs
+	for _,auraname in ipairs(self.db.auras) do
+		if (name == auraname) then
+			if (self.db[S_TRACK[origin]]) then
+				if (not self.update_applied or expires == 0 or expires > self.update_expires) then
+					self.update_index = index
+					self.update_icon = icon
+					self.update_origin = origin
+					if (duration > 0 and expires > 0) then
+						self.update_applied = expires - duration
+						self.update_expires = expires
+					else
+						self.update_applied = true
+						self.update_expires = false
+					end
+					self.update_stacks = count
+				end
+			end
+		end
+	end
+end -- UpdateAura()
+
+function Tracker.prototype:EndAuraUpdate(now,total)
+	-- find changes and autoupdate
+	local statusChanged = (self.update_origin ~= self.auraOrigin)
+	local timeChanged = (self.update_expires ~= self.auraExpires)
+	local maxTimeChanged = false
+	if (self.update_expires) then
+		local duration = self.update_expires - self.update_applied
+		if (not self.db.maxTime or self.db.autoMaxTime) then
+			self.db.maxTime = duration
+			maxTimeChanged = true
+		end
+	end
+	local stacksChanged = (self.update_stacks ~= self.auraStacks)
+	local maxStacksChanged = false
+	if (self.update_stacks) then
+		if (not self.db.maxStacks or (self.db.autoMaxStacks and self.update_stacks > self.db.maxStacks)) then
+			self.db.maxStacks = self.update_stacks
+			maxStacksChanged = true
+		end
+	end
+	local iconChanged = false
+	if (self.update_icon) then
+		if (self.db.icon == ICON_QM or self.db.autoIcon) then
+			self.db.icon = self.update_icon
+			iconChanged = true
+		end
+	end
+	-- store aura state
+	self.auraIndex = self.update_index
+	self.auraOrigin = self.update_origin
+	self.auraApplied = self.update_applied
+	self.auraTimeleft = self.update_expires and (self.update_expires - now)
+	self.auraExpires = self.update_expires
+	self.auraStacks = self.update_stacks
+	self.update_index = nil
+	self.update_icon = nil
+	self.update_origin = nil
+	self.update_applied = nil
+	self.update_expires = nil
+	self.update_stacks = nil
+	-- update visuals as needed
+	if (statusChanged) then
+		self:UpdateBorder()
+		self:UpdateIcon()
+		self:UpdateSpiral()
+		self:UpdateText()
+	else
+		if (iconChanged) then
+			self:UpdateIcon()
+		end
+		if (self.db.spiral == "time" and (timeChanged or maxTimeChanged)) then
+			self:UpdateSpiral()
+		elseif (self.db.spiral == "stacks" and (stacksChanged or maxStacksChanged)) then
+			self:UpdateSpiral()
+		end
+		if (self.db.text == "stacks" and maxStacksChanged) then
+			self:UpdateText()
+		elseif (self.db.textColor == "stacks" and (stacksChanged or maxStacksChanged)) then
+			self:UpdateText()
+		end
+	end
+end -- EndAuraUpdate()
+
+
+--[[ VISUAL UPDATE METHODS ]]--
+
+function Tracker.prototype:UpdateStyle()
+	self:UpdateBorder()
+	self:UpdateIcon()
+	self:UpdateSpiral()
+	self:UpdateFont()
+	self:UpdateText()
+end -- UpdateStyle()
+
+function Tracker.prototype:UpdateBorder()
+	local sdb = self.style.db.border
+	if (sdb[S_SHOW[self.auraOrigin]]) then
+		local borderSize = sdb[S_SIZE[self.auraOrigin]]
+		if (sdb.noScale) then
+			local m = {}
+			for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+				m[#m+1] = size
+			end
+			borderSize = borderSize * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+		end
+		self.backdrop.edgeSize = borderSize
+		self.uiFrame:SetBackdrop(self.backdrop)
+		self.uiFrame:SetBackdropBorderColor(unpack(sdb[S_COLOR[self.auraOrigin]]))
+	else
+		self.uiFrame:SetBackdrop(nil)
+	end
+end -- UpdateBorder()
+
+function Tracker.prototype:UpdateIcon()
+	local sdb = self.style.db.icon
+	if (sdb[S_SHOW[self.auraOrigin]]) then
+		self.uiIcon:SetTexture(self.db.icon)
+		if (sdb.zoom) then
+			self.uiIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+		else
+			self.uiIcon:SetTexCoord(   0,    1,    0,    1)
+		end
+		self.uiIcon:SetDesaturated(sdb[S_GRAY[self.auraOrigin]])
+		self.uiIcon:SetVertexColor(unpack(sdb[S_COLOR[self.auraOrigin]]))
+		self.uiIcon:Show();
+	else
+		self.uiIcon:Hide();
+	end
+end -- UpdateIcon()
+
+function Tracker.prototype:UpdateSpiral()
+	local sdb = self.style.db.spiral
+	if (sdb[S_SHOW[self.auraOrigin]]) then
+		self.uiCooldown.noCooldownCount = sdb.noCC or nil
+		self.uiCooldown.noOmniCC = sdb.noCC or nil
+		self.uiCooldown:SetReverse(self.db.spiralReverse)
+		if (self.auraExpires) then
+			self.uiCooldown:Show()
+			if (self.db.spiral == "time") then
+				self.uiCooldown:SetScript("OnUpdate", nil)
+				self.uiCooldown:SetCooldown(self.auraExpires - self.db.maxTime, self.db.maxTime)
+			elseif (self.db.spiral == "stacks") then
+				self.uiCooldown:SetScript("OnUpdate", TrackerCooldown_OnUpdate_Stacks)
+			end
+		else
+			self.uiCooldown:Hide()
+		end
+	else
+		self.uiCooldown:Hide()
+	end
+end -- UpdateSpiral()
+
+function Tracker.prototype:UpdateFont()
+	local sdb = self.style.db.text
+	local fontsize = sdb.size + (sdb.sizeMult * self.size)
+	self.uiText:SetFont(sdb.font, fontsize, sdb.outline)
+end -- UpdateFont()
+
+function Tracker.prototype:UpdateText()
+	local text = "0"
+	self.uiOverlay:SetScript("OnUpdate", nil)
+	local sdb = self.style.db.text
+	if (sdb[S_SHOW[self.auraOrigin]]) then
+		-- set text
+		if (self.db.text == "label") then
+			text = self.db.label
+		elseif (self.db.text == "time") then
+			if (self.auraTimeleft) then
+				self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
+				if (self.auraTimeleft >= 3600) then
+					text = tostring(ceil(self.auraTimeleft / 3600)).."h"
+				elseif (self.auraTimeleft >= 60) then
+					text = tostring(ceil(self.auraTimeleft / 60)).."m"
+				else
+					text = tostring(ceil(self.auraTimeleft or 0))
+				end
+			end
+		elseif (self.db.text == "stacks") then
+			text = tostring(self.auraStacks or 0)
+		end
+		-- set color
+		if (self.db.textColor == "time") then
+			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, false, self.auraTimeleft or 0))
+			self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
+		elseif (self.db.textColor == "timeRel") then
+			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraTimeleft or 0) / (self.db.maxTime or 0.0001)))
+			self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
+		elseif (self.db.textColor == "stacks") then
+			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraStacks or 0) / (self.db.maxStacks or 0.0001)))
+		end
+		self.text = text
+		self.uiText:SetText(text)
+		self.uiText:Show()
+	else
+		self.uiText:Hide()
+	end
+end -- UpdateText()
+
+function Tracker.prototype:SetLayout(x, y, trackerSize)
 	if (not self.moving) then
-		self.size = trackerSize
 		self.uiFrame:ClearAllPoints()
 		self.uiFrame:SetPoint("TOPLEFT", self.uiFrame:GetParent(), "TOPLEFT", x, -y) -- WoW's 0,0 is lowerleft
-		self.uiFrame:SetWidth(trackerSize + (2 * borderSize))
-		self.uiFrame:SetHeight(trackerSize + (2 * borderSize))
-		self.uiIcon:ClearAllPoints()
-		self.uiIcon:SetPoint("TOPLEFT", self.uiFrame, "TOPLEFT", borderSize, -borderSize)
-		self.uiIcon:SetPoint("BOTTOMRIGHT", self.uiFrame, "BOTTOMRIGHT", -borderSize, borderSize)
-		if (self.db.text.sizeMult ~= 0) then
+		self.uiFrame:SetWidth(trackerSize)
+		self.uiFrame:SetHeight(trackerSize)
+		if (trackerSize ~= self.size) then
+			self.size = trackerSize
 			self:UpdateFont()
 		end
 	end
@@ -421,301 +558,269 @@ function Tracker.prototype:Lock()
 	self.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
 end -- Lock()
 
-function Tracker.prototype:UpdateFont()
-	local size = (self.db.text.sizeMult * self.size) + self.db.text.size
-	self.uiText:SetFont(self.db.text.font, size, self.db.text.outline)
-end -- UpdateFont()
 
-function Tracker.prototype:UpdateAppearance()
-	local unpack = unpack
-	self.uiIcon:SetTexture(self.db.icon.texture)
-	if (self.auraApplied) then
-		self.uiIcon:SetDesaturated(false)
-		if (self.auraOrigin == "me") then
-			self.uiFrame:SetBackdropBorderColor(unpack(self.db.border.colorMine))
-			self.uiIcon:SetVertexColor(unpack(self.db.icon.colorMine))
-		else
-			self.uiFrame:SetBackdropBorderColor(unpack(self.db.border.colorOthers))
-			self.uiIcon:SetVertexColor(unpack(self.db.icon.colorOthers))
-		end
-		if (self.auraExpires) then
-			if (self.db.spiral.mode == "time") then
-				self.uiCooldown.noCooldownCount = (self.db.spiral.noCC or nil)
-				self.uiCooldown.noOmniCC = (self.db.spiral.noCC or nil)
-				self.uiCooldown:Show()
-				self.uiCooldown:SetCooldown(self.auraApplied, self.db.spiral.length)
-			end
-			if (self.db.text.mode == "time") then
-				self.uiTextFrame:Show()
-				self.uiTextFrame.AuraHUD_timeleft = self.auraExpires - GetTime()
-			end
-		else
-			self.uiCooldown:Hide()
-			self.uiTextFrame:Hide()
-			self.uiTextFrame.AuraHUD_timeleft = nil
-			self.uiTextFrame.AuraHUD_timestr = nil
-		end
-	else
-		self.uiFrame:SetBackdropBorderColor(unpack(self.db.border.colorMissing))
-		self.uiIcon:SetDesaturated(self.db.icon.desaturateMissing)
-		self.uiIcon:SetVertexColor(unpack(self.db.icon.colorMissing))
-		self.uiCooldown:Hide()
-		if (self.db.text.mode == "time") then
-			self.uiTextFrame:Hide()
-			self.uiTextFrame.AuraHUD_timeleft = nil
-			self.uiTextFrame.AuraHUD_timestr = nil
-		end
-	end
-end -- UpdateAppearance()
+--[[ SHARED OPTIONS TABLE ]]--
+
+local sharedOptions = {
+	tracker = {
+		type = "group",
+		name = "Tracker",
+		order = 1,
+		args = {
+			label = {
+				type = "input",
+				name = "Label",
+				get = function(i) return i.handler.db.label end,
+				set = function(i,v)
+					v = strtrim(v)
+					if (v == "") then v = false end
+					i.handler.db.label = v
+					Auracle:UpdateConfig()
+				end,
+				order = 10
+			},
+			removeTracker = {
+				type = "execute",
+				name = "Remove Tracker",
+				func = "Remove",
+				order = 11
+			},
+			style = {
+				type = "select",
+				name = "Tracker Style",
+				values = function() return Auracle.trackerStyleOptions end,
+				get = function(i) return i.handler.db.style end,
+				set = function(i,v)
+					local style = Auracle.trackerStyles[v]
+					if (style) then
+						i.handler.db.style = v
+						i.handler.style = style
+						style:Apply(i.handler)
+					end
+				end,
+				order = 12
+			}
+		}
+	},
+	auras = {
+		type = "group",
+		name = "Auras",
+		order = 2,
+		args = {
+			auratype = {
+				type = "select",
+				name = "Aura Type",
+				values = {
+					buff = "Buffs",
+					debuff = "Debuffs"
+				},
+				get = function(i) return i.handler.db.auratype end,
+				set = function(i,v)
+					i.handler.db.auratype = v
+					i.handler:UpdateUnitAuras()
+				end,
+				order = 20
+			},
+			auras = {
+				type = "input",
+				name = "Auras",
+				usage = "One buff or debuff name per line",
+				multiline = true,
+				width = "double",
+				get = function(i)
+					if (not i.handler.auralist) then
+						local l = ""
+						for _,auraname in ipairs(i.handler.db.auras) do
+							l = l .. "\n" .. auraname
+						end
+						i.handler.auralist = strsub(l,2)
+					end
+					return i.handler.auralist
+				end,
+				set = function(i,v)
+					local auras = i.handler.db.auras
+					wipe(auras)
+					for aura in string.gmatch(v, "[^\n\r]+") do
+						auras[#auras+1] = aura
+					end
+					i.handler.auralist = false
+					if (not i.handler.db.label) then Auracle:UpdateConfig() end
+					i.handler:UpdateUnitAuras()
+				end,
+				order = 21
+			},
+			trackOthers = {
+				type = "toggle",
+				name = "Track Other's",
+				get = function(i) return i.handler.db.trackOthers end,
+				set = function(i,v)
+					i.handler.db.trackOthers = v
+					i.handler:UpdateUnitAuras()
+				end,
+				order = 22
+			},
+			trackMine = {
+				type = "toggle",
+				name = "Track Mine",
+				get = function(i) return i.handler.db.trackMine end,
+				set = function(i,v)
+					i.handler.db.trackMine = v
+					i.handler:UpdateUnitAuras()
+				end,
+				order = 23
+			},
+			maxTime = {
+				type = "input",
+				name = "Maximum Duration",
+				get = function(i) return i.handler.db.maxTime end,
+				set = function(i,v)
+					i.handler.db.maxTime = v
+					if (i.handler.db.spiral == "time") then i.handler:UpdateSpiral() end
+				end,
+				order = 24
+			},
+			autoMaxTime = {
+				type = "toggle",
+				name = "Autoupdate",
+				desc = "Update maximum duration whenever a new aura activates the tracker",
+				get = function(i) return i.handler.db.autoMaxTime end,
+				set = function(i,v)
+					i.handler.db.autoMaxTime = v
+					if (v) then i.handler:UpdateUnitAuras() end
+				end,
+				order = 25
+			},
+			maxStacks = {
+				type = "input",
+				name = "Maximum Stacks",
+				get = function(i) return i.handler.db.maxStacks end,
+				set = function(i,v)
+					i.handler.db.maxStacks = v
+					if (i.handler.db.spiral == "stacks") then i.handler:UpdateSpiral() end
+				end,
+				order = 26
+			},
+			autoMaxStacks = {
+				type = "toggle",
+				name = "Autoupdate",
+				desc = "Update maximum stacks whenever a higher stack count is seen",
+				get = function(i) return i.handler.db.autoMaxStacks end,
+				set = function(i,v)
+					i.handler.db.autoMaxStacks = v
+					if (v) then i.handler:UpdateUnitAuras() end
+				end,
+				order = 27
+			},
+			icon = {
+				type = "input",
+				name = "Icon Texture",
+				get = function(i) return i.handler.db.icon end,
+				set = function(i,v)
+					i.handler.db.icon = v
+					i.handler:UpdateIcon()
+				end,
+				order = 28
+			},
+			autoIcon = {
+				type = "toggle",
+				name = "Autoupdate",
+				desc = "Update icon texture whenever a new aura activates the tracker",
+				get = function(i) return i.handler.db.autoIcon end,
+				set = function(i,v)
+					i.handler.db.autoIcon = v
+					if (v) then i.handler:UpdateUnitAuras() end
+				end,
+				order = 29
+			}
+		}
+	},
+	spiral = {
+		type = "group",
+		name = "Spiral",
+		order = 3,
+		args = {
+			mode = {
+				type = "select",
+				name = "Display",
+				values = {
+					time = "Duration",
+					stacks = "Stacks"
+				},
+				get = function(i) return i.handler.db.spiral end,
+				set = function(i,v)
+					i.handler.db.spiral = v
+					i.handler:UpdateSpiral()
+				end,
+				order = 30
+			},
+			reverse = {
+				type = "select",
+				name = "Direction",
+				values = {
+					fill = "Fill Clockwise",
+					drain = "Drain Clockwise"
+				},
+				get = function(i) return (i.handler.db.spiralReverse and "drain") or "fill" end,
+				set = function(i,v)
+					i.handler.db.spiralReverse = ((v == "drain") and true) or false
+					i.handler:UpdateSpiral()
+				end,
+				order = 31
+			}
+		}
+	},
+	text = {
+		type = "group",
+		name = "Text",
+		order = 4,
+		args = {
+			mode = {
+				type = "select",
+				name = "Display",
+				values = {
+					label = "Label",
+					time = "Duration",
+					stacks = "Stacks"
+				},
+				get = function(i) return i.handler.db.text end,
+				set = function(i,v)
+					i.handler.db.text = v
+					-- TODO text
+				end,
+				order = 40
+			},
+			color = {
+				type = "select",
+				name = "Color By",
+				values = {
+					time = "Absolute Duration",
+					timeRel = "Relative Duration",
+					stacks = "Relative Stacks"
+				},
+				get = function(i) return i.handler.db.textColor end,
+				set = function(i,v)
+					i.handler.db.textColor = v
+					-- TODO text
+				end,
+				order = 41
+			}
+		}
+	}
+}
 
 
 --[[ MENU METHODS ]]--
 
-function Tracker.prototype:GetConfigOption(i, v1, v2, v3, v4)
-	-- i[1] == "window#"
-	-- i[2] == "tracker#"
-	if (i[4] ~= nil) then
-		if (i[3] == "border" or i[3] == "icon") and (i[4] == "colorMissing" or i[4] == "colorMine" or i[4] == "colorOthers") then
-			return unpack(self.db[i[3]][i[4]])
-		elseif (type(self.db[i[3]][i[4]]) ~= "nil") then
-			return self.db[i[3]][i[4]]
-		end
-	elseif (i[3] ~= nil) then
-		if (i[3] == "auras") then
-			local str = ""
-			for _,auraname in ipairs(self.db.auras) do
-				str = str .. "\n" .. auraname
-			end
-			return strsub(str,2)
-		elseif (i[3] == "filter_origin") then
-			return self.db.filter.origin[v1]
-		elseif (self.db[i[3]] ~= nil) then
-			return self.db[i[3]]
-		end
-	end
-	AuraHUD:DebugCall("Tracker.GetConfigOption", i, v1, v2, v3, v4)
-end -- GetConfigOption()
-
-function Tracker.prototype:SetConfigOption(i, v1, v2, v3, v4)
-	-- i[1] == "window#"
-	-- i[2] == "tracker#"
-	if (i[4] ~= nil) then
-		if (i[3] == "border" or i[3] == "icon") and (i[4] == "colorMissing" or i[4] == "colorMine" or i[4] == "colorOthers") then
-			local c = self.db[i[3]][i[4]]
-			c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-		else
-			self.db[i[3]][i[4]] = v1
-		end
-		self:UpdateFont()
-		self:UpdateAppearance()
-		if ((i[3] == "icon" and i[4] == "autoTexture") or (i[3] == "spiral" and i[4] == "autoLength")) then
-			self:UpdateUnitAuras()
-		end
-	elseif (i[3] == "label") then
-		v1 = strtrim(v1)
-		if (v1 == "") then
-			v1 = false
-		end
-		self.db.label = v1
-		AuraHUD:UpdateOptionsTable()
-	elseif (i[3] == "auratype") then
-		self.db.auratype = v1
-		self:UpdateUnitAuras()
-	elseif (i[3] == "auras") then
-		wipe(self.db.auras)
-		for aura in string.gmatch(v1, "[^\n\r]+") do
-			tinsert(self.db.auras, aura)
-			--print(aura)
-		end
-		self:UpdateUnitAuras()
-	elseif (i[3] == "filter_origin") then
-		self.db.filter.origin[v1] = v2
-		self:UpdateUnitAuras()
-	else
-		AuraHUD:DebugCall("Tracker.SetConfigOption", i, v1, v2, v3, v4)
-	end
-end -- SetConfigOption()
-
-function Tracker.prototype:GetOptionsTable(DB_TRACKER_OPTIONS)
+function Tracker.prototype:GetOptionsTable()
 	if (not self.optionsTable) then
 		self.optionsTable = {
 			type = "group",
-			name = "ERR", -- filled in below, in case it changes
+			childGroups = "tab",
 			handler = self,
-			get = "GetConfigOption",
-			set = "SetConfigOption",
-			args = {
-				label = {
-					type = "input",
-					name = "Label",
-					width = "double",
-					order = 11
-				},
-				do_removeTracker = {
-					type = "execute",
-					name = "Remove This Tracker",
-					func = "Remove",
-					order = 12
-				},
-				auratype = {
-					type = "select",
-					name = "Aura Type",
-					values = DB_TRACKER_OPTIONS.auratype,
-					order = 13
-				},
-				auras = {
-					type = "input",
-					name = "Auras",
-					usage = "One aura name per line",
-					multiline = true,
-					width = "double",
-					order = 14
-				},
-				filter_origin = {
-					type = "multiselect",
-					name = "Show auras applied by...",
-					desc = "Origin",
-					values = DB_TRACKER_OPTIONS.filter_origin,
-					order = 15
-				},
-				border = {
-					type = "group",
-					name = "Border",
-					inline = true,
-					order = 20,
-					args = {
-						colorMissing = {
-							type = "color",
-							name = "Color when missing",
-							hasAlpha = true,
-							order = 21
-						},
-						colorMine = {
-							type = "color",
-							name = "Color when mine",
-							hasAlpha = true,
-							order = 22
-						},
-						colorOthers = {
-							type = "color",
-							name = "Color when others",
-							hasAlpha = true,
-							order = 23
-						}
-					}
-				},
-				icon = {
-					type = "group",
-					name = "Background",
-					inline = true,
-					order = 30,
-					args = {
-						texture = {
-							type = "input",
-							name = "Icon",
-							width = "full",
-							order = 31
-						},
-						autoTexture = {
-							type = "toggle",
-							name = "Autoupdate icon",
-							order = 32
-						},
-						desaturateMissing = {
-							type = "toggle",
-							name = "Grey-out icon when missing",
-							width = "double",
-							order = 33
-						},
-						colorMissing = {
-							type = "color",
-							name = "Tint when missing",
-							hasAlpha = true,
-							order = 34
-						},
-						colorMine = {
-							type = "color",
-							name = "Tint when mine",
-							hasAlpha = true,
-							order = 35
-						},
-						colorOthers = {
-							type = "color",
-							name = "Tint when others",
-							hasAlpha = true,
-							order = 36
-						}
-					}
-				},
-				spiral = {
-					type = "group",
-					name = "Cooldown Spiral",
-					inline = true,
-					order = 40,
-					args = {
-						noCC = {
-							type = "toggle",
-							name = "Disable external cooldown count",
-							width = "double",
-							order = 41
-						},
-						length = {
-							type = "range",
-							name = "Maximum duration",
-							min = 1,
-							max = 300,
-							step = 1,
-							order = 42
-						},
-						autoLength = {
-							type = "toggle",
-							name = "Autoupdate maximum duration",
-							width = "full",
-							order = 43
-						}
-					}
-				},
-				text = {
-					type = "group",
-					name = "Text",
-					inline = true,
-					order = 50,
-					args = {
-						font = {
-							type = "input",
-							name = "Font",
-							width = "full",
-							order = 51
-						},
-						sizeMult = {
-							type = "range",
-							name = "Relative size",
-							desc = "Effective font size is (relativeSize * trackerSize) + staticSize",
-							min = 0,
-							max = 2,
-							step = 0.05,
-							order = 52
-						},
-						size = {
-							type = "range",
-							name = "Static size",
-							desc = "Effective font size is (relativeSize * trackerSize) + staticSize",
-							min = 0,
-							max = 64,
-							step = 1,
-							order = 53
-						},
-						outline = {
-							type = "select",
-							name = "Outline",
-							values = DB_TRACKER_OPTIONS.text.outline,
-							order = 54
-						}
-					}
-				}
-			}
+			args = sharedOptions
 		}
 	end
-	self.optionsTable.name = self.db.label or "(unlabeled)"
+	self.optionsTable.name = self.db.label or self.db.auras[1] or "New Tracker"
 	return self.optionsTable
 end -- GetOptionsTable()
+
