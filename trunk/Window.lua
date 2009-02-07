@@ -850,7 +850,7 @@ function Window.prototype:GetOptionsTable()
 			args = {
 				addTracker = {
 					type = "group",
-					name = "|c7f7fffff(Add Tracker...)",
+					name = "|cff7fffff(Add Tracker...)",
 					order = -1,
 					args = {
 						addTracker = {

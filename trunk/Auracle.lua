@@ -8,6 +8,7 @@ local AceConfig
 local AceConfigDialog
 local AceConfigCmd
 local AceConfigRegistry
+local LibDataBroker
 --local LibUnitID
 --local LibSharedMedia
 --local LibButtonFacade
@@ -34,6 +35,7 @@ function Auracle:__windowstyle(class, db_default)
 	self.__windowstyle = nil
 	WindowStyle = class
 	DB_DEFAULT_WINDOWSTYLE = db_default
+	DB_DEFAULT.windowStyles.Default = DB_DEFAULT_WINDOWSTYLE
 end
 
 local TrackerStyle
@@ -41,6 +43,7 @@ function Auracle:__trackerstyle(class, db_default)
 	self.__trackerstyle = nil
 	TrackerStyle = class
 	DB_DEFAULT_TRACKERSTYLE = db_default
+	DB_DEFAULT.trackerStyles.Default = DB_DEFAULT_TRACKERSTYLE
 end
 
 local Window
@@ -48,6 +51,7 @@ function Auracle:__window(class, db_default)
 	self.__window = nil
 	Window = class
 	DB_DEFAULT_WINDOW = db_default
+	DB_DEFAULT.windows[1] = DB_DEFAULT_WINDOW
 end
 
 local Tracker
@@ -97,6 +101,7 @@ function Auracle:OnInitialize()
 	AceConfigDialog = LibStub("AceConfigDialog-3.0")
 	AceConfigCmd = LibStub("AceConfigCmd-3.0")
 	AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+	LibDataBroker = LibStub("LibDataBroker-1.1")
 --@alpha@
 	--LibUnitID = LibStub("LibUnitID-1.0-alpha",true)
 --@end-alpha@
@@ -133,6 +138,38 @@ function Auracle:OnInitialize()
 	AceConfig:RegisterOptionsTable("Auracle Setup", optionsTable)
 	AceConfig:RegisterOptionsTable("Auracle Blizzard Setup", blizOptionsTable)
 	blizOptionsFrame = AceConfigDialog:AddToBlizOptions("Auracle Blizzard Setup", "Auracle")
+	-- register LDB launcher
+	LibDataBroker:NewDataObject("Auracle", {
+		type = "launcher",
+		--icon = "Interface\\Icons\\Spell_Arcane_FocusedPower",
+		--icon = "Interface\\Icons\\Spell_Holy_SpiritualGuidence",
+		icon = "Interface\\Icons\\Spell_Holy_AuraMastery",
+		OnClick = function(frame, button)
+			if (button == "RightButton") then
+				self:OpenOptionsWindow()
+			else -- LeftButton or some other screwy argument
+				if (self:IsEnabled()) then
+					self:Print("Disabled.")
+					self:Disable()
+				else
+					self:Enable()
+					self:Print("Enabled.")
+				end
+			end
+		end,
+		OnTooltipShow = function(tt)
+			--[[ how to make this update when clicked?
+			if (self:IsEnabled()) then
+				tt:AddLine("Auracle |cffffffff(|cff00ff00enabled|cffffffff)")
+			else
+				tt:AddLine("Auracle |cffffffff(|cffff0000disabled|cffffffff)")
+			end
+			--]]
+			tt:AddLine("Auracle")
+			tt:AddLine("|cff7fffffLeft-click|cffffffff to toggle")
+			tt:AddLine("|cff7fffffRight-click|cffffffff to open configuration")
+		end,
+	})
 end -- OnInitialize()
 
 function Auracle:OnEnable()
@@ -723,7 +760,7 @@ function Auracle:UpdateOptionsTable()
 				args = {
 					addWindow = {
 						type = "group",
-						name = "|c7f7fffff(Add Window...)",
+						name = "|cff7fffff(Add Window...)",
 						order = -1,
 						args = {
 							addWindow = {
