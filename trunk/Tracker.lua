@@ -470,7 +470,7 @@ end -- UpdateSpiral()
 
 function Tracker.prototype:UpdateFont()
 	local sdb = self.style.db.text
-	local fontsize = sdb.size + (sdb.sizeMult * self.size)
+	local fontsize = max(1, sdb.size + (sdb.sizeMult * self.size))
 	self.uiText:SetFont(sdb.font, fontsize, sdb.outline)
 end -- UpdateFont()
 
