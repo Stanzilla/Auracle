@@ -11,3 +11,4 @@ externals:
   libs/AceGUI-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
   libs/AceConfig-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
   libs/LibOOP-1.0: svn://svn.wowace.com/wow/liboop/mainline/tags/1.0.0-beta/LibOOP
+  libs/LibDataBroker-1.1: git://github.com/tekkub/libdatabroker-1-1.git
