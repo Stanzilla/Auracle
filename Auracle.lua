@@ -14,7 +14,6 @@ local LibDataBroker
 
 --[[ CONSTANTS ]]--
 
-local DB_VERSION = 3
 local DB_DEFAULT = {
 	version = 0,
 	windowStyles = {},
@@ -436,62 +435,77 @@ function Auracle:Shutdown()
 end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
-	-- while DB_VERSION was 1, it was also part of DB_DEFAULT, so AceDB never actually stored it;
-	-- consequently, we have to examine the data to figure out if it needs updating.
-	-- worse, anyone who used 0.2.3 and then tried using 0.3.0 or 0.3.1 had their savedvars version
-	-- set to "2", but their data wasn't actually upgraded.
-	if (dbProfile.version <= 2) then
+	if (dbProfile.version ~= 0 and dbProfile.version <= 3) then
+		self:Print("Updating saved vars")
+		for _,wsdb in pairs(dbProfile.windowStyles) do
+			if (wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
+				wsdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
+			end
+		end
 		for _,wdb in pairs(dbProfile.windows) do
 			for _,tdb in pairs(wdb.trackers) do
-				if (tdb.trackOthers ~= nil or tdb.trackMine ~= nil or not tdb.tooltip) then
-					dbProfile.version = 1
-					break
-				end
-			end
-			if (dbProfile.version == 1) then break end
-		end
-	end
-	if (dbProfile.version ~= DB_VERSION and dbProfile.version ~= 0) then
-		self:Print("Updating saved vars")
-		if (dbProfile.version == 1) then
-			for _,wdb in pairs(dbProfile.windows) do
-				if (wdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
-					wdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
-				end
-				for _,tdb in pairs(wdb.trackers) do
+				-- track[Others|Mine] => show[Others|Mine]
+				if (tdb.trackOthers ~= nil) then
 					tdb.showOthers = tdb.trackOthers
-					tdb.showMine = tdb.trackMine
 					tdb.trackOthers = nil
+				end
+				if (tdb.trackMine ~= nil) then
+					tdb.showMine = tdb.trackMine
 					tdb.trackMine = nil
+				end
+				-- {spiral} and {text}
+				local spiralReverse = tdb.spiralReverse
+				if (spiralReverse == nil) then spiralReverse = true end
+				local textColor = tdb.textColor or "time"
+				local maxTime = tdb.maxTime
+				if (maxTime == nil) then maxTime = false end
+				local maxTimeMode = "auto"
+				if (tdb.autoMaxTime == false) then maxTimeMode = "static" end
+				local maxStacks = tdb.maxStacks
+				if (maxStacks == nil) then maxStacks = false end
+				local maxStacksMode = "auto"
+				if (tdb.autoMaxStacks == false) then maxStacksMode = "static" end
+				if (type(tdb.spiral) ~= "table") then
 					local spiral = {
 						mode = tdb.spiral,
-						reverse = tdb.spiralReverse,
-						maxTime = tdb.maxTime,
-						maxTimeMode = (tdb.autoMaxTime and "auto") or "static",
-						maxStacks = tdb.maxStacks,
-						maxStacksMode = (tdb.autoMaxStacks and "auto") or "static"
-					}
-					local text = {
-						mode = tdb.text,
-						color = tdb.textColor,
-						maxTime = tdb.maxTime,
-						maxTimeMode = (tdb.autoMaxTime and "auto") or "static",
-						maxStacks = tdb.maxStacks,
-						maxStacksMode = (tdb.autoMaxStacks and "auto") or "static"
+						reverse = spiralReverse,
+						maxTime = maxTime,
+						maxTimeMode = maxTimeMode,
+						maxStacks = maxStacks,
+						maxStacksMode = maxStacksMode
 					}
 					tdb.spiral = spiral
+				end
+				if (type(tdb.text) ~= "table") then
+					local text = {
+						mode = tdb.text,
+						color = textColor,
+						maxTime = maxTime,
+						maxTimeMode = maxTimeMode,
+						maxStacks = maxStacks,
+						maxStacksMode = maxStacksMode
+					}
 					tdb.text = text
-					tdb.spiralReverse = nil
-					tdb.textColor = nil
-					tdb.maxTime = nil
-					tdb.autoMaxTime = nil
-					tdb.maxStacks = nil
-					tdb.autoMaxStacks = nil
+				end
+				tdb.spiralReverse = nil
+				tdb.textColor = nil
+				tdb.maxTime = nil
+				tdb.autoMaxTime = nil
+				tdb.maxStacks = nil
+				tdb.autoMaxStacks = nil
+				-- {icon}
+				local autoIcon = tdb.autoIcon
+				if (autoIcon == nil) then autoIcon = true end
+				if (type(tdb.icon) ~= "table") then
 					local icon = {
 						texture = tdb.icon,
-						autoIcon = tdb.autoIcon
+						autoIcon = autoIcon
 					}
 					tdb.icon = icon
+				end
+				tdb.autoIcon = nil
+				-- {tooltip}
+				if (type(tdb.tooltip) ~= "table") then
 					tdb.tooltip = {
 						showMissing = "off",
 						showOthers = "off",
@@ -499,13 +513,9 @@ function Auracle:ConvertDataStore(dbProfile)
 					}
 				end
 			end
-			dbProfile.version = 2
-		end -- v1
-		if (dbProfile.version == 2) then
-			-- nothing to do
-			dbProfile.version = 3
-		end -- v2
+		end
 	end
+	dbProfile.version = 4
 end -- ConvertDataStore()
 
 function Auracle:UpdateEventListeners()
