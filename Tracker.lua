@@ -10,23 +10,37 @@ local Tracker = LibOOP:Class()
 local ICON_QM = "Interface\\Icons\\INV_Misc_QuestionMark"
 local DB_DEFAULT_TRACKER = {
 	label = false,
-	auratype = "debuff", -- buff|debuff
 	style = "Default",
+	auratype = "debuff", -- buff|debuff
 	auras = {},
-	trackOthers = true,
-	trackMine = true,
-	maxTime = false,
-	autoMaxTime = true,
-	maxStacks = false,
-	autoMaxStacks = true,
-	icon = ICON_QM,
-	autoIcon = true,
-	spiral = "time", -- off|time|stacks
-	spiralReverse = true,
-	text = "time", -- off|time|stacks
-	textColor = "time" -- time|timeRel|stacks
+	showOthers = true,
+	showMine = true,
+	spiral = {
+		mode = "time", -- off|time|stacks
+		reverse = true,
+		maxTime = false,
+		maxTimeMode = "auto",
+		maxStacks = false,
+		maxStacksMode = "auto"
+	},
+	icon = {
+		texture = ICON_QM,
+		autoIcon = true
+	},
+	text = {
+		mode = "time", -- off|time|stacks
+		color = "time", -- time|timeRel|stacks
+		maxTime = false,
+		maxTimeMode = "auto",
+		maxStacks = false,
+		maxStacksMode = "auto"
+	},
+	tooltip = {
+		showMissing = "off", -- off|summary
+		showOthers = "off", -- off|summary|aura
+		showMine = "off" -- off|summary|aura
+	}
 }
-local S_TRACK = {                         others="trackOthers",  mine="trackMine" }
 local S_SHOW  = { [false]="showMissing",  others="showOthers",   mine="showMine"  }
 local S_SIZE  = { [false]="sizeMissing",  others="sizeOthers",   mine="sizeMine"  }
 local S_GRAY  = { [false]="grayMissing",  others="grayOthers",   mine="grayMine"  }
@@ -87,10 +101,36 @@ local function Tracker_OnHide(self)
 end -- Tracker_OnHide()
 
 local function Tracker_OnEnter(self)
-	local tracker = self.Auracle_tracker
-	if (self:IsVisible() and tracker.auraApplied) then
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
-		GameTooltip:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, ((tracker.db.auratype == "buff") and "HELPFUL") or "HARMFUL")
+	if (self:IsVisible()) then
+		local tt = GameTooltip
+		local tracker = self.Auracle_tracker
+		local mode = tracker.db[S_SHOW[tracker.auraOrigin]]
+		if (mode == "aura" and tracker.auraApplied) then
+			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+			tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, ((tracker.db.auratype == "buff") and "HELPFUL") or "HARMFUL")
+		elseif (mode == "summary") then
+			local now,timeleft = GetTime(),nil
+			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+			tt:ClearLines()
+			tt:AddLine(tracker.db.label or tracker.db.auras[1] or "New Tracker", 1, 1, 0)
+			for i,aura in pairs(tracker.db.auras) do
+				if (tracker.summary[aura] == true) then
+					tt:AddLine(aura, 0, 1, 0)
+				elseif (tracker.summary[aura]) then
+					timeleft = tracker.summary[aura] - now
+					if (timeleft >= 3600) then
+						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 3600)).."h", 0, 1, 0, 0, 1, 0)
+					elseif (timeleft >= 60) then
+						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 60)).."m", 0, 1, 0, 0, 1, 0)
+					else
+						tt:AddDoubleLine(aura, tostring(ceil(timeleft)).."s", 0, 1, 0, 0, 1, 0)
+					end
+				else
+					tt:AddLine(aura, 1, 0, 0)
+				end
+			end
+			tt:Show()
+		end
 	end
 end -- Tracker_OnEnter()
 
@@ -101,11 +141,12 @@ local function Tracker_OnLeave(self)
 end -- Tracker_OnLeave()
 
 local function TrackerCooldown_OnUpdate_Stacks(self, elapsed)
-	self:SetCooldown(GetTime() - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.maxStacks)
+	self:SetCooldown(GetTime() - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.spiral.maxStacks)
 end -- TrackerCooldown_OnUpdate_Stacks()
 
 local function TrackerOverlay_OnUpdate(self, elapsed)
 	local tracker = self.Auracle_tracker
+	local dbtext = tracker.db.text
 	local auraTimeleft = tracker.auraTimeleft
 	if (auraTimeleft) then
 		auraTimeleft = max(0, auraTimeleft - elapsed)
@@ -114,7 +155,7 @@ local function TrackerOverlay_OnUpdate(self, elapsed)
 		auraTimeleft = 0
 	end
 	-- update text
-	if (tracker.db.text == "time") then
+	if (dbtext.mode == "time") then
 		local text
 		if (auraTimeleft >= 3600) then
 			text = tostring(ceil(auraTimeleft / 3600)).."h"
@@ -127,18 +168,18 @@ local function TrackerOverlay_OnUpdate(self, elapsed)
 			tracker.text = text
 			tracker.uiText:SetText(text)
 			-- update color
-			if (tracker.db.textColor == "time") then
+			if (dbtext.color == "time") then
 				tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, false, auraTimeleft))
-			elseif (tracker.db.textColor == "timeRel") then
-				tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, true, auraTimeleft / (tracker.db.maxTime or 0.001)))
+			elseif (dbtext.color == "timeRel") then
+				tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, true, auraTimeleft / (dbtext.maxTime or 0.001)))
 			end
 		end
 	else
 		-- update color
-		if (tracker.db.textColor == "time") then
+		if (dbtext.color == "time") then
 			tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, false, auraTimeleft))
-		elseif (tracker.db.textColor == "timeRel") then
-			tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, true, auraTimeleft / (tracker.db.maxTime or 0.001)))
+		elseif (dbtext.color == "timeRel") then
+			tracker.uiText:SetTextColor(tracker.style:GetTextColor(tracker.auraOrigin, true, auraTimeleft / (dbtext.maxTime or 0.001)))
 		end
 	end
 end -- TrackerOverlay_OnUpdate()
@@ -177,7 +218,7 @@ function Tracker:New(db, window, parentFrame)
 	tracker.style = Auracle.trackerStyles[db.style]
 	tracker.locked = true
 	tracker.moving = false
-	tracker.backdrop = { edgeFile="Interface\\Addons\\Auracle\\white", edgeSize=1 }
+	tracker.backdrop = { edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=1 }
 	tracker.size = 4
 	tracker.text = ""
 	tracker.auraIndex = false
@@ -186,9 +227,12 @@ function Tracker:New(db, window, parentFrame)
 	tracker.auraExpires = false
 	tracker.auraStacks = false
 	tracker.auralist = false
+	tracker.summary = {}
 	
 	-- (re?)initialize frames
 	tracker.uiFrame:SetParent(parentFrame)
+	local dbtt = tracker.db.tooltip
+	tracker.uiFrame:EnableMouse(dbtt.showMissing ~= "off" or dbtt.showOthers ~= "off" or dbtt.showMine ~= "off") -- intercepts clicks, causes OnMouseDown,OnMouseUp
 	tracker.uiFrame:Show()
 	tracker:Lock()
 	
@@ -228,6 +272,7 @@ function Tracker.prototype:Destroy()
 	self.auraExpires = nil
 	self.auraStacks = nil
 	self.auralist = nil
+	self.summary = nil
 	-- add object to the pool for later re-use
 	objectPool[self] = true
 end -- Destroy()
@@ -307,6 +352,7 @@ function Tracker.prototype:BeginAuraUpdate(now)
 	self.update_applied = false
 	self.update_expires = false
 	self.update_stacks = false
+	wipe(self.summary)
 end -- BeginAuraUpdate()
 
 function Tracker.prototype:UpdateAura(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
@@ -314,53 +360,83 @@ function Tracker.prototype:UpdateAura(now,index,name,rank,icon,count,atype,durat
 	if (self.update_applied and not self.update_expires) then
 		return
 	end
+	-- if we don't track this origin, we also don't care
+	if (not self.db[S_SHOW[origin]]) then
+		return
+	end
 	local ipairs = ipairs
 	for _,auraname in ipairs(self.db.auras) do
 		if (name == auraname) then
-			if (self.db[S_TRACK[origin]]) then
-				if (not self.update_applied or expires == 0 or expires > self.update_expires) then
-					self.update_index = index
-					self.update_icon = icon
-					self.update_origin = origin
-					if (duration > 0 and expires > 0) then
-						self.update_applied = expires - duration
-						self.update_expires = expires
-					else
-						self.update_applied = true
-						self.update_expires = false
-					end
-					self.update_stacks = count
+			self.summary[name] = expires or true
+			if (not self.update_applied or expires == 0 or expires > self.update_expires) then
+				self.update_index = index
+				self.update_icon = icon
+				self.update_origin = origin
+				if (duration > 0 and expires > 0) then
+					self.update_applied = expires - duration
+					self.update_expires = expires
+				else
+					self.update_applied = true
+					self.update_expires = false
 				end
+				self.update_stacks = count
 			end
 		end
 	end
 end -- UpdateAura()
 
 function Tracker.prototype:EndAuraUpdate(now,total)
+	local dbicon = self.db.icon
+	local dbspiral = self.db.spiral
+	local dbtext = self.db.text
 	-- find changes and autoupdate
 	local statusChanged = (self.update_origin ~= self.auraOrigin)
 	local timeChanged = (self.update_expires ~= self.auraExpires)
-	local maxTimeChanged = false
-	if (self.update_expires) then
-		local duration = self.update_expires - self.update_applied
-		if (not self.db.maxTime or self.db.autoMaxTime) then
-			self.db.maxTime = duration
-			maxTimeChanged = true
-		end
-	end
 	local stacksChanged = (self.update_stacks ~= self.auraStacks)
-	local maxStacksChanged = false
-	if (self.update_stacks) then
-		if (not self.db.maxStacks or (self.db.autoMaxStacks and self.update_stacks > self.db.maxStacks)) then
-			self.db.maxStacks = self.update_stacks
-			maxStacksChanged = true
-		end
-	end
 	local iconChanged = false
 	if (self.update_icon) then
-		if (self.db.icon == ICON_QM or self.db.autoIcon) then
-			self.db.icon = self.update_icon
+		if (dbicon.texture == ICON_QM
+			or (dbicon.autoIcon and dbicon.texture ~= self.update_icon)
+		) then
+			dbicon.texture = self.update_icon
 			iconChanged = true
+		end
+	end
+	local spiralMaxTimeChanged = false
+	local textMaxTimeChanged = false
+	if (self.update_expires) then
+		local duration = self.update_expires - self.update_applied
+		if (not dbspiral.maxTime
+			or (dbspiral.maxTimeMode == "autoUp" and dbspiral.maxTime < duration)
+			or (dbspiral.maxTimeMode == "auto" and dbspiral.maxTime ~= duration)
+		) then
+			dbspiral.maxTime = duration
+			spiralMaxTimeChanged = true
+		end
+		if (not dbtext.maxTime
+			or (dbtext.maxTimeMode == "autoUp" and dbtext.maxTime < duration)
+			or (dbtext.maxTimeMode == "auto" and dbtext.maxTime ~= duration)
+		) then
+			dbtext.maxTime = duration
+			textMaxTimeChanged = true
+		end
+	end
+	local spiralMaxStacksChanged = false
+	local textMaxStacksChanged = false
+	if (self.update_stacks) then
+		if (not dbspiral.maxStacks
+			or (dbspiral.maxStacksMode == "autoUp" and dbspiral.maxStacks < self.update_stacks)
+			or (dbspiral.maxStacksMode == "auto" and dbspiral.maxStacks ~= self.update_stacks)
+		) then
+			dbspiral.maxStacks = self.update_stacks
+			spiralMaxStacksChanged = true
+		end
+		if (not dbtext.maxStacks
+			or (dbtext.maxStacksMode == "autoUp" and dbtext.maxStacks < self.update_stacks)
+			or (dbtext.maxStacksMode == "auto" and dbtext.maxStacks ~= self.update_stacks)
+		) then
+			dbtext.maxStacks = self.update_stacks
+			textMaxStacksChanged = true
 		end
 	end
 	-- store aura state
@@ -386,14 +462,18 @@ function Tracker.prototype:EndAuraUpdate(now,total)
 		if (iconChanged) then
 			self:UpdateIcon()
 		end
-		if (self.db.spiral == "time" and (timeChanged or maxTimeChanged)) then
+		if (dbspiral.mode == "time" and (timeChanged or spiralMaxTimeChanged)) then
 			self:UpdateSpiral()
-		elseif (self.db.spiral == "stacks" and (stacksChanged or maxStacksChanged)) then
+		elseif (dbspiral.mode == "stacks" and (stacksChanged or spiralMaxStacksChanged)) then
 			self:UpdateSpiral()
 		end
-		if (self.db.text == "stacks" and maxStacksChanged) then
+		if (dbtext.mode == "stacks" and stacksChanged) then
 			self:UpdateText()
-		elseif (self.db.textColor == "stacks" and (stacksChanged or maxStacksChanged)) then
+		elseif (dbtext.color == "time" and timeChanged) then
+			self:UpdateText()
+		elseif (dbtext.color == "timeRel" and (timeChanged or textMaxTimeChanged)) then
+			self:UpdateText()
+		elseif (dbtext.color == "stacks" and (stacksChanged or textMaxStacksChanged)) then
 			self:UpdateText()
 		end
 	end
@@ -432,7 +512,7 @@ end -- UpdateBorder()
 function Tracker.prototype:UpdateIcon()
 	local sdb = self.style.db.icon
 	if (sdb[S_SHOW[self.auraOrigin]]) then
-		self.uiIcon:SetTexture(self.db.icon)
+		self.uiIcon:SetTexture(self.db.icon.texture)
 		if (sdb.zoom) then
 			self.uiIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 		else
@@ -449,15 +529,16 @@ end -- UpdateIcon()
 function Tracker.prototype:UpdateSpiral()
 	local sdb = self.style.db.spiral
 	if (sdb[S_SHOW[self.auraOrigin]]) then
+		local dbspiral = self.db.spiral
 		self.uiCooldown.noCooldownCount = sdb.noCC or nil
 		self.uiCooldown.noOmniCC = sdb.noCC or nil
-		self.uiCooldown:SetReverse(self.db.spiralReverse)
+		self.uiCooldown:SetReverse(dbspiral.reverse)
 		if (self.auraExpires) then
 			self.uiCooldown:Show()
-			if (self.db.spiral == "time") then
+			if (dbspiral.mode == "time") then
 				self.uiCooldown:SetScript("OnUpdate", nil)
-				self.uiCooldown:SetCooldown(self.auraExpires - self.db.maxTime, self.db.maxTime)
-			elseif (self.db.spiral == "stacks") then
+				self.uiCooldown:SetCooldown(self.auraExpires - dbspiral.maxTime, dbspiral.maxTime)
+			elseif (dbspiral.mode == "stacks") then
 				self.uiCooldown:SetScript("OnUpdate", TrackerCooldown_OnUpdate_Stacks)
 			end
 		else
@@ -479,10 +560,11 @@ function Tracker.prototype:UpdateText()
 	self.uiOverlay:SetScript("OnUpdate", nil)
 	local sdb = self.style.db.text
 	if (sdb[S_SHOW[self.auraOrigin]]) then
+		local dbtext = self.db.text
 		-- set text
-		if (self.db.text == "label") then
+		if (dbtext.mode == "label") then
 			text = self.db.label
-		elseif (self.db.text == "time") then
+		elseif (dbtext.mode == "time") then
 			if (self.auraTimeleft) then
 				self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
 				if (self.auraTimeleft >= 3600) then
@@ -493,18 +575,18 @@ function Tracker.prototype:UpdateText()
 					text = tostring(ceil(self.auraTimeleft or 0))
 				end
 			end
-		elseif (self.db.text == "stacks") then
+		elseif (dbtext.mode == "stacks") then
 			text = tostring(self.auraStacks or 0)
 		end
 		-- set color
-		if (self.db.textColor == "time") then
+		if (dbtext.color == "time") then
 			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, false, self.auraTimeleft or 0))
 			self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
-		elseif (self.db.textColor == "timeRel") then
-			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraTimeleft or 0) / (self.db.maxTime or 0.0001)))
+		elseif (dbtext.color == "timeRel") then
+			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraTimeleft or 0) / (dbtext.maxTime or 0.001)))
 			self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
-		elseif (self.db.textColor == "stacks") then
-			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraStacks or 0) / (self.db.maxStacks or 0.0001)))
+		elseif (dbtext.color == "stacks") then
+			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraStacks or 0) / (dbtext.maxStacks or 0.001)))
 		end
 		self.text = text
 		self.uiText:SetText(text)
@@ -555,7 +637,9 @@ function Tracker.prototype:Lock()
 	self.uiFrame:SetScript("OnEnter", Tracker_OnEnter)
 	self.uiFrame:SetScript("OnLeave", Tracker_OnLeave)
 	self.uiFrame:SetMovable(false) -- allows StartMoving
-	self.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+	if (self.db.tooltip.showMissing == "off" and self.db.tooltip.showOthers == "off" and self.db.tooltip.showMine == "off") then
+		self.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+	end
 end -- Lock()
 
 
@@ -585,6 +669,20 @@ local sharedOptions = {
 				func = "Remove",
 				order = 11
 			},
+			auratype = {
+				type = "select",
+				name = "Aura Type",
+				values = {
+					buff = "Buffs",
+					debuff = "Debuffs"
+				},
+				get = function(i) return i.handler.db.auratype end,
+				set = function(i,v)
+					i.handler.db.auratype = v
+					i.handler:UpdateUnitAuras()
+				end,
+				order = 12
+			},
 			style = {
 				type = "select",
 				name = "Tracker Style",
@@ -598,28 +696,7 @@ local sharedOptions = {
 						style:Apply(i.handler)
 					end
 				end,
-				order = 12
-			}
-		}
-	},
-	auras = {
-		type = "group",
-		name = "Auras",
-		order = 2,
-		args = {
-			auratype = {
-				type = "select",
-				name = "Aura Type",
-				values = {
-					buff = "Buffs",
-					debuff = "Debuffs"
-				},
-				get = function(i) return i.handler.db.auratype end,
-				set = function(i,v)
-					i.handler.db.auratype = v
-					i.handler:UpdateUnitAuras()
-				end,
-				order = 20
+				order = 13
 			},
 			auras = {
 				type = "input",
@@ -647,90 +724,55 @@ local sharedOptions = {
 					if (not i.handler.db.label) then Auracle:UpdateConfig() end
 					i.handler:UpdateUnitAuras()
 				end,
-				order = 21
+				order = 14
 			},
-			trackOthers = {
+			showOthers = {
 				type = "toggle",
-				name = "Track Other's",
-				get = function(i) return i.handler.db.trackOthers end,
+				name = "Tracker Other's",
+				get = function(i) return i.handler.db.showOthers end,
 				set = function(i,v)
-					i.handler.db.trackOthers = v
+					i.handler.db.showOthers = v
 					i.handler:UpdateUnitAuras()
 				end,
-				order = 22
+				order = 15
 			},
-			trackMine = {
+			showMine = {
 				type = "toggle",
 				name = "Track Mine",
-				get = function(i) return i.handler.db.trackMine end,
+				get = function(i) return i.handler.db.showMine end,
 				set = function(i,v)
-					i.handler.db.trackMine = v
+					i.handler.db.showMine = v
 					i.handler:UpdateUnitAuras()
 				end,
-				order = 23
-			},
-			maxTime = {
-				type = "input",
-				name = "Maximum Duration",
-				get = function(i) return i.handler.db.maxTime end,
-				set = function(i,v)
-					i.handler.db.maxTime = v
-					if (i.handler.db.spiral == "time") then i.handler:UpdateSpiral() end
-				end,
-				order = 24
-			},
-			autoMaxTime = {
-				type = "toggle",
-				name = "Autoupdate",
-				desc = "Update maximum duration whenever a new aura activates the tracker",
-				get = function(i) return i.handler.db.autoMaxTime end,
-				set = function(i,v)
-					i.handler.db.autoMaxTime = v
-					if (v) then i.handler:UpdateUnitAuras() end
-				end,
-				order = 25
-			},
-			maxStacks = {
-				type = "input",
-				name = "Maximum Stacks",
-				get = function(i) return i.handler.db.maxStacks end,
-				set = function(i,v)
-					i.handler.db.maxStacks = v
-					if (i.handler.db.spiral == "stacks") then i.handler:UpdateSpiral() end
-				end,
-				order = 26
-			},
-			autoMaxStacks = {
-				type = "toggle",
-				name = "Autoupdate",
-				desc = "Update maximum stacks whenever a higher stack count is seen",
-				get = function(i) return i.handler.db.autoMaxStacks end,
-				set = function(i,v)
-					i.handler.db.autoMaxStacks = v
-					if (v) then i.handler:UpdateUnitAuras() end
-				end,
-				order = 27
-			},
-			icon = {
-				type = "input",
-				name = "Icon Texture",
-				get = function(i) return i.handler.db.icon end,
-				set = function(i,v)
-					i.handler.db.icon = v
-					i.handler:UpdateIcon()
-				end,
-				order = 28
-			},
+				order = 16
+			}
+		}
+	},
+	icon = {
+		type = "group",
+		name = "Icon",
+		order = 2,
+		args = {
 			autoIcon = {
 				type = "toggle",
 				name = "Autoupdate",
 				desc = "Update icon texture whenever a new aura activates the tracker",
-				get = function(i) return i.handler.db.autoIcon end,
+				get = function(i) return i.handler.db.icon.autoIcon end,
 				set = function(i,v)
-					i.handler.db.autoIcon = v
+					i.handler.db.icon.autoIcon = v
 					if (v) then i.handler:UpdateUnitAuras() end
 				end,
-				order = 29
+				order = 20
+			},
+			texture = {
+				type = "input",
+				name = "Texture",
+				get = function(i) return i.handler.db.icon.texture end,
+				set = function(i,v)
+					i.handler.db.icon.texture = v
+					i.handler:UpdateIcon()
+				end,
+				order = 21
 			}
 		}
 	},
@@ -743,12 +785,12 @@ local sharedOptions = {
 				type = "select",
 				name = "Display",
 				values = {
-					time = "Duration",
-					stacks = "Stacks"
+					stacks = "Stacks",
+					time = "Time Left"
 				},
-				get = function(i) return i.handler.db.spiral end,
+				get = function(i) return i.handler.db.spiral.mode end,
 				set = function(i,v)
-					i.handler.db.spiral = v
+					i.handler.db.spiral.mode = v
 					i.handler:UpdateSpiral()
 				end,
 				order = 30
@@ -757,15 +799,85 @@ local sharedOptions = {
 				type = "select",
 				name = "Direction",
 				values = {
-					fill = "Fill Clockwise",
-					drain = "Drain Clockwise"
+					drain = "Drain Clockwise",
+					fill = "Fill Clockwise"
 				},
-				get = function(i) return (i.handler.db.spiralReverse and "drain") or "fill" end,
+				get = function(i) return (i.handler.db.spiral.reverse and "drain") or "fill" end,
 				set = function(i,v)
-					i.handler.db.spiralReverse = ((v == "drain") and true) or false
+					i.handler.db.spiral.reverse = ((v == "drain") and true) or false
 					i.handler:UpdateSpiral()
 				end,
 				order = 31
+			},
+			maxTime = {
+				type = "group",
+				name = "Maximum Duration",
+				inline = true,
+				order = 32,
+				args = {
+					mode = {
+						type = "select",
+						name = "Autoupdate Mode",
+						disabled = function(i) return i.handler.db.spiral.mode ~= "time" end,
+						values = {
+							auto = "Update Always",
+							autoUp = "Update Upwards",
+							static = "Static"
+						},
+						get = function(i) return i.handler.db.spiral.maxTimeMode end,
+						set = function(i,v)
+							i.handler.db.spiral.maxTimeMode = v
+							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+						end,
+						order = 320
+					},
+					maxTime = {
+						type = "input",
+						name = "Value",
+						disabled = function(i) return i.handler.db.spiral.mode ~= "time" end,
+						get = function(i) return tostring(i.handler.db.spiral.maxTime or "") end,
+						set = function(i,v)
+							i.handler.db.spiral.maxTime = tonumber(v)
+							if (i.handler.db.spiral.mode == "time") then i.handler:UpdateSpiral() end
+						end,
+						order = 321
+					}
+				}
+			},
+			maxStacks = {
+				type = "group",
+				name = "Maximum Stacks",
+				inline = true,
+				order = 33,
+				args = {
+					mode = {
+						type = "select",
+						name = "Autoupdate Mode",
+						disabled = function(i) return i.handler.db.spiral.mode ~= "stacks" end,
+						values = {
+							auto = "Update Always",
+							autoUp = "Update Upwards",
+							static = "Static"
+						},
+						get = function(i) return i.handler.db.spiral.maxStacksMode end,
+						set = function(i,v)
+							i.handler.db.spiral.maxStacksMode = v
+							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+						end,
+						order = 330
+					},
+					maxStacks = {
+						type = "input",
+						name = "Value",
+						disabled = function(i) return i.handler.db.spiral.mode ~= "stacks" end,
+						get = function(i) return tostring(i.handler.db.spiral.maxStacks or "") end,
+						set = function(i,v)
+							i.handler.db.spiral.maxStacks = tonumber(v)
+							if (i.handler.db.spiral.mode == "stacks") then i.handler:UpdateSpiral() end
+						end,
+						order = 331
+					}
+				}
 			}
 		}
 	},
@@ -779,13 +891,13 @@ local sharedOptions = {
 				name = "Display",
 				values = {
 					label = "Label",
-					time = "Duration",
-					stacks = "Stacks"
+					stacks = "Stacks",
+					time = "Time Left"
 				},
-				get = function(i) return i.handler.db.text end,
+				get = function(i) return i.handler.db.text.mode end,
 				set = function(i,v)
-					i.handler.db.text = v
-					-- TODO text
+					i.handler.db.text.mode = v
+					i.handler:UpdateText()
 				end,
 				order = 40
 			},
@@ -797,12 +909,157 @@ local sharedOptions = {
 					timeRel = "Relative Duration",
 					stacks = "Relative Stacks"
 				},
-				get = function(i) return i.handler.db.textColor end,
+				get = function(i) return i.handler.db.text.color end,
 				set = function(i,v)
-					i.handler.db.textColor = v
-					-- TODO text
+					i.handler.db.text.color = v
+					i.handler:UpdateText()
 				end,
 				order = 41
+			},
+			maxTime = {
+				type = "group",
+				name = "Maximum Duration",
+				inline = true,
+				order = 42,
+				args = {
+					mode = {
+						type = "select",
+						name = "Autoupdate Mode",
+						disabled = function(i) return i.handler.db.text.mode ~= "time" and i.handler.db.text.color ~= "timeRel" end,
+						values = {
+							auto = "Update Always",
+							autoUp = "Update Upwards",
+							static = "Static"
+						},
+						get = function(i) return i.handler.db.text.maxTimeMode end,
+						set = function(i,v)
+							i.handler.db.text.maxTimeMode = v
+							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+						end,
+						order = 420
+					},
+					maxTime = {
+						type = "input",
+						name = "Value",
+						disabled = function(i) return i.handler.db.text.mode ~= "time" and i.handler.db.text.color ~= "timeRel" end,
+						get = function(i) return tostring(i.handler.db.text.maxTime or "") end,
+						set = function(i,v)
+							i.handler.db.text.maxTime = tonumber(v)
+							if (i.handler.db.text.color == "timeRel") then i.handler:UpdateText() end
+						end,
+						order = 421
+					}
+				}
+			},
+			maxStacks = {
+				type = "group",
+				name = "Maximum Stacks",
+				inline = true,
+				order = 43,
+				args = {
+					mode = {
+						type = "select",
+						name = "Autoupdate Mode",
+						disabled = function(i) return i.handler.db.text.mode ~= "stacks" and i.handler.db.text.color ~= "stacks" end,
+						values = {
+							auto = "Update Always",
+							autoUp = "Update Upwards",
+							static = "Static"
+						},
+						get = function(i) return i.handler.db.text.maxStacksMode end,
+						set = function(i,v)
+							i.handler.db.text.maxStacksMode = v
+							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+						end,
+						order = 430
+					},
+					maxStacks = {
+						type = "input",
+						name = "Value",
+						disabled = function(i) return i.handler.db.text.mode ~= "stacks" and i.handler.db.text.color ~= "stacks" end,
+						get = function(i) return tostring(i.handler.db.text.maxStacks or "") end,
+						set = function(i,v)
+							i.handler.db.text.maxStacks = tonumber(v)
+							if (i.handler.db.text.color == "stacks") then i.handler:UpdateText() end
+						end,
+						order = 431
+					}
+				}
+			}
+		}
+	},
+	tooltip = {
+		type = "group",
+		name = "Tooltip",
+		order = 5,
+		args = {
+			modeMissing = {
+				type = "select",
+				name = "Display when Missing",
+				values = {
+					summary = "Summary",
+					off = "Nothing"
+				},
+				get = function(i) return i.handler.db.tooltip.showMissing end,
+				set = function(i,v)
+					i.handler.db.tooltip.showMissing = v
+					if (v ~= "off") then
+						i.handler.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+					elseif (i.handler.db.tooltip.showOthers == "off" and i.handler.db.tooltip.showMine == "off" and i.handler.locked) then
+						i.handler.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+					end
+				end,
+				order = 50
+			},
+			_0 = {
+				type = "description",
+				name = "",
+				width = "full",
+				order = 51
+			},
+			modeOthers = {
+				type = "select",
+				name = "Display when Other's",
+				values = {
+					aura = "Aura's Tooltip",
+					summary = "Summary",
+					off = "Nothing"
+				},
+				get = function(i) return i.handler.db.tooltip.showOthers end,
+				set = function(i,v)
+					i.handler.db.tooltip.showOthers = v
+					if (v ~= "off") then
+						i.handler.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+					elseif (i.handler.db.tooltip.showMissing == "off" and i.handler.db.tooltip.showMine == "off" and i.handler.locked) then
+						i.handler.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+					end
+				end,
+				order = 52
+			},
+			modeMine = {
+				type = "select",
+				name = "Display when Mine",
+				values = {
+					aura = "Aura's Tooltip",
+					summary = "Summary",
+					off = "Nothing"
+				},
+				get = function(i) return i.handler.db.tooltip.showMine end,
+				set = function(i,v)
+					i.handler.db.tooltip.showMine = v
+					if (v ~= "off") then
+						i.handler.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+					elseif (i.handler.db.tooltip.showMissing == "off" and i.handler.db.tooltip.showOthers == "off" and i.handler.locked) then
+						i.handler.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+					end
+				end,
+				order = 53
+			},
+			_1 = {
+				type = "description",
+				name = "Note that enabling any tooltip will cause the tracker to block mouse clicks even while locked.  If the tracker is near the middle of the screen, this can interfere with your camera and movement control.",
+				width = "double",
+				order = 54
 			}
 		}
 	}

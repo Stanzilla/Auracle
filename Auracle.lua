@@ -15,9 +15,9 @@ local LibDataBroker
 
 --[[ CONSTANTS ]]--
 
-local DB_VERSION = 1
+local DB_VERSION = 2
 local DB_DEFAULT = {
-	version = DB_VERSION,
+	version = 0,
 	windowStyles = {},
 	trackerStyles = {},
 	windows = {}
@@ -111,25 +111,6 @@ function Auracle:OnInitialize()
 	-- initialize stored data
 --Auracle_DB = nil
 	self.db = AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
-	-- reset corrupt data or roll-forward older schemes
-	if (not self.db.profile or not self.db.profile.version) then
-		self.db.profile = cloneTable(DB_DEFAULT, true)
-	end
-	if (self.db.profile.version < DB_VERSION) then
-		self:ConvertDataStore(self.db.profile)
-	end
-	-- make sure the Default styles exist
-	if (not self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
-		self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
-	end
-	if (not self.db.profile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name]) then
-		self.db.profile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name] = cloneTable(DB_DEFAULT_TRACKERSTYLE, true)
-	end
-	-- make sure at least one window exists
-	if (not next(self.db.profile.windows)) then
-		self.db.profile.windows[1] = cloneTable(DB_DEFAULT_WINDOW, true)
-	end
-	-- register profile update callbacks
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
@@ -396,6 +377,24 @@ function Auracle:Startup()
 	self.windowsLocked = true
 	self.plrGroup = "solo"
 	self.plrCombat = false
+	-- update old database versions
+--[[
+	if (not self.db.profile) then
+		self.db.profile = cloneTable(DB_DEFAULT, true)
+	end
+--]]
+	self:ConvertDataStore(self.db.profile)
+	-- make sure the Default styles exist
+	if (not self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
+		self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
+	end
+	if (not self.db.profile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name]) then
+		self.db.profile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name] = cloneTable(DB_DEFAULT_TRACKERSTYLE, true)
+	end
+	-- make sure at least one window exists
+	if (not next(self.db.profile.windows)) then
+		self.db.profile.windows[1] = cloneTable(DB_DEFAULT_WINDOW, true)
+	end
 	-- initialize objects
 	for name,db in pairs(self.db.profile.windowStyles) do
 		self.windowStyles[name] = WindowStyle(db)
@@ -439,8 +438,58 @@ function Auracle:Shutdown()
 end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
+	if (dbProfile.version ~= DB_VERSION and dbProfile.version ~= 0) then
+		self:Print("Updating saved vars")
+		if (dbProfile.version == nil) then
+			-- while DB_VERSION was 1, it was also part of DB_DEFAULT, so AceDB never actually stored it
+			for _,wdb in pairs(dbProfile.windows) do
+				if (wdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
+					wdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
+				end
+				for _,tdb in pairs(wdb.trackers) do
+					tdb.showOthers = tdb.trackOthers
+					tdb.showMine = tdb.trackMine
+					tdb.trackOthers = nil
+					tdb.trackMine = nil
+					local spiral = {
+						mode = tdb.spiral,
+						reverse = tdb.spiralReverse,
+						maxTime = tdb.maxTime,
+						maxTimeMode = (tdb.autoMaxTime and "auto") or "static",
+						maxStacks = tdb.maxStacks,
+						maxStacksMode = (tdb.autoMaxStacks and "auto") or "static"
+					}
+					local text = {
+						mode = tdb.text,
+						color = tdb.textColor,
+						maxTime = tdb.maxTime,
+						maxTimeMode = (tdb.autoMaxTime and "auto") or "static",
+						maxStacks = tdb.maxStacks,
+						maxStacksMode = (tdb.autoMaxStacks and "auto") or "static"
+					}
+					tdb.spiral = spiral
+					tdb.text = text
+					tdb.spiralReverse = nil
+					tdb.textColor = nil
+					tdb.maxTime = nil
+					tdb.autoMaxTime = nil
+					tdb.maxStacks = nil
+					tdb.autoMaxStacks = nil
+					local icon = {
+						texture = tdb.icon,
+						autoIcon = tdb.autoIcon
+					}
+					tdb.icon = icon
+					tdb.tooltip = {
+						showMissing = "off",
+						showOthers = "off",
+						showMine = "off",
+					}
+				end
+			end
+		end
+	end
 	dbProfile.version = DB_VERSION
-	return true
 end -- ConvertDataStore()
 
 function Auracle:UpdateEventListeners()
