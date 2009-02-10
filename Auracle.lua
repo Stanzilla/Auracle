@@ -14,7 +14,7 @@ local LibDataBroker
 
 --[[ CONSTANTS ]]--
 
-local DB_VERSION = 2
+local DB_VERSION = 3
 local DB_DEFAULT = {
 	version = 0,
 	windowStyles = {},
@@ -436,9 +436,11 @@ function Auracle:Shutdown()
 end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
-	-- while DB_VERSION was 1, it was also part of DB_DEFAULT, so AceDB never actually stored it
-	-- consequently, we have to examine the data to figure out if it needs updating
-	if (dbProfile.version == 0) then
+	-- while DB_VERSION was 1, it was also part of DB_DEFAULT, so AceDB never actually stored it;
+	-- consequently, we have to examine the data to figure out if it needs updating.
+	-- worse, anyone who used 0.2.3 and then tried using 0.3.0 or 0.3.1 had their savedvars version
+	-- set to "2", but their data wasn't actually upgraded.
+	if (dbProfile.version <= 2) then
 		for _,wdb in pairs(dbProfile.windows) do
 			for _,tdb in pairs(wdb.trackers) do
 				if (tdb.trackOthers ~= nil or tdb.trackMine ~= nil or not tdb.tooltip) then
@@ -497,9 +499,13 @@ function Auracle:ConvertDataStore(dbProfile)
 					}
 				end
 			end
-		end
+			dbProfile.version = 2
+		end -- v1
+		if (dbProfile.version == 2) then
+			-- nothing to do
+			dbProfile.version = 3
+		end -- v2
 	end
-	dbProfile.version = DB_VERSION
 end -- ConvertDataStore()
 
 function Auracle:UpdateEventListeners()
