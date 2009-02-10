@@ -577,7 +577,7 @@ local sharedOptions = {
 						i.handler.db.unit = v
 						Auracle:UpdateEventListeners()
 						if (not i.handler.db.label) then Auracle:UpdateConfig() end
-						i.handler:UpdateUnitAuras()
+						Auracle:UpdateUnitIdentity(v)
 					end,
 					order = 12
 				},

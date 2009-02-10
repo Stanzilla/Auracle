@@ -104,7 +104,7 @@ local function Tracker_OnEnter(self)
 	if (self:IsVisible()) then
 		local tt = GameTooltip
 		local tracker = self.Auracle_tracker
-		local mode = tracker.db[S_SHOW[tracker.auraOrigin]]
+		local mode = tracker.db.tooltip[S_SHOW[tracker.auraOrigin]]
 		if (mode == "aura" and tracker.auraApplied) then
 			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
 			tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, ((tracker.db.auratype == "buff") and "HELPFUL") or "HARMFUL")
@@ -637,9 +637,8 @@ function Tracker.prototype:Lock()
 	self.uiFrame:SetScript("OnEnter", Tracker_OnEnter)
 	self.uiFrame:SetScript("OnLeave", Tracker_OnLeave)
 	self.uiFrame:SetMovable(false) -- allows StartMoving
-	if (self.db.tooltip.showMissing == "off" and self.db.tooltip.showOthers == "off" and self.db.tooltip.showMine == "off") then
-		self.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
-	end
+	local dbtt = self.db.tooltip
+	self.uiFrame:EnableMouse(dbtt.showMissing ~= "off" or dbtt.showOthers ~= "off" or dbtt.showMine ~= "off") -- intercepts clicks, causes OnMouseDown,OnMouseUp
 end -- Lock()
 
 
