@@ -45,6 +45,7 @@ local S_SHOW  = { [false]="showMissing",  others="showOthers",   mine="showMine"
 local S_SIZE  = { [false]="sizeMissing",  others="sizeOthers",   mine="sizeMine"  }
 local S_GRAY  = { [false]="grayMissing",  others="grayOthers",   mine="grayMine"  }
 local S_COLOR = { [false]="colorMissing", others="colorOthers",  mine="colorMine" }
+local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, insets={left=0,right=0,top=0,bottom=0} }
 
 
 --[[ INIT ]]--
@@ -452,7 +453,7 @@ function Tracker.prototype:EndAuraUpdate(now,total)
 	self.update_stacks = nil
 	-- update visuals as needed
 	if (statusChanged) then
-		self:UpdateBorder()
+		self:UpdateBackdrop()
 		self:UpdateIcon()
 		self:UpdateSpiral()
 		self:UpdateText()
@@ -481,31 +482,36 @@ end -- EndAuraUpdate()
 --[[ VISUAL UPDATE METHODS ]]--
 
 function Tracker.prototype:UpdateStyle()
-	self:UpdateBorder()
+	self:UpdateBackdrop()
 	self:UpdateIcon()
 	self:UpdateSpiral()
 	self:UpdateFont()
 	self:UpdateText()
 end -- UpdateStyle()
 
-function Tracker.prototype:UpdateBorder()
-	local sdb = self.style.db.border
-	if (sdb[S_SHOW[self.auraOrigin]]) then
-		local borderSize = sdb[S_SIZE[self.auraOrigin]]
-		if (sdb.noScale) then
-			local m = {}
-			for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
-				m[#m+1] = size
+function Tracker.prototype:UpdateBackdrop()
+	if (self.locked) then
+		local sdb = self.style.db.border
+		if (sdb[S_SHOW[self.auraOrigin]]) then
+			local borderSize = sdb[S_SIZE[self.auraOrigin]]
+			if (sdb.noScale) then
+				local m = {}
+				for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+					m[#m+1] = size
+				end
+				borderSize = borderSize * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
 			end
-			borderSize = borderSize * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+			self.backdrop.edgeSize = borderSize
+			self.uiFrame:SetBackdrop(self.backdrop)
+			self.uiFrame:SetBackdropBorderColor(unpack(sdb[S_COLOR[self.auraOrigin]]))
+		else
+			self.uiFrame:SetBackdrop(nil)
 		end
-		self.backdrop.edgeSize = borderSize
-		self.uiFrame:SetBackdrop(self.backdrop)
-		self.uiFrame:SetBackdropBorderColor(unpack(sdb[S_COLOR[self.auraOrigin]]))
 	else
-		self.uiFrame:SetBackdrop(nil)
+		self.uiFrame:SetBackdrop(UNLOCKED_BACKDROP)
+		self.uiFrame:SetBackdropColor(0, 0.75, 0.75, 0.5)
 	end
-end -- UpdateBorder()
+end -- UpdateBackdrop()
 
 function Tracker.prototype:UpdateIcon()
 	local sdb = self.style.db.icon
@@ -624,6 +630,7 @@ function Tracker.prototype:Unlock()
 	self.uiFrame:SetScript("OnHide", Tracker_OnMouseUp)
 	self.uiFrame:SetScript("OnEnter", nil)
 	self.uiFrame:SetScript("OnLeave", nil)
+	self:UpdateBackdrop()
 end -- Unlock()
 
 function Tracker.prototype:Lock()
@@ -637,6 +644,7 @@ function Tracker.prototype:Lock()
 	self.uiFrame:SetMovable(false) -- allows StartMoving
 	local dbtt = self.db.tooltip
 	self.uiFrame:EnableMouse(dbtt.showMissing ~= "off" or dbtt.showOthers ~= "off" or dbtt.showMine ~= "off") -- intercepts clicks, causes OnMouseDown,OnMouseUp
+	self:UpdateBackdrop()
 end -- Lock()
 
 

@@ -47,6 +47,7 @@ local DB_DEFAULT_WINDOW = {
 	trackers = {}
 }
 local DB_DEFAULT_TRACKER
+local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, insets={left=0,right=0,top=0,bottom=0} }
 
 
 --[[ INIT ]]--
@@ -306,14 +307,16 @@ end -- SetUnitStatus()
 
 function Window.prototype:UpdateVisibility()
 	local dbvis = self.db.visibility
-	local nowVis = dbvis.plrGroup[self.plrGroup] and dbvis.plrCombat[self.plrCombat]
-	if (nowVis) then
-		if (self.tgtExists) then
-			nowVis = dbvis.tgtType[self.tgtType] and dbvis.tgtReact[self.tgtReact]
-		else
-			nowVis = dbvis.tgtMissing
-		end
-	end
+	local nowVis = (
+		not (self.locked and self.trackersLocked)
+		or (
+			(dbvis.plrGroup[self.plrGroup] and dbvis.plrCombat[self.plrCombat])
+			and (
+				(self.tgtExists and dbvis.tgtType[self.tgtType] and dbvis.tgtReact[self.tgtReact])
+				or (not self.tgtExists and dbvis.tgtMissing)
+			)
+		)
+	)
 	if (nowVis) then
 		self.uiFrame:Show()
 	else
@@ -328,25 +331,30 @@ function Window.prototype:UpdateStyle()
 end -- UpdateStyle()
 
 function Window.prototype:UpdateBackdrop()
-	local backdrop = self.style:GetBackdropTable()
-	if (next(backdrop)) then
-		local sdb = self.style.db
-		if (backdrop.insets and sdb.background.noScale) then
-			local m = {}
-			for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
-				m[#m+1] = size
+	if (self.locked) then
+		local backdrop = self.style:GetBackdropTable()
+		if (next(backdrop)) then
+			local sdb = self.style.db
+			if (backdrop.insets and sdb.background.noScale) then
+				local m = {}
+				for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+					m[#m+1] = size
+				end
+				local inset = backdrop.insets.left * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+				backdrop.insets.left = inset
+				backdrop.insets.right = inset
+				backdrop.insets.top = inset
+				backdrop.insets.bottom = inset
 			end
-			local inset = backdrop.insets.left * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
-			backdrop.insets.left = inset
-			backdrop.insets.right = inset
-			backdrop.insets.top = inset
-			backdrop.insets.bottom = inset
+			self.uiFrame:SetBackdrop(backdrop)
+			self.uiFrame:SetBackdropBorderColor(unpack(sdb.border.color))
+			self.uiFrame:SetBackdropColor(unpack(sdb.background.color))
+		else
+			self.uiFrame:SetBackdrop(nil)
 		end
-		self.uiFrame:SetBackdrop(backdrop)
-		self.uiFrame:SetBackdropBorderColor(unpack(sdb.border.color))
-		self.uiFrame:SetBackdropColor(unpack(sdb.background.color))
 	else
-		self.uiFrame:SetBackdrop(nil)
+		self.uiFrame:SetBackdrop(UNLOCKED_BACKDROP)
+		self.uiFrame:SetBackdropColor(0, 0.75, 0.75, 0.75)
 	end
 end -- UpdateBackdrop()
 
@@ -466,6 +474,8 @@ function Window.prototype:Unlock()
 	self.uiFrame:SetScript("OnMouseDown", Window_OnMouseDown)
 	self.uiFrame:SetScript("OnMouseUp", Window_OnMouseUp)
 	self.uiFrame:SetScript("OnHide", Window_OnHide)
+	self:UpdateBackdrop()
+	self:UpdateVisibility()
 end -- Unlock()
 
 function Window.prototype:Lock()
@@ -476,6 +486,8 @@ function Window.prototype:Lock()
 	self.uiFrame:SetScript("OnHide", nil)
 	self.uiFrame:SetMovable(false) -- allows StartMoving
 	self.uiFrame:EnableMouse(false) -- intercepts clicks, causes OnMouseDown,OnMouseUp
+	self:UpdateVisibility()
+	self:UpdateBackdrop()
 end -- Lock()
 
 function Window.prototype:AddTracker()
@@ -518,6 +530,7 @@ function Window.prototype:UnlockTrackers()
 	for n,tracker in ipairs(self.trackers) do
 		tracker:Unlock()
 	end
+	self:UpdateVisibility()
 end -- UnlockTrackers()
 
 function Window.prototype:LockTrackers()
@@ -525,6 +538,7 @@ function Window.prototype:LockTrackers()
 	for n,tracker in ipairs(self.trackers) do
 		tracker:Lock()
 	end
+	self:UpdateVisibility()
 end -- LockTrackers()
 
 

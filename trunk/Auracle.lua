@@ -10,7 +10,6 @@ local AceConfigCmd
 local AceConfigRegistry
 local LibDataBroker
 --local LibUnitID
---local LibSharedMedia
 --local LibButtonFacade
 
 --[[ CONSTANTS ]]--
@@ -106,7 +105,6 @@ function Auracle:OnInitialize()
 	--LibUnitID = LibStub("LibUnitID-1.0-alpha",true)
 --@end-alpha@
 	--LibUnitID = LibUnitID or LibStub("LibUnitID-1.0")
-	--LibSharedMedia = LibStub("LibSharedMedia-3.0")
 	--LibButtonFacade = LibStub("LibButtonFacade",true) -- optional
 	-- initialize stored data
 --Auracle_DB = nil
@@ -448,7 +446,7 @@ function Auracle:ConvertDataStore(dbProfile)
 					break
 				end
 			end
-			if (dbProfile.version) then break end
+			if (dbProfile.version == 1) then break end
 		end
 	end
 	if (dbProfile.version ~= DB_VERSION and dbProfile.version ~= 0) then
