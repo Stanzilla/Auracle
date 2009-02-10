@@ -438,10 +438,22 @@ function Auracle:Shutdown()
 end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
+	-- while DB_VERSION was 1, it was also part of DB_DEFAULT, so AceDB never actually stored it
+	-- consequently, we have to examine the data to figure out if it needs updating
+	if (dbProfile.version == 0) then
+		for _,wdb in pairs(dbProfile.windows) do
+			for _,tdb in pairs(wdb.trackers) do
+				if (tdb.trackOthers ~= nil or tdb.trackMine ~= nil or not tdb.tooltip) then
+					dbProfile.version = 1
+					break
+				end
+			end
+			if (dbProfile.version) then break end
+		end
+	end
 	if (dbProfile.version ~= DB_VERSION and dbProfile.version ~= 0) then
-		self:Print("Updating saved vars from format #"..tostring(dbProfile.version).." to #"..tostring(DB_VERSION))
-		if (dbProfile.version == nil) then
-			-- while DB_VERSION was 1, it was also part of DB_DEFAULT, so AceDB never actually stored it
+		self:Print("Updating saved vars")
+		if (dbProfile.version == 1) then
 			for _,wdb in pairs(dbProfile.windows) do
 				if (wdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
 					wdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
