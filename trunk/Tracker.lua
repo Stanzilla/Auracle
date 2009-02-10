@@ -231,8 +231,6 @@ function Tracker:New(db, window, parentFrame)
 	
 	-- (re?)initialize frames
 	tracker.uiFrame:SetParent(parentFrame)
-	local dbtt = tracker.db.tooltip
-	tracker.uiFrame:EnableMouse(dbtt.showMissing ~= "off" or dbtt.showOthers ~= "off" or dbtt.showMine ~= "off") -- intercepts clicks, causes OnMouseDown,OnMouseUp
 	tracker.uiFrame:Show()
 	tracker:Lock()
 	
