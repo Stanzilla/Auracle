@@ -19,11 +19,14 @@ local DB_DEFAULT_WINDOWSTYLE = {
 	},
 	background = {
 		show = true,
-		texture = "Interface\\ChatFrame\\ChatFrameBackground",
-		tileSize = 16,
+		--texture = "Interface\\ChatFrame\\ChatFrameBackground",
+		texture = "Interface\\DialogFrame\\UI-DialogBox-Background",
+		--tileSize = 0,
+		tileSize = 32,
 		noScale = true,
 		inset = 4,
-		color = {  0,   0,   0, 0.75}
+		--color = {  0,   0,   0, 0.75}
+		color = {  1,   1,   1, 0.75}
 	},
 	layout = {
 		noScale = true,
@@ -38,6 +41,7 @@ local DB_DEFAULT_WINDOWSTYLE = {
 
 Auracle:__windowstyle(WindowStyle, DB_DEFAULT_WINDOWSTYLE)
 
+local LibSharedMedia = LibStub("LibSharedMedia-3.0")
 local backdrop = {}
 local insets = {}
 
@@ -191,6 +195,7 @@ local sharedOptions = {
 				end,
 				order = 20
 			},
+--[[
 			texture = { -- TODO: LibSharedMedia
 				type = "input",
 				name = "Texture",
@@ -198,6 +203,25 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.texture end,
 				set = function(i,v)
 					i.handler.db.border.texture = v
+					i.handler:Apply(nil, "Backdrop")
+				end,
+				order = 21
+			},
+--]]
+			texture = {
+				type = "select",
+				dialogControl = "LSM30_Border",
+				name = "Texture",
+				values = AceGUIWidgetLSMlists.border,
+				disabled = function(i) return not i.handler.db.border.show end,
+				get = function(i)
+					for key,data in pairs(AceGUIWidgetLSMlists.border) do
+						if (data == i.handler.db.border.texture) then return key end
+					end
+					return "None"
+				end,
+				set = function(i,v)
+					i.handler.db.border.texture = LibSharedMedia:Fetch("border", v)
 					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 21
@@ -248,6 +272,7 @@ local sharedOptions = {
 				end,
 				order = 30
 			},
+--[[
 			texture = { -- TODO: LibSharedMedia
 				type = "input",
 				name = "Texture",
@@ -255,6 +280,25 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.background.texture end,
 				set = function(i,v)
 					i.handler.db.background.texture = v
+					i.handler:Apply(nil, "Backdrop")
+				end,
+				order = 31
+			},
+--]]
+			texture = {
+				type = "select",
+				dialogControl = "LSM30_Background",
+				name = "Texture",
+				values = AceGUIWidgetLSMlists.background,
+				disabled = function(i) return not i.handler.db.background.show end,
+				get = function(i)
+					for key,data in pairs(AceGUIWidgetLSMlists.background) do
+						if (data == i.handler.db.background.texture) then return key end
+					end
+					return "None"
+				end,
+				set = function(i,v)
+					i.handler.db.background.texture = LibSharedMedia:Fetch("background", v)
 					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 31

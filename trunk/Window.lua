@@ -9,8 +9,8 @@ local Window = LibOOP:Class()
 
 local DB_DEFAULT_WINDOW = {
 	label = false,
-	unit = "target", -- player|target|targettarget|pet|pettarget|focus|focustarget
 	style = "Default",
+	unit = "target", -- player|target|targettarget|pet|pettarget|focus|focustarget
 	visibility = {
 		plrGroup = {
 			solo = true,
@@ -125,7 +125,7 @@ function Window:New(db)
 	window.locked = true
 	window.moving = false
 	window.plrGroup = "solo"
-	window.plrCombat = "no"
+	window.plrCombat = false
 	window.tgtExists = false
 	window.tgtType = "pc"
 	window.tgtReact = "neutral"
@@ -562,7 +562,7 @@ local sharedOptions = {
 				},
 				unit = {
 					type = "select",
-					name = "Track Unit",
+					name = "Watch Unit",
 					values = {
 						player = "Player",
 						target = "Target",
@@ -617,6 +617,7 @@ local sharedOptions = {
 							get = function(i) return i.handler.db.visibility.plrGroup.solo end,
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.solo = v
+								Auracle:UpdateEventListeners()
 								i.handler:UpdateVisibility()
 							end,
 							order = 200
@@ -627,6 +628,7 @@ local sharedOptions = {
 							get = function(i) return i.handler.db.visibility.plrGroup.party end,
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.party = v
+								Auracle:UpdateEventListeners()
 								i.handler:UpdateVisibility()
 							end,
 							order = 201
@@ -637,6 +639,7 @@ local sharedOptions = {
 							get = function(i) return i.handler.db.visibility.plrGroup.raid end,
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.raid = v
+								Auracle:UpdateEventListeners()
 								i.handler:UpdateVisibility()
 							end,
 							order = 202
@@ -655,6 +658,7 @@ local sharedOptions = {
 							get = function(i) return i.handler.db.visibility.plrCombat[false] end,
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[false] = v
+								Auracle:UpdateEventListeners()
 								i.handler:UpdateVisibility()
 							end,
 							order = 210
@@ -665,6 +669,7 @@ local sharedOptions = {
 							get = function(i) return i.handler.db.visibility.plrCombat[true] end,
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[true] = v
+								Auracle:UpdateEventListeners()
 								i.handler:UpdateVisibility()
 							end,
 							order = 211

@@ -90,6 +90,8 @@ local S_LONG  = {                         others="othersLong",  mine="mineLong" 
 
 Auracle:__trackerstyle(TrackerStyle, DB_DEFAULT_TRACKERSTYLE)
 
+local LibSharedMedia = LibStub("LibSharedMedia-3.0")
+
 
 --[[ CONSTRUCT & DESTRUCT ]]--
 
@@ -516,12 +518,31 @@ local sharedOptions = {
 		name = "Text",
 		order = 5,
 		args = {
+--[[
 			font = { -- TODO: LibSharedMedia
 				type = "input",
 				name = "Font",
 				get = function(i) return i.handler.db.text.font end,
 				set = function(i,v)
 					i.handler.db.text.font = v
+					i.handler:Apply(nil, "Font")
+				end,
+				order = 50
+			},
+--]]
+			font = {
+				type = "select",
+				dialogControl = "LSM30_Font",
+				name = "Font",
+				values = AceGUIWidgetLSMlists.font,
+				get = function(i)
+					for key,data in pairs(AceGUIWidgetLSMlists.font) do
+						if (data == i.handler.db.text.font) then return key end
+					end
+					return "None"
+				end,
+				set = function(i,v)
+					i.handler.db.text.font = LibSharedMedia:Fetch("font", v)
 					i.handler:Apply(nil, "Font")
 				end,
 				order = 50
