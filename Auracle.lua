@@ -439,7 +439,7 @@ end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
 	if (dbProfile.version ~= DB_VERSION and dbProfile.version ~= 0) then
-		self:Print("Updating saved vars")
+		self:Print("Updating saved vars from format #"..tostring(dbProfile.version).." to #"..tostring(DB_VERSION))
 		if (dbProfile.version == nil) then
 			-- while DB_VERSION was 1, it was also part of DB_DEFAULT, so AceDB never actually stored it
 			for _,wdb in pairs(dbProfile.windows) do
@@ -483,7 +483,7 @@ function Auracle:ConvertDataStore(dbProfile)
 					tdb.tooltip = {
 						showMissing = "off",
 						showOthers = "off",
-						showMine = "off",
+						showMine = "off"
 					}
 				end
 			end
