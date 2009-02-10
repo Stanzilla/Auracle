@@ -229,7 +229,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.noScale end,
 				set = function(i,v)
 					i.handler.db.border.noScale = v
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 20
 			},
@@ -240,7 +240,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.showMissing end,
 				set = function(i,v)
 					i.handler.db.border.showMissing = v
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 21
 			},
@@ -254,7 +254,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.sizeMissing end,
 				set = function(i,v)
 					i.handler.db.border.sizeMissing = v
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 22
 			},
@@ -267,7 +267,7 @@ local sharedOptions = {
 				set = function(i,v1,v2,v3,v4)
 					local c = i.handler.db.border.colorMissing
 					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 23
 			},
@@ -278,7 +278,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.showOthers end,
 				set = function(i,v)
 					i.handler.db.border.showOthers = v
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 24
 			},
@@ -292,7 +292,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.sizeOthers end,
 				set = function(i,v)
 					i.handler.db.border.sizeOthers = v
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 25
 			},
@@ -305,7 +305,7 @@ local sharedOptions = {
 				set = function(i,v1,v2,v3,v4)
 					local c = i.handler.db.border.colorOthers
 					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 26
 			},
@@ -316,7 +316,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.showMine end,
 				set = function(i,v)
 					i.handler.db.border.showMine = v
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 27
 			},
@@ -330,7 +330,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.border.sizeMine end,
 				set = function(i,v)
 					i.handler.db.border.sizeMine = v
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 28
 			},
@@ -343,7 +343,7 @@ local sharedOptions = {
 				set = function(i,v1,v2,v3,v4)
 					local c = i.handler.db.border.colorMine
 					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Border")
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 29
 			}
