@@ -81,27 +81,31 @@ local __auracle_debug_call = __auracle_debug_call or function() end
 
 --[[ EVENT HANDLERS ]]--
 
-local function Tracker_OnMouseDown(self, button)
+local function Frame_OnMouseDown(self, button)
 	if (button == "LeftButton") then
 		self.Auracle_tracker:StartMoving()
 	end
-end -- Tracker_OnMouseDown()
+end -- Frame_OnMouseDown()
 
-local function Tracker_OnUpdate(self)
+local function Frame_OnUpdate(self)
 	self.Auracle_tracker:UpdateMovingPosition()
-end -- Tracker_OnUpdate()
+end -- Frame_OnUpdate()
 
-local function Tracker_OnMouseUp(self, button)
+local function Frame_OnMouseUp(self, button)
 	if (button == "LeftButton") then
 		self.Auracle_tracker:StopMoving()
 	end
-end -- Tracker_OnMouseUp()
+end -- Frame_OnMouseUp()
 
-local function Tracker_OnHide(self)
+local function Frame_OnHide(self)
 	self.Auracle_tracker:StopMoving()
-end -- Tracker_OnHide()
+end -- Frame_OnHide()
 
-local function Tracker_OnEnter(self)
+local function Frame_OnSizeChanged(self)
+	return self.Auracle_tracker:UpdateBackdrop()
+end -- Frame_OnSizeChanged()
+
+local function Frame_OnEnter(self)
 	if (self:IsVisible()) then
 		local tt = GameTooltip
 		local tracker = self.Auracle_tracker
@@ -133,17 +137,17 @@ local function Tracker_OnEnter(self)
 			tt:Show()
 		end
 	end
-end -- Tracker_OnEnter()
+end -- Frame_OnEnter()
 
-local function Tracker_OnLeave(self)
+local function Frame_OnLeave(self)
 	if ((GameTooltip:GetOwner()) == self) then
 		GameTooltip:Hide()
 	end
-end -- Tracker_OnLeave()
+end -- Frame_OnLeave()
 
-local function TrackerCooldown_OnUpdate_Stacks(self, elapsed)
+local function Cooldown_OnUpdate_Stacks(self, elapsed)
 	self:SetCooldown(GetTime() - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.spiral.maxStacks)
-end -- TrackerCooldown_OnUpdate_Stacks()
+end -- Cooldown_OnUpdate_Stacks()
 
 local function TrackerOverlay_OnUpdate(self, elapsed)
 	local tracker = self.Auracle_tracker
@@ -232,6 +236,7 @@ function Tracker:New(db, window, parentFrame)
 	
 	-- (re?)initialize frames
 	tracker.uiFrame:SetParent(parentFrame)
+	tracker.uiFrame:SetScript("OnSizeChanged", Frame_OnSizeChanged)
 	tracker.uiFrame:Show()
 	tracker:Lock()
 	
@@ -252,6 +257,7 @@ function Tracker.prototype:Destroy()
 	self.uiFrame:SetScript("OnMouseDown", nil)
 	self.uiFrame:SetScript("OnMouseUp", nil)
 	self.uiFrame:SetScript("OnHide", nil)
+	self.uiFrame:SetScript("OnSizeChanged", nil)
 	self.uiFrame:SetScript("OnEnter", nil)
 	self.uiFrame:SetScript("OnLeave", nil)
 	self.uiFrame:ClearAllPoints()
@@ -288,7 +294,7 @@ end -- Remove()
 function Tracker.prototype:StartMoving()
 	if (not self.locked and not self.moving) then
 		self.moving = true
-		self.uiFrame:SetScript("OnUpdate", Tracker_OnUpdate)
+		self.uiFrame:SetScript("OnUpdate", Frame_OnUpdate)
 		local _,_,_,x,y = self.uiFrame:GetPoint(1)
 		self.moving_frameX = x
 		self.moving_frameY = y
@@ -392,10 +398,11 @@ function Tracker.prototype:EndAuraUpdate(now,total)
 	local statusChanged = (self.update_origin ~= self.auraOrigin)
 	local timeChanged = (self.update_expires ~= self.auraExpires)
 	local stacksChanged = (self.update_stacks ~= self.auraStacks)
+	local auraApplied = (statusChanged or timeChanged or self.update_applied ~= self.auraApplied or self.update_index ~= self.auraIndex)
 	local iconChanged = false
 	if (self.update_icon) then
 		if (dbicon.texture == ICON_QM
-			or (dbicon.autoIcon and dbicon.texture ~= self.update_icon)
+			or (dbicon.autoIcon and self.update_icon ~= dbicon.texture)
 		) then
 			dbicon.texture = self.update_icon
 			iconChanged = true
@@ -406,15 +413,15 @@ function Tracker.prototype:EndAuraUpdate(now,total)
 	if (self.update_expires) then
 		local duration = self.update_expires - self.update_applied
 		if (not dbspiral.maxTime
-			or (dbspiral.maxTimeMode == "autoUp" and dbspiral.maxTime < duration)
-			or (dbspiral.maxTimeMode == "auto" and dbspiral.maxTime ~= duration)
+			or (dbspiral.maxTimeMode == "autoUp" and duration > dbspiral.maxTime)
+			or (dbspiral.maxTimeMode == "auto" and duration ~= dbspiral.maxTime)
 		) then
 			dbspiral.maxTime = duration
 			spiralMaxTimeChanged = true
 		end
 		if (not dbtext.maxTime
-			or (dbtext.maxTimeMode == "autoUp" and dbtext.maxTime < duration)
-			or (dbtext.maxTimeMode == "auto" and dbtext.maxTime ~= duration)
+			or (dbtext.maxTimeMode == "autoUp" and duration > dbtext.maxTime)
+			or (dbtext.maxTimeMode == "auto" and duration ~= dbtext.maxTime)
 		) then
 			dbtext.maxTime = duration
 			textMaxTimeChanged = true
@@ -424,15 +431,15 @@ function Tracker.prototype:EndAuraUpdate(now,total)
 	local textMaxStacksChanged = false
 	if (self.update_stacks) then
 		if (not dbspiral.maxStacks
-			or (dbspiral.maxStacksMode == "autoUp" and dbspiral.maxStacks < self.update_stacks)
-			or (dbspiral.maxStacksMode == "auto" and dbspiral.maxStacks ~= self.update_stacks)
+			or (dbspiral.maxStacksMode == "autoUp" and self.update_stacks > dbspiral.maxStacks)
+			or (dbspiral.maxStacksMode == "auto" and auraApplied and self.update_stacks ~= dbspiral.maxStacks)
 		) then
 			dbspiral.maxStacks = self.update_stacks
 			spiralMaxStacksChanged = true
 		end
 		if (not dbtext.maxStacks
-			or (dbtext.maxStacksMode == "autoUp" and dbtext.maxStacks < self.update_stacks)
-			or (dbtext.maxStacksMode == "auto" and dbtext.maxStacks ~= self.update_stacks)
+			or (dbtext.maxStacksMode == "autoUp" and self.update_stacks > dbtext.maxStacks)
+			or (dbtext.maxStacksMode == "auto" and auraApplied and self.update_stacks ~= dbtext.maxStacks)
 		) then
 			dbtext.maxStacks = self.update_stacks
 			textMaxStacksChanged = true
@@ -543,7 +550,7 @@ function Tracker.prototype:UpdateSpiral()
 				self.uiCooldown:SetScript("OnUpdate", nil)
 				self.uiCooldown:SetCooldown(self.auraExpires - dbspiral.maxTime, dbspiral.maxTime)
 			elseif (dbspiral.mode == "stacks") then
-				self.uiCooldown:SetScript("OnUpdate", TrackerCooldown_OnUpdate_Stacks)
+				self.uiCooldown:SetScript("OnUpdate", Cooldown_OnUpdate_Stacks)
 			end
 		else
 			self.uiCooldown:Hide()
@@ -621,13 +628,13 @@ function Tracker.prototype:IsLocked()
 end -- IsLocked()
 
 function Tracker.prototype:Unlock()
-	Tracker_OnLeave(self.uiFrame)
+	Frame_OnLeave(self.uiFrame)
 	self.locked = false
 	self.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
 	self.uiFrame:SetMovable(true) -- allows StartMoving
-	self.uiFrame:SetScript("OnMouseDown", Tracker_OnMouseDown)
-	self.uiFrame:SetScript("OnMouseUp", Tracker_OnMouseUp)
-	self.uiFrame:SetScript("OnHide", Tracker_OnMouseUp)
+	self.uiFrame:SetScript("OnMouseDown", Frame_OnMouseDown)
+	self.uiFrame:SetScript("OnMouseUp", Frame_OnMouseUp)
+	self.uiFrame:SetScript("OnHide", Frame_OnMouseUp)
 	self.uiFrame:SetScript("OnEnter", nil)
 	self.uiFrame:SetScript("OnLeave", nil)
 	self:UpdateBackdrop()
@@ -639,8 +646,8 @@ function Tracker.prototype:Lock()
 	self.uiFrame:SetScript("OnMouseDown", nil)
 	self.uiFrame:SetScript("OnMouseUp", nil)
 	self.uiFrame:SetScript("OnHide", nil)
-	self.uiFrame:SetScript("OnEnter", Tracker_OnEnter)
-	self.uiFrame:SetScript("OnLeave", Tracker_OnLeave)
+	self.uiFrame:SetScript("OnEnter", Frame_OnEnter)
+	self.uiFrame:SetScript("OnLeave", Frame_OnLeave)
 	self.uiFrame:SetMovable(false) -- allows StartMoving
 	local dbtt = self.db.tooltip
 	self.uiFrame:EnableMouse(dbtt.showMissing ~= "off" or dbtt.showOthers ~= "off" or dbtt.showMine ~= "off") -- intercepts clicks, causes OnMouseDown,OnMouseUp
