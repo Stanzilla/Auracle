@@ -12,6 +12,13 @@ local DB_DEFAULT_WINDOW = {
 	style = "Default",
 	unit = "target", -- player|target|targettarget|pet|pettarget|focus|focustarget
 	visibility = {
+		plrInstance = {
+			none = true,
+			pvp = true, -- bg
+			arena = true,
+			party = true, -- 5-man instance
+			raid = true -- raid instance
+		},
 		plrGroup = {
 			solo = true,
 			party = true,
@@ -89,21 +96,27 @@ local __auracle_debug_call = __auracle_debug_call or function() end
 
 --[[  EVENT HANDLERS ]]--
 
-local function Window_OnMouseDown(self, button)
+local function Frame_OnMouseDown(self, button)
 	if (button == "LeftButton") then
-		self.Auracle_window:StartMoving()
+		return self.Auracle_window:StartMoving()
 	end
-end -- Window_OnMouseDown()
+end -- Frame_OnMouseDown()
 
-local function Window_OnMouseUp(self, button)
+local function Frame_OnMouseUp(self, button)
 	if (button == "LeftButton") then
-		self.Auracle_window:StopMoving()
+		return self.Auracle_window:StopMoving()
 	end
-end -- Window_OnMouseUp()
+end -- Frame_OnMouseUp()
 
-local function Window_OnHide(self)
-	self.Auracle_window:StopMoving()
-end -- Window_OnHide()
+local function Frame_OnHide(self)
+	return self.Auracle_window:StopMoving()
+end -- Frame_OnHide()
+
+local function Frame_OnSizeChanged(self)
+	if (self:GetEffectiveScale() ~= self.Auracle_window.effectiveScale) then
+		return self.Auracle_window:UpdateLayout()
+	end
+end -- Frame_OnSizeChanged()
 
 
 --[[ CONSTRUCT & DESTRUCT ]]--
@@ -125,6 +138,8 @@ function Window:New(db)
 	window.style = Auracle.windowStyles[db.style]
 	window.locked = true
 	window.moving = false
+	window.effectiveScale = 1.0
+	window.plrInstance = "none"
 	window.plrGroup = "solo"
 	window.plrCombat = false
 	window.tgtExists = false
@@ -164,6 +179,8 @@ function Window.prototype:Destroy()
 	self.style = nil
 	self.locked = nil
 	self.moving = nil
+	self.effectiveScale = nil
+	self.plrInstance = nil
 	self.plrGroup = nil
 	self.plrCombat = nil
 	self.tgtExists = nil
@@ -289,7 +306,8 @@ end -- EndAuraUpdate()
 
 --[[ SITUATION UPDATE METHODS ]]--
 
-function Window.prototype:SetPlayerStatus(plrGroup, plrCombat)
+function Window.prototype:SetPlayerStatus(plrInstance, plrGroup, plrCombat)
+	self.plrInstance = plrInstance
 	self.plrGroup = plrGroup
 	self.plrCombat = plrCombat
 	return self:UpdateVisibility()
@@ -310,7 +328,7 @@ function Window.prototype:UpdateVisibility()
 	local nowVis = (
 		not (self.locked and self.trackersLocked)
 		or (
-			(dbvis.plrGroup[self.plrGroup] and dbvis.plrCombat[self.plrCombat])
+			(dbvis.plrInstance[self.plrInstance] and dbvis.plrGroup[self.plrGroup] and dbvis.plrCombat[self.plrCombat])
 			and (
 				(self.tgtExists and dbvis.tgtType[self.tgtType] and dbvis.tgtReact[self.tgtReact])
 				or (not self.tgtExists and dbvis.tgtMissing)
@@ -331,6 +349,9 @@ function Window.prototype:UpdateStyle()
 end -- UpdateStyle()
 
 function Window.prototype:UpdateBackdrop()
+	-- set frame opacity
+	self.uiFrame:SetAlpha(self.style.db.windowOpacity)
+	-- set frame backdrop
 	if (self.locked) then
 		local backdrop = self.style:GetBackdropTable()
 		if (next(backdrop)) then
@@ -359,6 +380,11 @@ function Window.prototype:UpdateBackdrop()
 end -- UpdateBackdrop()
 
 function Window.prototype:UpdateLayout()
+	-- disable size handler
+	self.uiFrame:SetScript("OnSizeChanged", nil)
+	-- set frame scale
+	self.uiFrame:SetScale(self.style.db.windowScale)
+	self.effectiveScale = self.uiFrame:GetEffectiveScale()
 	-- position each tracker
 	for n,tracker in ipairs(self.trackers) do
 		self:UpdateTrackerLayout(n)
@@ -372,7 +398,7 @@ function Window.prototype:UpdateLayout()
 		for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
-		local factor = ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+		local factor = ((768 / self.effectiveScale) / m[2])
 		padding = padding * factor
 		spacing = spacing * factor
 	end
@@ -384,6 +410,8 @@ function Window.prototype:UpdateLayout()
 	local rows = max(1, ceil(num / wrap))
 	self.uiFrame:SetWidth((padding * 2) + (cols * trackerSize) + ((cols-1) * spacing))
 	self.uiFrame:SetHeight((padding * 2) + (rows * trackerSize) + ((rows-1) * spacing))
+	-- re-set size handler
+	self.uiFrame:SetScript("OnSizeChanged", Frame_OnSizeChanged)
 end -- UpdateLayout()
 
 function Window.prototype:UpdateTrackerLayout(tn)
@@ -396,7 +424,7 @@ function Window.prototype:UpdateTrackerLayout(tn)
 		for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
-		local factor = ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+		local factor = ((768 / self.effectiveScale) / m[2])
 		padding = padding * factor
 		spacing = spacing * factor
 	end
@@ -431,7 +459,7 @@ function Window.prototype:SetTrackerPosition(tracker, x, y)
 		for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
-		local factor = ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+		local factor = ((768 / self.effectiveScale) / m[2])
 		padding = padding * factor
 		spacing = spacing * factor
 	end
@@ -471,9 +499,9 @@ function Window.prototype:Unlock()
 	self.locked = false
 	self.uiFrame:EnableMouse(true) -- intercepts clicks, causes OnMouseDown,OnMouseUp
 	self.uiFrame:SetMovable(true) -- allows StartMoving
-	self.uiFrame:SetScript("OnMouseDown", Window_OnMouseDown)
-	self.uiFrame:SetScript("OnMouseUp", Window_OnMouseUp)
-	self.uiFrame:SetScript("OnHide", Window_OnHide)
+	self.uiFrame:SetScript("OnMouseDown", Frame_OnMouseDown)
+	self.uiFrame:SetScript("OnMouseUp", Frame_OnMouseUp)
+	self.uiFrame:SetScript("OnHide", Frame_OnHide)
 	self:UpdateBackdrop()
 	self:UpdateVisibility()
 end -- Unlock()
@@ -618,11 +646,75 @@ local sharedOptions = {
 			inline = false,
 			order = 2,
 			args = {
+				plrInstance = {
+					type = "group",
+					name = "Show when player is in...",
+					inline = true,
+					order = 20,
+					args = {
+						none = {
+							type = "toggle",
+							name = "No Instance",
+							width = "full",
+							get = function(i) return i.handler.db.visibility.plrInstance.none end,
+							set = function(i,v)
+								i.handler.db.visibility.plrInstance.none = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus()
+							end,
+							order = 200
+						},
+						pvp = {
+							type = "toggle",
+							name = "Battleground",
+							get = function(i) return i.handler.db.visibility.plrInstance.pvp end,
+							set = function(i,v)
+								i.handler.db.visibility.plrInstance.pvp = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus()
+							end,
+							order = 201
+						},
+						arena = {
+							type = "toggle",
+							name = "Arena",
+							get = function(i) return i.handler.db.visibility.plrInstance.arena end,
+							set = function(i,v)
+								i.handler.db.visibility.plrInstance.arena = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus()
+							end,
+							order = 202
+						},
+						party = {
+							type = "toggle",
+							name = "Party Instance",
+							get = function(i) return i.handler.db.visibility.plrInstance.party end,
+							set = function(i,v)
+								i.handler.db.visibility.plrInstance.party = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus()
+							end,
+							order = 203
+						},
+						raid = {
+							type = "toggle",
+							name = "Raid Instance",
+							get = function(i) return i.handler.db.visibility.plrInstance.raid end,
+							set = function(i,v)
+								i.handler.db.visibility.plrInstance.raid = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus()
+							end,
+							order = 204
+						}
+					}
+				},
 				plrGroup = {
 					type = "group",
 					name = "Show when player is...",
 					inline = true,
-					order = 20,
+					order = 21,
 					args = {
 						solo = {
 							type = "toggle",
@@ -632,9 +724,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.solo = v
 								Auracle:UpdateEventListeners()
-								i.handler:UpdateVisibility()
+								Auracle:UpdatePlayerStatus()
 							end,
-							order = 200
+							order = 210
 						},
 						party = {
 							type = "toggle",
@@ -643,20 +735,20 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.party = v
 								Auracle:UpdateEventListeners()
-								i.handler:UpdateVisibility()
+								Auracle:UpdatePlayerStatus()
 							end,
-							order = 201
+							order = 211
 						},
 						raid = {
 							type = "toggle",
-							name = "In a Raid",
+							name = "In a Raid Group",
 							get = function(i) return i.handler.db.visibility.plrGroup.raid end,
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.raid = v
 								Auracle:UpdateEventListeners()
-								i.handler:UpdateVisibility()
+								Auracle:UpdatePlayerStatus()
 							end,
-							order = 202
+							order = 212
 						}
 					}
 				},
@@ -664,7 +756,7 @@ local sharedOptions = {
 					type = "group",
 					name = "Show when player is...",
 					inline = true,
-					order = 21,
+					order = 22,
 					args = {
 						no = {
 							type = "toggle",
@@ -673,9 +765,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[false] = v
 								Auracle:UpdateEventListeners()
-								i.handler:UpdateVisibility()
+								Auracle:UpdatePlayerStatus()
 							end,
-							order = 210
+							order = 220
 						},
 						yes = {
 							type = "toggle",
@@ -684,9 +776,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[true] = v
 								Auracle:UpdateEventListeners()
-								i.handler:UpdateVisibility()
+								Auracle:UpdatePlayerStatus()
 							end,
-							order = 211
+							order = 221
 						}
 					}
 				},
@@ -699,13 +791,13 @@ local sharedOptions = {
 						i.handler.db.visibility.tgtMissing = v
 						i.handler:UpdateVisibility()
 					end,
-					order = 22
+					order = 23
 				},
 				tgtReact = {
 					type = "group",
 					name = "Show when unit is...",
 					inline = true,
-					order = 23,
+					order = 24,
 					args = {
 						hostile = {
 							type = "toggle",
@@ -715,7 +807,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtReact.hostile = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 230
+							order = 240
 						},
 						neutral = {
 							type = "toggle",
@@ -725,7 +817,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtReact.neutral = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 231
+							order = 241
 						},
 						friendly = {
 							type = "toggle",
@@ -735,7 +827,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtReact.friendly = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 232
+							order = 242
 						}
 					}
 				},
@@ -743,7 +835,7 @@ local sharedOptions = {
 					type = "group",
 					name = "Show when unit is a(n)...",
 					inline = true,
-					order = 24,
+					order = 25,
 					args = {
 						pc = {
 							type = "toggle",
@@ -754,7 +846,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.pc = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 240
+							order = 250
 						},
 						worldboss = {
 							type = "toggle",
@@ -764,7 +856,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.worldboss = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 241
+							order = 251
 						},
 						rareelite = {
 							type = "toggle",
@@ -774,7 +866,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.rareelite = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 242
+							order = 252
 						},
 						elite = {
 							type = "toggle",
@@ -784,7 +876,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.elite = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 243
+							order = 253
 						},
 						rare = {
 							type = "toggle",
@@ -794,7 +886,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.rare = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 244
+							order = 254
 						},
 						normal = {
 							type = "toggle",
@@ -804,7 +896,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.normal = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 245
+							order = 255
 						},
 						trivial = {
 							type = "toggle",
@@ -814,7 +906,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.trivial = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 246
+							order = 256
 						}
 					}
 				}

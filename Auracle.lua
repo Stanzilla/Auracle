@@ -14,6 +14,7 @@ local LibDataBroker
 
 --[[ CONSTANTS ]]--
 
+local DB_VERSION = 4
 local DB_DEFAULT = {
 	version = 0,
 	windowStyles = {},
@@ -211,11 +212,8 @@ function Auracle:PARTY_MEMBERS_CHANGED()
 		self.plrGroup = "party"
 	end
 	-- update windows
-	local nowVis
 	for _,window in ipairs(self.windows) do
-		nowVis = window:SetPlayerStatus(self.plrGroup, self.plrCombat)
-		-- if this window is (now?) visible, update its unit
-		if (nowVis) then
+		if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
 			self:UpdateUnitAuras(window.db.unit)
 		end
 	end
@@ -224,11 +222,8 @@ end -- PARTY_MEMBERS_CHANGED()
 function Auracle:PLAYER_REGEN_DISABLED()
 	self.plrCombat = true
 	-- update windows
-	local nowVis
 	for _,window in ipairs(self.windows) do
-		nowVis = window:SetPlayerStatus(self.plrGroup, self.plrCombat)
-		-- if this window is (now?) visible, update its unit
-		if (nowVis and not wasVis) then
+		if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
 			self:UpdateUnitAuras(window.db.unit)
 		end
 	end
@@ -237,15 +232,25 @@ end -- PLAYER_REGEN_DISABLED()
 function Auracle:PLAYER_REGEN_ENABLED()
 	self.plrCombat = false
 	-- update windows
-	local nowVis
 	for _,window in ipairs(self.windows) do
-		nowVis = window:SetPlayerStatus(self.plrGroup, self.plrCombat)
-		-- if this window is (now?) visible, update its unit
-		if (nowVis and not wasVis) then
+		if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
 			self:UpdateUnitAuras(window.db.unit)
 		end
 	end
 end -- PLAYER_REGEN_ENABLED()
+
+function Auracle:PLAYER_ENTERING_WORLD()
+	local _,inst = IsInInstance()
+	if (inst ~= self.plrInstance) then
+		self.plrInstance = inst
+		-- update windows
+		for _,window in ipairs(self.windows) do
+			if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
+				self:UpdateUnitAuras(window.db.unit)
+			end
+		end
+	end
+end -- PLAYER_ENTERING_WORLD()
 
 
 --[[ AceBucket EVENT HANDLERS ]]--
@@ -348,6 +353,8 @@ end -- UpdateUnitAuras()
 
 function Auracle:UpdatePlayerStatus()
 	-- determine player's group and combat status
+	local _
+	_,self.plrInstance = IsInInstance()
 	self.plrGroup = "solo"
 	if (GetNumRaidMembers() > 0) then -- includes player
 		self.plrGroup = "raid"
@@ -357,7 +364,7 @@ function Auracle:UpdatePlayerStatus()
 	self.plrCombat = (InCombatLockdown() and true) or false
 	-- update windows
 	for _,window in ipairs(self.windows) do
-		window:SetPlayerStatus(self.plrGroup, self.plrCombat)
+		window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)
 	end
 end -- UpdatePlayerStatus()
 
@@ -372,6 +379,7 @@ function Auracle:Startup()
 	self.trackerStyleOptions = {}
 	self.windows = {}
 	self.windowsLocked = true
+	self.plrInstance = "none"
 	self.plrGroup = "solo"
 	self.plrCombat = false
 	-- update old database versions
@@ -430,12 +438,13 @@ function Auracle:Shutdown()
 	self.trackerStyleOptions = nil
 	self.windows = nil
 	self.windowsLocked = nil
+	self.plrInstance = nil
 	self.plrGroup = nil
 	self.plrCombat = nil
 end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
-	if (dbProfile.version ~= 0 and dbProfile.version <= 3) then
+	if (dbProfile.version ~= 0 and dbProfile.version < DB_VERSION) then
 		self:Print("Updating saved vars")
 		for _,wsdb in pairs(dbProfile.windowStyles) do
 			if (wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
@@ -443,17 +452,22 @@ function Auracle:ConvertDataStore(dbProfile)
 			end
 		end
 		for _,wdb in pairs(dbProfile.windows) do
+			-- visibility.plrInstance{}
+			if (type(wdb.visibility.plrInstance) ~= "table") then
+				wdb.visibility.plrInstance = cloneTable(DB_DEFAULT_WINDOW.visibility.plrInstance, true)
+			end
 			for _,tdb in pairs(wdb.trackers) do
-				-- track[Others|Mine] => show[Others|Mine]
+				-- trackOthers => showOthers
 				if (tdb.trackOthers ~= nil) then
 					tdb.showOthers = tdb.trackOthers
 					tdb.trackOthers = nil
 				end
+				-- trackMine => showMine
 				if (tdb.trackMine ~= nil) then
 					tdb.showMine = tdb.trackMine
 					tdb.trackMine = nil
 				end
-				-- {spiral} and {text}
+				-- spiral{} and text{}
 				local spiralReverse = tdb.spiralReverse
 				if (spiralReverse == nil) then spiralReverse = true end
 				local textColor = tdb.textColor or "time"
@@ -493,7 +507,7 @@ function Auracle:ConvertDataStore(dbProfile)
 				tdb.autoMaxTime = nil
 				tdb.maxStacks = nil
 				tdb.autoMaxStacks = nil
-				-- {icon}
+				-- icon{}
 				local autoIcon = tdb.autoIcon
 				if (autoIcon == nil) then autoIcon = true end
 				if (type(tdb.icon) ~= "table") then
@@ -504,7 +518,7 @@ function Auracle:ConvertDataStore(dbProfile)
 					tdb.icon = icon
 				end
 				tdb.autoIcon = nil
-				-- {tooltip}
+				-- tooltip{}
 				if (type(tdb.tooltip) ~= "table") then
 					tdb.tooltip = {
 						showMissing = "off",
@@ -515,15 +529,15 @@ function Auracle:ConvertDataStore(dbProfile)
 			end
 		end
 	end
-	dbProfile.version = 4
+	dbProfile.version = DB_VERSION
 end -- ConvertDataStore()
 
 function Auracle:UpdateEventListeners()
 	-- clear them all
 	self:UnregisterAllEvents()
 	-- determine which listeners we need according to current settings
-	local ePTarget,eUTarget,ePFocus,ePet,eParty,eCombat,eAuras
-	local u,v
+	local ePTarget,eUTarget,ePFocus,ePet,eWorld,eParty,eCombat,eAuras
+	local u,vI,vG,vC
 	for wn,window in ipairs(self.windows) do
 		-- based on window.unit
 		u = window.db.unit
@@ -543,11 +557,16 @@ function Auracle:UpdateEventListeners()
 			eUTarget = true
 		end
 		-- based on window.vis
-		v = window.db.visibility
-		if (v.plrGroup.solo ~= v.plrGroup.party or v.plrGroup.solo ~= v.plrGroup.raid) then
+		vI = window.db.visibility.plrInstance
+		if (vI.none ~= vI.pvp or vI.none ~= vI.arena or vI.none ~= vI.party or vI.none ~= vI.raid) then
+			eWorld = true
+		end
+		vG = window.db.visibility.plrGroup
+		if (vG.solo ~= vG.party or vG.solo ~= vG.raid) then
 			eParty = true
 		end
-		if (v.plrCombat[false] ~= v.plrCombat[true]) then
+		vC = window.db.visibility.plrCombat
+		if (vC[false] ~= vC[true]) then
 			eCombat = true
 		end
 		-- based on window.trackers
@@ -562,6 +581,7 @@ function Auracle:UpdateEventListeners()
 	if (eUTarget) then self:RegisterEvent("UNIT_TARGET") end
 	if (ePFocus) then self:RegisterEvent("PLAYER_FOCUS_CHANGED") end
 	if (ePet) then self:RegisterEvent("UNIT_PET") end
+	if (eWorld) then self:RegisterEvent("PLAYER_ENTERING_WORLD") end
 	if (eParty) then self:RegisterEvent("PARTY_MEMBERS_CHANGED") end
 	if (eCombat) then
 		self:RegisterEvent("PLAYER_REGEN_DISABLED")

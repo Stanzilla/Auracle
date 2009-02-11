@@ -147,18 +147,17 @@ local sharedOptions = {
 				end,
 				order = 12
 			},
---[[ TODO
 			windowOpacity = {
 				type = "range",
 				name = "Window Opacity",
 				width = "double",
 				min = 0.0,
 				max = 1.0,
-				step = 0.05,
+				step = 0.01,
 				get = function(i) return i.handler.db.windowOpacity end,
 				set = function(i,v)
 					i.handler.db.windowOpacity = v
-					-- TODO
+					i.handler:Apply(nil, "Backdrop")
 				end,
 				order = 13
 			},
@@ -168,15 +167,14 @@ local sharedOptions = {
 				width = "double",
 				min = 0.5,
 				max = 2.0,
-				step = 0.05,
+				step = 0.01,
 				get = function(i) return i.handler.db.windowScale end,
 				set = function(i,v)
 					i.handler.db.windowScale = v
-					-- TODO
+					i.handler:Apply(nil, "Layout")
 				end,
 				order = 14
 			}
---]]
 		}
 	},
 	border = {
