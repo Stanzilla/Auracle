@@ -14,7 +14,6 @@ local LibDataBroker
 
 --[[ CONSTANTS ]]--
 
-local DB_VERSION = 4
 local DB_DEFAULT = {
 	version = 0,
 	windowStyles = {},
@@ -34,7 +33,7 @@ function Auracle:__windowstyle(class, db_default)
 	self.__windowstyle = nil
 	WindowStyle = class
 	DB_DEFAULT_WINDOWSTYLE = db_default
-	DB_DEFAULT.windowStyles.Default = DB_DEFAULT_WINDOWSTYLE
+	--DB_DEFAULT.windowStyles.Default = DB_DEFAULT_WINDOWSTYLE
 end
 
 local TrackerStyle
@@ -42,7 +41,7 @@ function Auracle:__trackerstyle(class, db_default)
 	self.__trackerstyle = nil
 	TrackerStyle = class
 	DB_DEFAULT_TRACKERSTYLE = db_default
-	DB_DEFAULT.trackerStyles.Default = DB_DEFAULT_TRACKERSTYLE
+	--DB_DEFAULT.trackerStyles.Default = DB_DEFAULT_TRACKERSTYLE
 end
 
 local Window
@@ -50,7 +49,7 @@ function Auracle:__window(class, db_default)
 	self.__window = nil
 	Window = class
 	DB_DEFAULT_WINDOW = db_default
-	DB_DEFAULT.windows[1] = DB_DEFAULT_WINDOW
+	--DB_DEFAULT.windows[1] = DB_DEFAULT_WINDOW
 end
 
 local Tracker
@@ -382,13 +381,6 @@ function Auracle:Startup()
 	self.plrInstance = "none"
 	self.plrGroup = "solo"
 	self.plrCombat = false
-	-- update old database versions
---[[
-	if (not self.db.profile) then
-		self.db.profile = cloneTable(DB_DEFAULT, true)
-	end
---]]
-	self:ConvertDataStore(self.db.profile)
 	-- make sure the Default styles exist
 	if (not self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
 		self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
@@ -400,6 +392,8 @@ function Auracle:Startup()
 	if (not next(self.db.profile.windows)) then
 		self.db.profile.windows[1] = cloneTable(DB_DEFAULT_WINDOW, true)
 	end
+	-- update old database versions
+	self:ConvertDataStore(self.db.profile)
 	-- initialize objects
 	for name,db in pairs(self.db.profile.windowStyles) do
 		self.windowStyles[name] = WindowStyle(db)
@@ -444,10 +438,9 @@ function Auracle:Shutdown()
 end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
-	if (dbProfile.version ~= 0 and dbProfile.version < DB_VERSION) then
-		self:Print("Updating saved vars")
+	if (dbProfile.version < 4) then
 		for _,wsdb in pairs(dbProfile.windowStyles) do
-			if (wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
+			if (wsdb.background and wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
 				wsdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
 			end
 		end
@@ -529,7 +522,26 @@ function Auracle:ConvertDataStore(dbProfile)
 			end
 		end
 	end
-	dbProfile.version = DB_VERSION
+	if (dbProfile.version < 5) then
+		local fix
+		fix = function(db, def)
+			for key,val in pairs(def) do
+				if (type(val) == "table") then
+					if (type(db[key]) == "table") then
+						fix(db[key], val)
+					else
+						db[key] = cloneTable(val, true)
+					end
+				elseif (db[key] == nil) then
+					db[key] = val
+				end
+			end
+		end
+		fix(dbProfile.windowStyles.Default, DB_DEFAULT_WINDOWSTYLE)
+		fix(dbProfile.trackerStyles.Default, DB_DEFAULT_TRACKERSTYLE)
+		fix(dbProfile.windows[1], DB_DEFAULT_WINDOW)
+	end
+	dbProfile.version = 5
 end -- ConvertDataStore()
 
 function Auracle:UpdateEventListeners()
