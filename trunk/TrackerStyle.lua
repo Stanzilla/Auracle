@@ -518,18 +518,6 @@ local sharedOptions = {
 		name = "Text",
 		order = 5,
 		args = {
---[[
-			font = { -- TODO: LibSharedMedia
-				type = "input",
-				name = "Font",
-				get = function(i) return i.handler.db.text.font end,
-				set = function(i,v)
-					i.handler.db.text.font = v
-					i.handler:Apply(nil, "Font")
-				end,
-				order = 50
-			},
---]]
 			font = {
 				type = "select",
 				dialogControl = "LSM30_Font",
@@ -646,7 +634,6 @@ width = "full",
 			showOthers = {
 				type = "toggle",
 				name = "Show when Other's",
-				width = "full",
 				get = function(i) return i.handler.db.text.showOthers end,
 				set = function(i,v)
 					i.handler.db.text.showOthers = v
@@ -657,7 +644,6 @@ width = "full",
 			showMine = {
 				type = "toggle",
 				name = "Show when Mine",
-				width = "full",
 				get = function(i) return i.handler.db.text.showMine end,
 				set = function(i,v)
 					i.handler.db.text.showMine = v

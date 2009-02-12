@@ -193,19 +193,6 @@ local sharedOptions = {
 				end,
 				order = 20
 			},
---[[
-			texture = { -- TODO: LibSharedMedia
-				type = "input",
-				name = "Texture",
-				disabled = function(i) return not i.handler.db.border.show end,
-				get = function(i) return i.handler.db.border.texture end,
-				set = function(i,v)
-					i.handler.db.border.texture = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 21
-			},
---]]
 			texture = {
 				type = "select",
 				dialogControl = "LSM30_Border",
@@ -227,6 +214,7 @@ local sharedOptions = {
 			color = {
 				type = "color",
 				name = "Color",
+				width = "half",
 				hasAlpha = true,
 				disabled = function(i) return not i.handler.db.border.show end,
 				get = function(i) return unpack(i.handler.db.border.color) end,
@@ -270,19 +258,6 @@ local sharedOptions = {
 				end,
 				order = 30
 			},
---[[
-			texture = { -- TODO: LibSharedMedia
-				type = "input",
-				name = "Texture",
-				disabled = function(i) return not i.handler.db.background.show end,
-				get = function(i) return i.handler.db.background.texture end,
-				set = function(i,v)
-					i.handler.db.background.texture = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 31
-			},
---]]
 			texture = {
 				type = "select",
 				dialogControl = "LSM30_Background",
@@ -304,6 +279,7 @@ local sharedOptions = {
 			color = {
 				type = "color",
 				name = "Color",
+				width = "half",
 				hasAlpha = true,
 				disabled = function(i) return not i.handler.db.background.show end,
 				get = function(i) return unpack(i.handler.db.background.color) end,
