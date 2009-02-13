@@ -100,14 +100,25 @@ function Auracle:OnInitialize()
 	AceConfigCmd = LibStub("AceConfigCmd-3.0")
 	AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 	LibDataBroker = LibStub("LibDataBroker-1.1")
---@alpha@
-	--LibUnitID = LibStub("LibUnitID-1.0-alpha",true)
---@end-alpha@
-	--LibUnitID = LibUnitID or LibStub("LibUnitID-1.0")
-	--LibButtonFacade = LibStub("LibButtonFacade",true) -- optional
 	-- initialize stored data
+--@debug@
+--[[
+DB_DEFAULT._testNum = { [1]="numeric", [2]="defaults" }
+DB_DEFAULT._testBool = { [false]="boolean", [true]="defaults" }
+--]]
+--@end-debug@
 --Auracle_DB = nil
 	self.db = AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
+--@debug@
+--[[
+print("numeric: "..tostring(self.db.profile._testNum[1])..","..tostring(self.db.profile._testNum[2]))
+print("boolean: "..tostring(self.db.profile._testBool[false])..","..tostring(self.db.profile._testBool[true]))
+self.db.profile._testNum[1] = "one"
+self.db.profile._testNum[2] = "two"
+self.db.profile._testBool[false] = "false"
+self.db.profile._testBool[true] = "true"
+--]]
+--@end-debug@
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
@@ -439,6 +450,7 @@ end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
 	if (dbProfile.version < 4) then
+		self:Print("Updating saved vars to version 4")
 		for _,wsdb in pairs(dbProfile.windowStyles) do
 			if (wsdb.background and wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
 				wsdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
@@ -521,8 +533,10 @@ function Auracle:ConvertDataStore(dbProfile)
 				end
 			end
 		end
+		dbProfile.version = 4
 	end
-	if (dbProfile.version < 5) then
+	if (dbProfile.version < 6) then
+		self:Print("Updating saved vars to version 6")
 		local fix
 		fix = function(db, def)
 			for key,val in pairs(def) do
@@ -539,9 +553,11 @@ function Auracle:ConvertDataStore(dbProfile)
 		end
 		fix(dbProfile.windowStyles.Default, DB_DEFAULT_WINDOWSTYLE)
 		fix(dbProfile.trackerStyles.Default, DB_DEFAULT_TRACKERSTYLE)
-		fix(dbProfile.windows[1], DB_DEFAULT_WINDOW)
+		for i = 1,#dbProfile.windows do
+			fix(dbProfile.windows[i], DB_DEFAULT_WINDOW)
+		end
+		dbProfile.version = 6
 	end
-	dbProfile.version = 5
 end -- ConvertDataStore()
 
 function Auracle:UpdateEventListeners()
