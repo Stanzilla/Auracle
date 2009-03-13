@@ -70,6 +70,9 @@ Auracle:__window(Window, DB_DEFAULT_WINDOW)
 
 local objectPool = {}
 
+local API_GetCurrentResolution = GetCurrentResolution
+local API_GetScreenResolutions = GetScreenResolutions
+
 
 --[[ UTILITY FUNCTIONS ]]--
 
@@ -358,7 +361,7 @@ function Window.prototype:UpdateBackdrop()
 			local sdb = self.style.db
 			if (backdrop.insets and sdb.background.noScale) then
 				local m = {}
-				for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+				for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
 					m[#m+1] = size
 				end
 				local inset = backdrop.insets.left * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
@@ -395,7 +398,7 @@ function Window.prototype:UpdateLayout()
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
 		local m = {}
-		for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+		for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
 		local factor = ((768 / self.effectiveScale) / m[2])
@@ -421,7 +424,7 @@ function Window.prototype:UpdateTrackerLayout(tn)
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
 		local m = {}
-		for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+		for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
 		local factor = ((768 / self.effectiveScale) / m[2])
@@ -456,7 +459,7 @@ function Window.prototype:SetTrackerPosition(tracker, x, y)
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
 		local m = {}
-		for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+		for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
 		local factor = ((768 / self.effectiveScale) / m[2])
@@ -532,6 +535,10 @@ function Window.prototype:AddTracker()
 	self:UpdateLayout()
 	self:UpdateUnitAuras()
 end -- AddTracker()
+
+function Window.prototype:AddPresetTracker()
+	-- TODO
+end -- AddPresetTracker()
 
 function Window.prototype:RemoveTracker(tracker)
 	local tpos,t
@@ -962,13 +969,377 @@ function Window.prototype:GetOptionsTable()
 				addTracker = {
 					type = "group",
 					name = "|cff7fffff(Add Tracker...)",
+					childGroups = "tab",
 					order = -1,
 					args = {
 						addTracker = {
 							type = "execute",
-							name = "Add Tracker",
-							func = "AddTracker"
+							name = "Add Blank Tracker",
+							func = "AddTracker",
+							order = 1
 						}
+--[[
+						,
+						buffType = {
+							type = "group",
+							name = "Buffs by Type",
+							order = 1,
+							args = {
+								stats = {
+									type = "group",
+									name = "Stats",
+									order = 10,
+									args = {
+										stats = {
+											type = "execute",
+											name = "+% Stats",
+											desc = "Blessing of Kings",
+											width = "full",
+											func = "", -- TODO
+											order = 100
+										},
+										mark = {
+											type = "execute",
+											name = "+ Stats/Armor/Resists",
+											desc = "Mark of the Wild, Gift of the Wild",
+											width = "full",
+											func = "", -- TODO
+											order = 101
+										},
+										agistr = {
+											type = "execute",
+											name = "+ Agility/Strength",
+											desc = "Strength of Earth, Horn of Winter",
+											width = "full",
+											func = "", -- TODO
+											order = 102
+										},
+										stam = {
+											type = "execute",
+											name = "+ Stamina",
+											desc = "Power Word: Fortitude, Prayer of Fortitude",
+											width = "full",
+											func = "", -- TODO
+											order = 103
+										},
+										health = {
+											type = "execute",
+											name = "+ Health",
+											desc = "Commanding Shout, Blood Pact",
+											width = "full",
+											func = "", -- TODO
+											order = 104
+										},
+										intellect = {
+											type = "execute",
+											name = "+ Intellect",
+											desc = "Arcane Intellect, Arcane Brilliance, Fel Intelligence",
+											width = "full",
+											func = "", -- TODO
+											order = 105
+										},
+										spirit = {
+											type = "execute",
+											name = "+ Spirit",
+											desc = "Divine Spirit, Prayer of Spirit, Fel Intelligence",
+											width = "full",
+											func = "", -- TODO
+											order = 106
+										},
+									}
+								},
+								general = {
+									type = "group",
+									name = "General",
+									order = 11,
+									args = {
+										dmg = {
+											type = "execute",
+											name = "+% Damage",
+											desc = "Ferocious Inspiration, (Sanctified) Retribution Aura",
+											width = "full",
+											func = "", -- TODO
+											order = 110
+										},
+										bighaste = {
+											type = "execute",
+											name = "++ Haste",
+											desc = "Bloodlust, Heroism",
+											width = "full",
+											func = "", -- TODO
+											order = 111
+										},
+										haste = {
+											type = "execute",
+											name = "+ Haste",
+											desc = "(Improved) Moonkin Aura, (Swift) Retribution Aura",
+											width = "full",
+											func = "", -- TODO
+											order = 112
+										}
+									}
+								},
+								physical = {
+									type = "group",
+									name = "Physical",
+									order = 12,
+									args = {
+										pctAP = {
+											type = "execute",
+											name = "+% Attack Power",
+											desc = "Abominable Might, Trueshot Aura, Unleashed Rage",
+											width = "full",
+											func = "", -- TODO
+											order = 120
+										},
+										AP = {
+											type = "execute",
+											name = "+ Attack Power",
+											desc = "Battle Shout, Blessing of Might, Furious Howl",
+											width = "full",
+											func = "", -- TODO
+											order = 121
+										},
+										meleeHaste = {
+											type = "execute",
+											name = "+ Melee Haste",
+											desc = "Improved Icy Talons, Windfury Totem",
+											width = "full",
+											func = "", -- TODO
+											order = 122
+										},
+										meleeCrit = {
+											type = "execute",
+											name = "+ Melee Crit",
+											desc = "Leader of the Pack, Rampage",
+											width = "full",
+											func = "", -- TODO
+											order = 123
+										},
+									}
+								},
+								caster = {
+									type = "group",
+									name = "Caster",
+									order = 13,
+									args = {
+										SP = {
+											type = "execute",
+											name = "+ Spell Power",
+											desc = "Focus Magic, (Improved) Divine Spirit, (Improved) Prayer of Spirit, Flametongue Totem, Totem of Wrath, Demonic Pact",
+											width = "full",
+											func = "", -- TODO
+											order = 130
+										},
+										spellHaste = {
+											type = "execute",
+											name = "+ Spell Haste",
+											desc = "Wrath of Air Totem",
+											width = "full",
+											func = "", -- TODO
+											order = 131
+										},
+										spellCrit = {
+											type = "execute",
+											name = "+ Spell Crit",
+											desc = "Moonkin Aura, Elemental Oath",
+											width = "full",
+											func = "", -- TODO
+											order = 132
+										},
+									}
+								},
+								tank = {
+									type = "group",
+									name = "Tank",
+									order = 14,
+									args = {
+										armor = {
+											type = "execute",
+											name = "+% Armor",
+											desc = "Inspiration, Ancestral Fortitude",
+											width = "full",
+											func = "", -- TODO
+											order = 140
+										},
+										dmgTaken = {
+											type = "execute",
+											name = "-% Damage Taken",
+											desc = "Grace, Blessing of Sanctuary, Greater Blessing of Sanctuary, Divine Protection, Barkskin",
+											width = "full",
+											func = "", -- TODO
+											order = 141
+										},
+									}
+								},
+								
+							}
+						},
+						debuffType = {
+							type = "group",
+							name = "Debuffs by Type",
+							order = 3,
+							args = {
+								dps = {
+									type = "group",
+									name = "DPS",
+									order = 30,
+									args = {
+										disarm = {
+											type = "execute",
+											name = "Disarm",
+											desc = "Disarm, Dismantle, Chimera Shot - Scorpid, Snatch", -- Psychic Horror
+											width = "full",
+											func = "", -- TODO
+											order = 300
+										},
+										AP = {
+											type = "execute",
+											name = "- AP",
+											desc = "Demoralizing Shout, Demoralizing Roar, Demoralizing Screech, Curse of Weakness",
+											width = "full",
+											func = "", -- TODO
+											order = 301
+										},
+										meleeHaste = {
+											type = "execute",
+											name = "- Melee Haste",
+											desc = "Frost Fever, Infected Wounds, Thunder Clap, Waylay, Riposte", -- (Judgements of the Just)Judgement of *
+											width = "full",
+											func = "", -- TODO
+											order = 302
+										},
+										meleeRangedHit = {
+											type = "execute",
+											name = "- Melee/Ranged Hit",
+											desc = "Insect Swarm, Scorpid Sting",
+											width = "full",
+											func = "", -- TODO
+											order = 303
+										},
+										rangedHaste = {
+											type = "execute",
+											name = "- Ranged Haste",
+											desc = "Slow, Waylay",
+											width = "full",
+											func = "", -- TODO
+											order = 304
+										},
+										spellHaste = {
+											type = "execute",
+											name = "- Spell Haste",
+											desc = "Curse of Tongues, Slow, Mind-numbing Poison, Lava Breath",
+											width = "full",
+											func = "", -- TODO
+											order = 305
+										},
+									}
+								},
+								physicalTank = {
+									type = "group",
+									name = "Physical Tank",
+									order = 31,
+									args = {
+										bigArmor = {
+											type = "execute",
+											name = "-- Armor",
+											desc = "Acid Spit, Expose Armor, Sunder Armor",
+											width = "full",
+											func = "", -- TODO
+											order = 310
+										},
+										armor = {
+											type = "execute",
+											name = "- Armor",
+											desc = "Faerie Fire, Faerie Fire (Feral), Sting, Curse of Recklessness",
+											width = "full",
+											func = "", -- TODO
+											order = 311
+										},
+										physicalDmgTaken = {
+											type = "execute",
+											name = "+% Physical Damage Taken",
+											desc = "Blood Frenzy, Blood Poisoning",
+											width = "full",
+											func = "", -- TODO
+											order = 312
+										},
+										bleedDmgTaken = {
+											type = "execute",
+											name = "+% Bleed Damage Taken",
+											desc = "Mangle - Bear, Mangle - Cat, Trauma",
+											width = "full",
+											func = "", -- TODO
+											order = 313
+										},
+										critTaken = {
+											type = "execute",
+											name = "+ Crit Taken",
+											desc = "Heart of the Crusader, Totem of Wrath", -- Master Poisoner
+											width = "full",
+											func = "", -- TODO
+											order = 314
+										},
+									}
+								},
+								casterTank = {
+									type = "group",
+									name = "Caster Tank",
+									order = 32,
+									args = {
+										resists = {
+											type = "execute",
+											name = "- Resists",
+											desc = "Curse of the Elements",
+											width = "full",
+											func = "", -- TODO
+											order = 320
+										},
+										spellDmgTaken = {
+											type = "execute",
+											name = "+% Spell Damage Taken",
+											desc = "Ebon Plague, Earth and Moon, Curse of the Elements",
+											width = "full",
+											func = "", -- TODO
+											order = 321
+										},
+										diseaseDmgTaken = {
+											type = "execute",
+											name = "+% Disease Damage Taken",
+											desc = "Crypt Fever, Ebon Plague",
+											width = "full",
+											func = "", -- TODO
+											order = 322
+										},
+										spellHitTaken = {
+											type = "execute",
+											name = "+ Spell Hit Taken",
+											desc = "(Improved) Faerie Fire, Misery",
+											width = "full",
+											func = "", -- TODO
+											order = 323
+										},
+										critTaken = {
+											type = "execute",
+											name = "+ Crit Taken",
+											desc = "Heart of the Crusader, Totem of Wrath",
+											width = "full",
+											func = "", -- TODO
+											order = 324
+										},
+										spellCritTaken = {
+											type = "execute",
+											name = "+ Spell Crit Taken",
+											desc = "Improved Scorch, Winter's Chill",
+											width = "full",
+											func = "", -- TODO
+											order = 325
+										},
+									}
+								}
+							}
+						}
+--]]
 					}
 				}
 			}
