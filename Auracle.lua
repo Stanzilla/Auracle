@@ -65,6 +65,18 @@ local optionsTable = { type="group", handler=Auracle, childGroups="tab", args={}
 local blizOptionsTable = { type="group", handler=Auracle, args={} }
 local blizOptionsFrame
 
+local API_GetTime = GetTime
+local API_GetNumRaidMembers = GetNumRaidMembers
+local API_GetNumPartyMembers = GetNumPartyMembers
+local API_InCombatLockdown = InCombatLockdown
+local API_IsInInstance = IsInInstance
+local API_UnitAura = UnitAura
+local API_UnitClassification = UnitClassification
+local API_UnitExists = UnitExists
+local API_UnitIsEnemy = UnitIsEnemy
+local API_UnitIsFriend = UnitIsFriend
+local API_UnitPlayerControlled = UnitPlayerControlled
+
 
 --[[ UTILITY FUNCTIONS ]]--
 
@@ -101,24 +113,8 @@ function Auracle:OnInitialize()
 	AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 	LibDataBroker = LibStub("LibDataBroker-1.1")
 	-- initialize stored data
---@debug@
---[[
-DB_DEFAULT._testNum = { [1]="numeric", [2]="defaults" }
-DB_DEFAULT._testBool = { [false]="boolean", [true]="defaults" }
---]]
---@end-debug@
 --Auracle_DB = nil
 	self.db = AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
---@debug@
---[[
-print("numeric: "..tostring(self.db.profile._testNum[1])..","..tostring(self.db.profile._testNum[2]))
-print("boolean: "..tostring(self.db.profile._testBool[false])..","..tostring(self.db.profile._testBool[true]))
-self.db.profile._testNum[1] = "one"
-self.db.profile._testNum[2] = "two"
-self.db.profile._testBool[false] = "false"
-self.db.profile._testBool[true] = "true"
---]]
---@end-debug@
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
@@ -216,9 +212,9 @@ end -- UNIT_PET()
 function Auracle:PARTY_MEMBERS_CHANGED()
 	-- determine player's group status
 	self.plrGroup = "solo"
-	if (GetNumRaidMembers() > 0) then -- includes player
+	if (API_GetNumRaidMembers() > 0) then -- includes player
 		self.plrGroup = "raid"
-	elseif (GetNumPartyMembers() > 0) then -- excludes player
+	elseif (API_GetNumPartyMembers() > 0) then -- excludes player
 		self.plrGroup = "party"
 	end
 	-- update windows
@@ -250,7 +246,7 @@ function Auracle:PLAYER_REGEN_ENABLED()
 end -- PLAYER_REGEN_ENABLED()
 
 function Auracle:PLAYER_ENTERING_WORLD()
-	local _,inst = IsInInstance()
+	local _,inst = API_IsInInstance()
 	if (inst ~= self.plrInstance) then
 		self.plrInstance = inst
 		-- update windows
@@ -276,15 +272,15 @@ end -- Bucket_UNIT_AURA()
 
 function Auracle:UpdateUnitIdentity(unit)
 	local ipairs = ipairs
-	if (UnitExists(unit)) then
+	if (API_UnitExists(unit)) then
 		local tgtType,tgtReact = "pc","neutral"
 		-- check unit type and reaction
-		if (not UnitPlayerControlled(unit)) then
-			tgtType = UnitClassification(unit)
+		if (not API_UnitPlayerControlled(unit)) then
+			tgtType = API_UnitClassification(unit)
 		end
-		if (UnitIsEnemy("player",unit)) then
+		if (API_UnitIsEnemy("player",unit)) then
 			tgtReact = "hostile"
-		elseif (UnitIsFriend("player",unit)) then
+		elseif (API_UnitIsFriend("player",unit)) then
 			tgtReact = "friendly"
 		end
 		-- update window visibility
@@ -309,11 +305,13 @@ function Auracle:UpdateUnitIdentity(unit)
 	end
 end -- UpdateUnitIdentity()
 
+local toc30100 = (select(4,GetBuildInfo()) == 30100)
+
 function Auracle:UpdateUnitAuras(unit)
 	local ipairs = ipairs
-	local now = GetTime()
-	local index, totalBuffs, totalDebuffs
-	local name, rank, icon, count, atype, duration, expires, origin, stealable
+	local now = API_GetTime()
+	local index, totalBuffs, totalDebuffs, origin
+	local name, rank, icon, count, atype, duration, expires, caster, stealable
 	-- reset window states
 	for _,window in ipairs(self.windows) do
 		if (window.db.unit == unit) then
@@ -322,8 +320,9 @@ function Auracle:UpdateUnitAuras(unit)
 	end
 	-- parse buffs
 	index = 1
-	name,rank,icon,count,atype,duration,expires,origin,stealable = UnitAura(unit, index, "HELPFUL")
-	origin = (origin and "mine") or "others"
+	name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
+	if not toc30100 then caster = (caster and "player") or "others" end
+	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	while (name) do
 		for _,window in ipairs(self.windows) do
 			if (window.db.unit == unit) then
@@ -331,14 +330,16 @@ function Auracle:UpdateUnitAuras(unit)
 			end
 		end
 		index = index + 1
-		name,rank,icon,count,atype,duration,expires,origin,stealable = UnitAura(unit, index, "HELPFUL")
-		origin = (origin and "mine") or "others"
+		name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
+		if not toc30100 then caster = (caster and "player") or "others" end
+		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalBuffs = index - 1
 	-- parse debuffs
 	index = 1
-	name,rank,icon,count,atype,duration,expires,origin,stealable = UnitAura(unit, index, "HARMFUL")
-	origin = (origin and "mine") or "others"
+	name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
+	if not toc30100 then caster = (caster and "player") or "others" end
+	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	while (name) do
 		for _,window in ipairs(self.windows) do
 			if (window.db.unit == unit) then
@@ -346,8 +347,9 @@ function Auracle:UpdateUnitAuras(unit)
 			end
 		end
 		index = index + 1
-		name,rank,icon,count,atype,duration,expires,origin,stealable = UnitAura(unit, index, "HARMFUL")
-		origin = (origin and "mine") or "others"
+		name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
+		if not toc30100 then caster = (caster and "player") or "others" end
+		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalDebuffs = index - 1
 	-- update windows
@@ -358,20 +360,19 @@ function Auracle:UpdateUnitAuras(unit)
 	end
 end -- UpdateUnitAuras()
 
-
 --[[ SITUATION UPDATE METHODS ]]--
 
 function Auracle:UpdatePlayerStatus()
 	-- determine player's group and combat status
 	local _
-	_,self.plrInstance = IsInInstance()
+	_,self.plrInstance = API_IsInInstance()
 	self.plrGroup = "solo"
-	if (GetNumRaidMembers() > 0) then -- includes player
+	if (API_GetNumRaidMembers() > 0) then -- includes player
 		self.plrGroup = "raid"
-	elseif (GetNumPartyMembers() > 0) then -- excludes player
+	elseif (API_GetNumPartyMembers() > 0) then -- excludes player
 		self.plrGroup = "party"
 	end
-	self.plrCombat = (InCombatLockdown() and true) or false
+	self.plrCombat = (API_InCombatLockdown() and true) or false
 	-- update windows
 	for _,window in ipairs(self.windows) do
 		window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)
@@ -458,7 +459,7 @@ function Auracle:ConvertDataStore(dbProfile)
 		end
 		for _,wdb in pairs(dbProfile.windows) do
 			-- visibility.plrInstance{}
-			if (type(wdb.visibility.plrInstance) ~= "table") then
+			if (wdb.visibility and type(wdb.visibility.plrInstance) ~= "table") then
 				wdb.visibility.plrInstance = cloneTable(DB_DEFAULT_WINDOW.visibility.plrInstance, true)
 			end
 			for _,tdb in pairs(wdb.trackers) do

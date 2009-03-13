@@ -52,8 +52,12 @@ local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, i
 
 Auracle:__tracker(Tracker, DB_DEFAULT_TRACKER)
 
-local ceil,GetTime,max,min,tostring = ceil,GetTime,max,min,tostring
+local ceil,max,min,tostring = ceil,max,min,tostring
 local objectPool = {}
+
+local API_GetCurrentResolution = GetCurrentResolution
+local API_GetScreenResolutions = GetScreenResolutions
+local API_GetTime = GetTime
 
 
 --[[ UTILITY FUNCTIONS ]]--
@@ -114,7 +118,7 @@ local function Frame_OnEnter(self)
 			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
 			tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, ((tracker.db.auratype == "buff") and "HELPFUL") or "HARMFUL")
 		elseif (mode == "summary") then
-			local now,timeleft = GetTime(),nil
+			local now,timeleft = API_GetTime(),nil
 			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
 			tt:ClearLines()
 			tt:AddLine(tracker.db.label or tracker.db.auras[1] or "New Tracker", 1, 1, 0)
@@ -146,7 +150,7 @@ local function Frame_OnLeave(self)
 end -- Frame_OnLeave()
 
 local function Cooldown_OnUpdate_Stacks(self, elapsed)
-	self:SetCooldown(GetTime() - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.spiral.maxStacks)
+	self:SetCooldown(API_GetTime() - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.spiral.maxStacks)
 end -- Cooldown_OnUpdate_Stacks()
 
 local function TrackerOverlay_OnUpdate(self, elapsed)
@@ -503,7 +507,7 @@ function Tracker.prototype:UpdateBackdrop()
 			local borderSize = sdb[S_SIZE[self.auraOrigin]]
 			if (sdb.noScale) then
 				local m = {}
-				for size in string.gmatch(select(GetCurrentResolution(), GetScreenResolutions()), "[0-9]+") do
+				for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
 					m[#m+1] = size
 				end
 				borderSize = borderSize * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
@@ -740,7 +744,7 @@ local sharedOptions = {
 			},
 			showOthers = {
 				type = "toggle",
-				name = "Tracker Other's",
+				name = "Track Other's",
 				get = function(i) return i.handler.db.showOthers end,
 				set = function(i,v)
 					i.handler.db.showOthers = v
