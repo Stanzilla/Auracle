@@ -1,4 +1,4 @@
-## Interface: 30100
+## Interface: 30200
 ## Title: Auracle
 ## Version: 0.3
 ## Notes: Compact, customizable filtering and monitoring of buffs and debuffs

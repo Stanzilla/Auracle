@@ -305,8 +305,6 @@ function Auracle:UpdateUnitIdentity(unit)
 	end
 end -- UpdateUnitIdentity()
 
---local toc30100 = (select(4,GetBuildInfo()) == 30100)
-
 function Auracle:UpdateUnitAuras(unit)
 	local ipairs = ipairs
 	local now = API_GetTime()
@@ -321,7 +319,6 @@ function Auracle:UpdateUnitAuras(unit)
 	-- parse buffs
 	index = 1
 	name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
-	--if not toc30100 then caster = (caster and "player") or "others" end
 	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	while (name) do
 		for _,window in ipairs(self.windows) do
@@ -331,14 +328,12 @@ function Auracle:UpdateUnitAuras(unit)
 		end
 		index = index + 1
 		name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
-		--if not toc30100 then caster = (caster and "player") or "others" end
 		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalBuffs = index - 1
 	-- parse debuffs
 	index = 1
 	name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
-	--if not toc30100 then caster = (caster and "player") or "others" end
 	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	while (name) do
 		for _,window in ipairs(self.windows) do
@@ -348,7 +343,6 @@ function Auracle:UpdateUnitAuras(unit)
 		end
 		index = index + 1
 		name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
-		--if not toc30100 then caster = (caster and "player") or "others" end
 		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalDebuffs = index - 1
@@ -972,4 +966,16 @@ function Auracle:UpdateBlizOptions()
 	end
 	AceConfigRegistry:NotifyChange("Auracle Blizzard Setup")
 end -- UpdateBlizOptions()
+
+
+--[[ CROSS-INIT ]]--
+
+CONFIGMODE_CALLBACKS = CONFIGMODE_CALLBACKS or {}
+function CONFIGMODE_CALLBACKS.Auracle(action)
+	if (action == 'ON') then
+		Auracle:UnlockWindows()
+	elseif (action == 'OFF') then
+		Auracle:LockWindows()
+	end
+end
 
