@@ -12,6 +12,10 @@ local DB_DEFAULT_WINDOW = {
 	style = "Default",
 	unit = "target", -- player|target|targettarget|pet|pettarget|focus|focustarget
 	visibility = {
+		plrSpec = {
+			[1] = true,
+			[2] = true
+		},
 		plrInstance = {
 			none = true,
 			pvp = true, -- bg
@@ -27,6 +31,9 @@ local DB_DEFAULT_WINDOW = {
 		plrCombat = {
 			[false] = true,
 			[true] = true
+		},
+		plrStance = {
+			Humanoid = false -- backwards logic, so new stances default to visible
 		},
 		tgtMissing = true,
 		tgtReact = {
@@ -71,7 +78,9 @@ Auracle:__window(Window, DB_DEFAULT_WINDOW)
 local objectPool = {}
 
 local API_GetCurrentResolution = GetCurrentResolution
+local API_GetNumShapeshiftForms = GetNumShapeshiftForms
 local API_GetScreenResolutions = GetScreenResolutions
+local API_GetShapeshiftFormInfo = GetShapeshiftFormInfo
 
 
 --[[ UTILITY FUNCTIONS ]]--
@@ -142,9 +151,11 @@ function Window:New(db)
 	window.locked = true
 	window.moving = false
 	window.effectiveScale = 1.0
+	window.plrSpec = 1
 	window.plrInstance = "none"
 	window.plrGroup = "solo"
 	window.plrCombat = false
+	window.plrStance = "Humanoid"
 	window.tgtExists = false
 	window.tgtType = "pc"
 	window.tgtReact = "neutral"
@@ -183,9 +194,11 @@ function Window.prototype:Destroy()
 	self.locked = nil
 	self.moving = nil
 	self.effectiveScale = nil
+	self.plrSpec = nil
 	self.plrInstance = nil
 	self.plrGroup = nil
 	self.plrCombat = nil
+	self.plrStance = nil
 	self.tgtExists = nil
 	self.tgtType = nil
 	self.tgtReact = nil
@@ -309,10 +322,12 @@ end -- EndAuraUpdate()
 
 --[[ SITUATION UPDATE METHODS ]]--
 
-function Window.prototype:SetPlayerStatus(plrInstance, plrGroup, plrCombat)
+function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCombat, plrStance)
+	self.plrSpec = plrSpec
 	self.plrInstance = plrInstance
 	self.plrGroup = plrGroup
 	self.plrCombat = plrCombat
+	self.plrStance = plrStance
 	return self:UpdateVisibility()
 end -- SetPlayerStatus()
 
@@ -331,10 +346,21 @@ function Window.prototype:UpdateVisibility()
 	local nowVis = (
 		not (self.locked and self.trackersLocked)
 		or (
-			(dbvis.plrInstance[self.plrInstance] and dbvis.plrGroup[self.plrGroup] and dbvis.plrCombat[self.plrCombat])
+			dbvis.plrSpec[self.plrSpec]
+			and dbvis.plrInstance[self.plrInstance]
+			and dbvis.plrGroup[self.plrGroup]
+			and dbvis.plrCombat[self.plrCombat]
+			and not dbvis.plrStance[self.plrStance] -- backwards logic, so new stances default to visible
 			and (
-				(self.tgtExists and dbvis.tgtType[self.tgtType] and dbvis.tgtReact[self.tgtReact])
-				or (not self.tgtExists and dbvis.tgtMissing)
+				(
+					self.tgtExists
+					and dbvis.tgtType[self.tgtType]
+					and dbvis.tgtReact[self.tgtReact]
+				)
+				or (
+					not self.tgtExists
+					and dbvis.tgtMissing
+				)
 			)
 		)
 	)
@@ -536,9 +562,10 @@ function Window.prototype:AddTracker()
 	self:UpdateUnitAuras()
 end -- AddTracker()
 
+--[[ TODO
 function Window.prototype:AddPresetTracker()
-	-- TODO
 end -- AddPresetTracker()
+--]]
 
 function Window.prototype:RemoveTracker(tracker)
 	local tpos,t
@@ -601,13 +628,13 @@ local sharedOptions = {
 						i.handler.db.label = v
 						Auracle:UpdateConfig()
 					end,
-					order = 10
+					order = 1
 				},
 				removeWindow = {
 					type = "execute",
 					name = "Remove Window",
 					func = "Remove",
-					order = 11
+					order = 2
 				},
 				unit = {
 					type = "select",
@@ -628,7 +655,7 @@ local sharedOptions = {
 						if (not i.handler.db.label) then Auracle:UpdateConfig() end
 						Auracle:UpdateUnitIdentity(v)
 					end,
-					order = 12
+					order = 3
 				},
 				style = {
 					type = "select",
@@ -643,7 +670,7 @@ local sharedOptions = {
 							style:Apply(i.handler)
 						end
 					end,
-					order = 13
+					order = 4
 				}
 			}
 		},
@@ -653,11 +680,41 @@ local sharedOptions = {
 			inline = false,
 			order = 2,
 			args = {
+				plrSpec = {
+					type = "group",
+					name = "Show when player is using...",
+					inline = true,
+					order = 1,
+					args = {
+						primary = {
+							type = "toggle",
+							name = "Primary Talents",
+							get = function(i) return i.handler.db.visibility.plrSpec[1] end,
+							set = function(i,v)
+								i.handler.db.visibility.plrSpec[1] = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus(i.handler)
+							end,
+							order = 1
+						},
+						secondary = {
+							type = "toggle",
+							name = "Secondary Talents",
+							get = function(i) return i.handler.db.visibility.plrSpec[2] end,
+							set = function(i,v)
+								i.handler.db.visibility.plrSpec[2] = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus(i.handler)
+							end,
+							order = 2
+						}
+					}
+				},
 				plrInstance = {
 					type = "group",
 					name = "Show when player is in...",
 					inline = true,
-					order = 20,
+					order = 2,
 					args = {
 						none = {
 							type = "toggle",
@@ -667,9 +724,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.none = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 200
+							order = 1
 						},
 						pvp = {
 							type = "toggle",
@@ -678,9 +735,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.pvp = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 201
+							order = 2
 						},
 						arena = {
 							type = "toggle",
@@ -689,9 +746,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.arena = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 202
+							order = 3
 						},
 						party = {
 							type = "toggle",
@@ -700,9 +757,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.party = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 203
+							order = 4
 						},
 						raid = {
 							type = "toggle",
@@ -711,9 +768,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.raid = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 204
+							order = 5
 						}
 					}
 				},
@@ -721,7 +778,7 @@ local sharedOptions = {
 					type = "group",
 					name = "Show when player is...",
 					inline = true,
-					order = 21,
+					order = 3,
 					args = {
 						solo = {
 							type = "toggle",
@@ -731,9 +788,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.solo = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 210
+							order = 1
 						},
 						party = {
 							type = "toggle",
@@ -742,9 +799,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.party = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 211
+							order = 2
 						},
 						raid = {
 							type = "toggle",
@@ -753,9 +810,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.raid = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 212
+							order = 3
 						}
 					}
 				},
@@ -763,7 +820,7 @@ local sharedOptions = {
 					type = "group",
 					name = "Show when player is...",
 					inline = true,
-					order = 22,
+					order = 4,
 					args = {
 						no = {
 							type = "toggle",
@@ -772,9 +829,9 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[false] = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 220
+							order = 1
 						},
 						yes = {
 							type = "toggle",
@@ -783,11 +840,18 @@ local sharedOptions = {
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[true] = v
 								Auracle:UpdateEventListeners()
-								Auracle:UpdatePlayerStatus()
+								Auracle:UpdatePlayerStatus(i.handler)
 							end,
-							order = 221
+							order = 2
 						}
 					}
+				},
+				plrStance = {
+					type = "group",
+					name = "Show when player is...",
+					inline = true,
+					order = 5,
+					args = {} -- populated in UpdateStanceOptions()
 				},
 				tgtMissing = {
 					type = "toggle",
@@ -798,13 +862,13 @@ local sharedOptions = {
 						i.handler.db.visibility.tgtMissing = v
 						i.handler:UpdateVisibility()
 					end,
-					order = 23
+					order = 6
 				},
 				tgtReact = {
 					type = "group",
 					name = "Show when unit is...",
 					inline = true,
-					order = 24,
+					order = 7,
 					args = {
 						hostile = {
 							type = "toggle",
@@ -814,7 +878,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtReact.hostile = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 240
+							order = 1
 						},
 						neutral = {
 							type = "toggle",
@@ -824,7 +888,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtReact.neutral = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 241
+							order = 2
 						},
 						friendly = {
 							type = "toggle",
@@ -834,7 +898,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtReact.friendly = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 242
+							order = 3
 						}
 					}
 				},
@@ -842,7 +906,7 @@ local sharedOptions = {
 					type = "group",
 					name = "Show when unit is a(n)...",
 					inline = true,
-					order = 25,
+					order = 8,
 					args = {
 						pc = {
 							type = "toggle",
@@ -853,7 +917,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.pc = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 250
+							order = 1
 						},
 						worldboss = {
 							type = "toggle",
@@ -863,7 +927,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.worldboss = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 251
+							order = 2
 						},
 						rareelite = {
 							type = "toggle",
@@ -873,7 +937,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.rareelite = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 252
+							order = 3
 						},
 						elite = {
 							type = "toggle",
@@ -883,7 +947,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.elite = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 253
+							order = 4
 						},
 						rare = {
 							type = "toggle",
@@ -893,7 +957,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.rare = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 254
+							order = 5
 						},
 						normal = {
 							type = "toggle",
@@ -903,7 +967,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.normal = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 255
+							order = 6
 						},
 						trivial = {
 							type = "toggle",
@@ -913,7 +977,7 @@ local sharedOptions = {
 								i.handler.db.visibility.tgtType.trivial = v
 								i.handler:UpdateVisibility()
 							end,
-							order = 256
+							order = 7
 						}
 					}
 				}
@@ -937,7 +1001,7 @@ local sharedOptions = {
 							i.handler:UnlockTrackers()
 						end
 					end,
-					order = 30
+					order = 1
 				},
 				wrap = {
 					type = "range",
@@ -950,15 +1014,47 @@ local sharedOptions = {
 						i.handler.db.layout.wrap = v
 						i.handler:UpdateLayout()
 					end,
-					order = 31
+					order = 2
 				}
 			}
 		}
 	}
-}
+} -- {sharedOptions}
 
 
 --[[ MENU METHODS ]]--
+
+local sharedOptions_plrStance_get = function(i)
+	return not i.handler.db.visibility.plrStance[i[#i]] -- backwards logic, so new stances default to visible
+end
+
+local sharedOptions_plrStance_set = function(i,v)
+	i.handler.db.visibility.plrStance[i[#i]] = not v -- backwards logic, so new stances default to visible
+	Auracle:UpdateEventListeners()
+	Auracle:UpdatePlayerStatus(i.handler)
+end
+
+function Window:UpdateStanceOptions()
+	-- get list of available stances
+	local _
+	local stances = { [0] = "Humanoid" }
+	local numStances = API_GetNumShapeshiftForms()
+	for s = 1,numStances do
+		_,stances[s],_,_ = API_GetShapeshiftFormInfo(s)
+	end
+	-- generate toggles for each
+	local pSa = sharedOptions.args.visibility.args.plrStance.args
+	wipe(pSa)
+	for s = 0,numStances do
+		pSa[stances[s]] = {
+			type = "toggle",
+			name = stances[s],
+			get = sharedOptions_plrStance_get,
+			set = sharedOptions_plrStance_set,
+			order = s + 1
+		}
+	end
+end -- UpdateStanceOptions()
 
 function Window.prototype:GetOptionsTable()
 	if (not self.optionsTable) then
