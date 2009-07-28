@@ -9,8 +9,11 @@ local AceConfigDialog
 local AceConfigCmd
 local AceConfigRegistry
 local LibDataBroker
+--TODO: local LibDualSpec
 --local LibUnitID
+--local LibUnitAura
 --local LibButtonFacade
+
 
 --[[ CONSTANTS ]]--
 
@@ -65,9 +68,12 @@ local optionsTable = { type="group", handler=Auracle, childGroups="tab", args={}
 local blizOptionsTable = { type="group", handler=Auracle, args={} }
 local blizOptionsFrame
 
-local API_GetTime = GetTime
-local API_GetNumRaidMembers = GetNumRaidMembers
+local API_GetActiveTalentGroup = GetActiveTalentGroup
 local API_GetNumPartyMembers = GetNumPartyMembers
+local API_GetNumRaidMembers = GetNumRaidMembers
+local API_GetShapeshiftForm = GetShapeshiftForm
+local API_GetShapeshiftFormInfo = GetShapeshiftFormInfo
+local API_GetTime = GetTime
 local API_InCombatLockdown = InCombatLockdown
 local API_IsInInstance = IsInInstance
 local API_UnitAura = UnitAura
@@ -112,9 +118,10 @@ function Auracle:OnInitialize()
 	AceConfigCmd = LibStub("AceConfigCmd-3.0")
 	AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 	LibDataBroker = LibStub("LibDataBroker-1.1")
+	--TODO: LibDualSpec = LibStub("LibDualSpec-1.0")
 	-- initialize stored data
---Auracle_DB = nil
 	self.db = AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
+	--TODO: LibDualSpec:EnhanceDatabase(self.db, "Auracle")
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
@@ -159,6 +166,7 @@ end -- OnInitialize()
 
 function Auracle:OnEnable()
 	self:Startup()
+	Window:UpdateStanceOptions()
 	self:UpdateConfig()
 end -- OnEnable()
 
@@ -172,6 +180,7 @@ function Auracle:OnProfileChanged()
 	if (self:IsEnabled()) then
 		self:Shutdown()
 		self:Startup()
+		Window:UpdateStanceOptions()
 		self:UpdateConfig()
 	end
 end -- OnProfileChanged()
@@ -179,12 +188,56 @@ end -- OnProfileChanged()
 
 --[[ WoW EVENT HANDLERS ]]--
 
+function Auracle:ACTIVE_TALENT_GROUP_CHANGED()
+	self.plrSpec = API_GetActiveTalentGroup()
+	self:DispatchPlayerStatus()
+end -- ACTIVE_TALENT_GROUP_CHANGED()
+
+function Auracle:PARTY_MEMBERS_CHANGED()
+	if (API_GetNumRaidMembers() > 0) then -- includes player
+		self.plrGroup = "raid"
+	elseif (API_GetNumPartyMembers() > 0) then -- excludes player
+		self.plrGroup = "party"
+	else
+		self.plrGroup = "solo"
+	end
+	self:DispatchPlayerStatus()
+end -- PARTY_MEMBERS_CHANGED()
+
+function Auracle:PLAYER_ENTERING_WORLD()
+	local _
+	_,self.plrInstance = API_IsInInstance()
+	self:DispatchPlayerStatus()
+end -- PLAYER_ENTERING_WORLD()
+
+function Auracle:PLAYER_FOCUS_CHANGED()
+	self:UpdateUnitIdentity("focus")
+	self:UpdateUnitIdentity("focustarget")
+end -- PLAYER_FOCUS_CHANGED()
+
+function Auracle:PLAYER_REGEN_DISABLED()
+	self.plrCombat = true
+	self:DispatchPlayerStatus()
+end -- PLAYER_REGEN_DISABLED()
+
+function Auracle:PLAYER_REGEN_ENABLED()
+	self.plrCombat = false
+	self:DispatchPlayerStatus()
+end -- PLAYER_REGEN_ENABLED()
+
 function Auracle:PLAYER_TARGET_CHANGED()
 	self:UpdateUnitIdentity("target")
 	self:UpdateUnitIdentity("targettarget")
 end -- PLAYER_TARGET_CHANGED()
 
-function Auracle:UNIT_TARGET()
+function Auracle:UNIT_PET(event, unit)
+	if (unit == "player") then
+		self:UpdateUnitIdentity("pet")
+		self:UpdateUnitIdentity("pettarget")
+	end
+end -- UNIT_PET()
+
+function Auracle:UNIT_TARGET(event, unit)
 	if (unit == "player") then
 		self:UpdateUnitIdentity("target")
 		self:UpdateUnitIdentity("targettarget")
@@ -197,66 +250,20 @@ function Auracle:UNIT_TARGET()
 	end
 end -- UNIT_TARGET()
 
-function Auracle:PLAYER_FOCUS_CHANGED()
-	self:UpdateUnitIdentity("focus")
-	self:UpdateUnitIdentity("focustarget")
-end -- PLAYER_FOCUS_CHANGED()
+function Auracle:UPDATE_SHAPESHIFT_FORM()
+	local form,_ = API_GetShapeshiftForm()
+	if (form < 1) then
+		self.plrStance = "Humanoid"
+	else
+		_,self.plrStance,_,_ = API_GetShapeshiftFormInfo(form)
+	end
+	self:DispatchPlayerStatus()
+end -- UPDATE_SHAPESHIFT_FORM()
 
-function Auracle:UNIT_PET(event, unit)
-	if (unit == "player") then
-		self:UpdateUnitIdentity("pet")
-		self:UpdateUnitIdentity("pettarget")
-	end
-end -- UNIT_PET()
-
-function Auracle:PARTY_MEMBERS_CHANGED()
-	-- determine player's group status
-	self.plrGroup = "solo"
-	if (API_GetNumRaidMembers() > 0) then -- includes player
-		self.plrGroup = "raid"
-	elseif (API_GetNumPartyMembers() > 0) then -- excludes player
-		self.plrGroup = "party"
-	end
-	-- update windows
-	for _,window in ipairs(self.windows) do
-		if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
-			self:UpdateUnitAuras(window.db.unit)
-		end
-	end
-end -- PARTY_MEMBERS_CHANGED()
-
-function Auracle:PLAYER_REGEN_DISABLED()
-	self.plrCombat = true
-	-- update windows
-	for _,window in ipairs(self.windows) do
-		if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
-			self:UpdateUnitAuras(window.db.unit)
-		end
-	end
-end -- PLAYER_REGEN_DISABLED()
-
-function Auracle:PLAYER_REGEN_ENABLED()
-	self.plrCombat = false
-	-- update windows
-	for _,window in ipairs(self.windows) do
-		if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
-			self:UpdateUnitAuras(window.db.unit)
-		end
-	end
-end -- PLAYER_REGEN_ENABLED()
-
-function Auracle:PLAYER_ENTERING_WORLD()
-	local _,inst = API_IsInInstance()
-	if (inst ~= self.plrInstance) then
-		self.plrInstance = inst
-		-- update windows
-		for _,window in ipairs(self.windows) do
-			if (window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)) then
-				self:UpdateUnitAuras(window.db.unit)
-			end
-		end
-	end
-end -- PLAYER_ENTERING_WORLD()
+function Auracle:UPDATE_SHAPESHIFT_FORMS()
+	Window:UpdateStanceOptions()
+	self:UpdateConfig()
+end -- UPDATE_SHAPESHIFT_FORMS()
 
 
 --[[ AceBucket EVENT HANDLERS ]]--
@@ -354,24 +361,49 @@ function Auracle:UpdateUnitAuras(unit)
 	end
 end -- UpdateUnitAuras()
 
+
 --[[ SITUATION UPDATE METHODS ]]--
 
-function Auracle:UpdatePlayerStatus()
-	-- determine player's group and combat status
-	local _
+function Auracle:UpdatePlayerStatus(window)
+	-- determine player's spec, instance, group, combat and stance status
+	self.plrSpec = API_GetActiveTalentGroup()
 	_,self.plrInstance = API_IsInInstance()
-	self.plrGroup = "solo"
 	if (API_GetNumRaidMembers() > 0) then -- includes player
 		self.plrGroup = "raid"
 	elseif (API_GetNumPartyMembers() > 0) then -- excludes player
 		self.plrGroup = "party"
+	else
+		self.plrGroup = "solo"
 	end
 	self.plrCombat = (API_InCombatLockdown() and true) or false
-	-- update windows
-	for _,window in ipairs(self.windows) do
-		window:SetPlayerStatus(self.plrInstance, self.plrGroup, self.plrCombat)
+	local form,_ = API_GetShapeshiftForm()
+	if (form < 1) then
+		self.plrStance = "Humanoid"
+	else
+		_,self.plrStance,_,_ = API_GetShapeshiftFormInfo(form)
 	end
+	-- update windows
+	self:DispatchPlayerStatus(window)
 end -- UpdatePlayerStatus()
+
+function Auracle:DispatchPlayerStatus(window)
+	local ipairs,pairs = ipairs,pairs
+	-- update windows and flag units of windows that appear
+	local units = {}
+	if (window) then
+		units[window.db.unit] = window:SetPlayerStatus(self.plrSpec, self.plrInstance, self.plrGroup, self.plrCombat, self.plrStance)
+	else
+		for _,window in ipairs(self.windows) do
+			units[window.db.unit] = window:SetPlayerStatus(self.plrSpec, self.plrInstance, self.plrGroup, self.plrCombat, self.plrStance) or units[window.db.unit]
+		end
+	end
+	-- update auras as necessary
+	for unit,vis in pairs(units) do
+		if (vis) then
+			self:UpdateUnitAuras(unit)
+		end
+	end
+end -- DispatchPlayerStatus()
 
 
 --[[ CONFIG METHODS ]]--
@@ -384,9 +416,11 @@ function Auracle:Startup()
 	self.trackerStyleOptions = {}
 	self.windows = {}
 	self.windowsLocked = true
+	self.plrSpec = 1
 	self.plrInstance = "none"
 	self.plrGroup = "solo"
 	self.plrCombat = false
+	self.plrStance = "Humanoid"
 	-- make sure the Default styles exist
 	if (not self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
 		self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
@@ -438,9 +472,11 @@ function Auracle:Shutdown()
 	self.trackerStyleOptions = nil
 	self.windows = nil
 	self.windowsLocked = nil
+	self.plrSpec = nil
 	self.plrInstance = nil
 	self.plrGroup = nil
 	self.plrCombat = nil
+	self.plrStance = nil
 end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
@@ -530,6 +566,7 @@ function Auracle:ConvertDataStore(dbProfile)
 		end
 		dbProfile.version = 4
 	end
+	-- version 6: abandoned AceDB's "intelligent" storage, so now we have to copy over anything which is missing as a result
 	if (dbProfile.version < 6) then
 		self:Print("Updating saved vars to version 6")
 		local fix
@@ -553,14 +590,29 @@ function Auracle:ConvertDataStore(dbProfile)
 		end
 		dbProfile.version = 6
 	end
+	-- version 7: added window vis plrSpec,plrStance
+	if (dbProfile.version < 7) then
+		self:Print("Updating saved vars to version 7")
+		for _,wdb in pairs(dbProfile.windows) do
+			if (wdb.visibility) then
+				if (type(wdb.visibility.plrSpec) ~= "table") then
+					wdb.visibility.plrSpec = cloneTable(DB_DEFAULT_WINDOW.visibility.plrSpec, true)
+				end
+				if (type(wdb.visibility.plrStance) ~= "table") then
+					wdb.visibility.plrStance = cloneTable(DB_DEFAULT_WINDOW.visibility.plrStance, true)
+				end
+			end
+		end
+		dbProfile.version = 7
+	end
 end -- ConvertDataStore()
 
 function Auracle:UpdateEventListeners()
 	-- clear them all
 	self:UnregisterAllEvents()
 	-- determine which listeners we need according to current settings
-	local ePTarget,eUTarget,ePFocus,ePet,eWorld,eParty,eCombat,eAuras
-	local u,vI,vG,vC
+	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eAuras,eStance
+	local u,vis
 	for wn,window in ipairs(self.windows) do
 		-- based on window.unit
 		u = window.db.unit
@@ -579,18 +631,18 @@ function Auracle:UpdateEventListeners()
 			ePFocus = true
 			eUTarget = true
 		end
-		-- based on window.vis
-		vI = window.db.visibility.plrInstance
-		if (vI.none ~= vI.pvp or vI.none ~= vI.arena or vI.none ~= vI.party or vI.none ~= vI.raid) then
-			eWorld = true
-		end
-		vG = window.db.visibility.plrGroup
-		if (vG.solo ~= vG.party or vG.solo ~= vG.raid) then
-			eParty = true
-		end
-		vC = window.db.visibility.plrCombat
-		if (vC[false] ~= vC[true]) then
-			eCombat = true
+		-- based on window.visibility
+		vis = window.db.visibility.plrSpec
+		eSpec = (vis[1] ~= vis[2])
+		vis = window.db.visibility.plrInstance
+		eWorld = (vis.none ~= vis.pvp or vis.none ~= vis.arena or vis.none ~= vis.party or vis.none ~= vis.raid)
+		vis = window.db.visibility.plrGroup
+		eParty = (vis.solo ~= vis.party or vis.solo ~= vis.raid)
+		vis = window.db.visibility.plrCombat
+		eCombat = (vis[false] ~= vis[true])
+		vis = window.db.visibility.plrStance
+		for stance,val in pairs(vis) do
+			eStance = eStance or (val ~= vis.Humanoid)
 		end
 		-- based on window.trackers
 		if (#window.trackers > 0) then
@@ -604,12 +656,15 @@ function Auracle:UpdateEventListeners()
 	if (eUTarget) then self:RegisterEvent("UNIT_TARGET") end
 	if (ePFocus) then self:RegisterEvent("PLAYER_FOCUS_CHANGED") end
 	if (ePet) then self:RegisterEvent("UNIT_PET") end
+	if (eSpec) then self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED") end
 	if (eWorld) then self:RegisterEvent("PLAYER_ENTERING_WORLD") end
 	if (eParty) then self:RegisterEvent("PARTY_MEMBERS_CHANGED") end
 	if (eCombat) then
 		self:RegisterEvent("PLAYER_REGEN_DISABLED")
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	end
+	if (eStance) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM") end
+	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 end -- UpdateEventListeners()
 
 function Auracle:AddWindow()
@@ -901,6 +956,7 @@ function Auracle:UpdateOptionsTable()
 			}
 --]]
 		}
+		--TODO: LibDualSpec:EnhanceOptions(args.profiles, self.db)
 		optionsTable.args = args
 	end
 	args.general.args.locked.disabled = not self:IsEnabled()
