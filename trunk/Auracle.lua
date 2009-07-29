@@ -257,6 +257,9 @@ function Auracle:UPDATE_SHAPESHIFT_FORM()
 	else
 		_,self.plrStance,_,_ = API_GetShapeshiftFormInfo(form)
 	end
+--@debug@
+	print('UPDATE_SHAPESHIFT_FORM: '..tostring(form).." = "..self.plrStance)
+--@end-debug@
 	self:DispatchPlayerStatus()
 end -- UPDATE_SHAPESHIFT_FORM()
 
@@ -633,13 +636,13 @@ function Auracle:UpdateEventListeners()
 		end
 		-- based on window.visibility
 		vis = window.db.visibility.plrSpec
-		eSpec = (vis[1] ~= vis[2])
+		eSpec = eSpec or (vis[1] ~= vis[2])
 		vis = window.db.visibility.plrInstance
-		eWorld = (vis.none ~= vis.pvp or vis.none ~= vis.arena or vis.none ~= vis.party or vis.none ~= vis.raid)
+		eWorld = eWorld or (vis.none ~= vis.pvp or vis.none ~= vis.arena or vis.none ~= vis.party or vis.none ~= vis.raid)
 		vis = window.db.visibility.plrGroup
-		eParty = (vis.solo ~= vis.party or vis.solo ~= vis.raid)
+		eParty = eParty or (vis.solo ~= vis.party or vis.solo ~= vis.raid)
 		vis = window.db.visibility.plrCombat
-		eCombat = (vis[false] ~= vis[true])
+		eCombat = eCombat or (vis[false] ~= vis[true])
 		vis = window.db.visibility.plrStance
 		for stance,val in pairs(vis) do
 			eStance = eStance or (val ~= vis.Humanoid)
