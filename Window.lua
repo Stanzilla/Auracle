@@ -328,6 +328,9 @@ function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCom
 	self.plrGroup = plrGroup
 	self.plrCombat = plrCombat
 	self.plrStance = plrStance
+--@debug@
+	print("(Window):SetPlayerStatus(..., "..tostring(plrStance)..") : "..tostring(not self.db.visibility.plrStance[plrStance]))
+--@end-debug@
 	return self:UpdateVisibility()
 end -- SetPlayerStatus()
 
