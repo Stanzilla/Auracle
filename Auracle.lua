@@ -9,7 +9,7 @@ local AceConfigDialog
 local AceConfigCmd
 local AceConfigRegistry
 local LibDataBroker
---TODO: local LibDualSpec
+local LibDualSpec
 --local LibUnitID
 --local LibUnitAura
 --local LibButtonFacade
@@ -119,10 +119,10 @@ function Auracle:OnInitialize()
 	AceConfigCmd = LibStub("AceConfigCmd-3.0")
 	AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 	LibDataBroker = LibStub("LibDataBroker-1.1")
-	--TODO: LibDualSpec = LibStub("LibDualSpec-1.0")
+	LibDualSpec = LibStub("LibDualSpec-1.0")
 	-- initialize stored data
 	self.db = AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
-	--TODO: LibDualSpec:EnhanceDatabase(self.db, "Auracle")
+	LibDualSpec:EnhanceDatabase(self.db, "Auracle")
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
@@ -990,7 +990,7 @@ function Auracle:UpdateOptionsTable()
 			}
 --]]
 		}
-		--TODO: LibDualSpec:EnhanceOptions(args.profiles, self.db)
+		LibDualSpec:EnhanceOptions(args.profiles, self.db)
 		optionsTable.args = args
 	end
 	args.general.args.locked.disabled = not self:IsEnabled()
