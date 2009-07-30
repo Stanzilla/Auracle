@@ -32,8 +32,8 @@ local DB_DEFAULT_WINDOW = {
 			[false] = true,
 			[true] = true
 		},
-		plrStance = {
-			Humanoid = false -- backwards logic, so new stances default to visible
+		plrForm = {
+			Humanoid = false -- backwards logic, so new forms default to visible
 		},
 		tgtMissing = true,
 		tgtReact = {
@@ -155,7 +155,7 @@ function Window:New(db)
 	window.plrInstance = "none"
 	window.plrGroup = "solo"
 	window.plrCombat = false
-	window.plrStance = "Humanoid"
+	window.plrForm = "Humanoid"
 	window.tgtExists = false
 	window.tgtType = "pc"
 	window.tgtReact = "neutral"
@@ -198,7 +198,7 @@ function Window.prototype:Destroy()
 	self.plrInstance = nil
 	self.plrGroup = nil
 	self.plrCombat = nil
-	self.plrStance = nil
+	self.plrForm = nil
 	self.tgtExists = nil
 	self.tgtType = nil
 	self.tgtReact = nil
@@ -322,14 +322,14 @@ end -- EndAuraUpdate()
 
 --[[ SITUATION UPDATE METHODS ]]--
 
-function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCombat, plrStance)
+function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCombat, plrForm)
 	self.plrSpec = plrSpec
 	self.plrInstance = plrInstance
 	self.plrGroup = plrGroup
 	self.plrCombat = plrCombat
-	self.plrStance = plrStance
+	self.plrForm = plrForm
 --@debug@
-	print("(Window):SetPlayerStatus(..., "..tostring(plrStance)..") : "..tostring(not self.db.visibility.plrStance[plrStance]))
+	print("(Window):SetPlayerStatus(..., "..tostring(plrForm)..") : "..tostring(not self.db.visibility.plrForm[plrForm]))
 --@end-debug@
 	return self:UpdateVisibility()
 end -- SetPlayerStatus()
@@ -353,7 +353,7 @@ function Window.prototype:UpdateVisibility()
 			and dbvis.plrInstance[self.plrInstance]
 			and dbvis.plrGroup[self.plrGroup]
 			and dbvis.plrCombat[self.plrCombat]
-			and not dbvis.plrStance[self.plrStance] -- backwards logic, so new stances default to visible
+			and not dbvis.plrForm[self.plrForm] -- backwards logic, so new forms default to visible
 			and (
 				(
 					self.tgtExists
@@ -849,12 +849,12 @@ local sharedOptions = {
 						}
 					}
 				},
-				plrStance = {
+				plrForm = {
 					type = "group",
 					name = "Show when player is...",
 					inline = true,
 					order = 5,
-					args = {} -- populated in UpdateStanceOptions()
+					args = {} -- populated in UpdateFormOptions()
 				},
 				tgtMissing = {
 					type = "toggle",
@@ -1027,37 +1027,37 @@ local sharedOptions = {
 
 --[[ MENU METHODS ]]--
 
-local sharedOptions_plrStance_get = function(i)
-	return not i.handler.db.visibility.plrStance[i[#i]] -- backwards logic, so new stances default to visible
+local sharedOptions_plrForm_get = function(i)
+	return not i.handler.db.visibility.plrForm[i[#i]] -- backwards logic, so new forms default to visible
 end
 
-local sharedOptions_plrStance_set = function(i,v)
-	i.handler.db.visibility.plrStance[i[#i]] = not v -- backwards logic, so new stances default to visible
+local sharedOptions_plrForm_set = function(i,v)
+	i.handler.db.visibility.plrForm[i[#i]] = (not v) or nil -- backwards logic, so new forms default to visible
 	Auracle:UpdateEventListeners()
 	Auracle:UpdatePlayerStatus(i.handler)
 end
 
-function Window:UpdateStanceOptions()
-	-- get list of available stances
+function Window:UpdateFormOptions()
+	-- get list of available forms
 	local _
-	local stances = { [0] = "Humanoid" }
-	local numStances = API_GetNumShapeshiftForms()
-	for s = 1,numStances do
-		_,stances[s],_,_ = API_GetShapeshiftFormInfo(s)
+	local forms = { [0] = "Humanoid" }
+	local maxform = API_GetNumShapeshiftForms()
+	for f = 1,maxform do
+		_,forms[f],_,_ = API_GetShapeshiftFormInfo(f)
 	end
 	-- generate toggles for each
-	local pSa = sharedOptions.args.visibility.args.plrStance.args
-	wipe(pSa)
-	for s = 0,numStances do
-		pSa[stances[s]] = {
+	local pFa = sharedOptions.args.visibility.args.plrForm.args
+	wipe(pFa)
+	for f = 0,maxform do
+		pFa[forms[f]] = {
 			type = "toggle",
-			name = stances[s],
-			get = sharedOptions_plrStance_get,
-			set = sharedOptions_plrStance_set,
+			name = forms[s],
+			get = sharedOptions_plrForm_get,
+			set = sharedOptions_plrForm_set,
 			order = s + 1
 		}
 	end
-end -- UpdateStanceOptions()
+end -- UpdateFormOptions()
 
 function Window.prototype:GetOptionsTable()
 	if (not self.optionsTable) then
