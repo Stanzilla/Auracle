@@ -489,7 +489,9 @@ end -- Shutdown()
 
 function Auracle:ConvertDataStore(dbProfile)
 	if (dbProfile.version < 4) then
+--@debug@
 		self:Print("Updating saved vars to version 4")
+--@end-debug@
 		for _,wsdb in pairs(dbProfile.windowStyles) do
 			if (wsdb.background and wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
 				wsdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
@@ -576,7 +578,9 @@ function Auracle:ConvertDataStore(dbProfile)
 	end
 	-- version 6: abandoned AceDB's "intelligent" storage, so now we have to copy over anything which is missing as a result
 	if (dbProfile.version < 6) then
+--@debug@
 		self:Print("Updating saved vars to version 6")
+--@end-debug@
 		local fix
 		fix = function(db, def)
 			for key,val in pairs(def) do
@@ -600,13 +604,15 @@ function Auracle:ConvertDataStore(dbProfile)
 	end
 	-- version 7: added window vis plrSpec,plrStance
 	if (dbProfile.version < 7) then
+--@debug@
 		self:Print("Updating saved vars to version 7")
+--@end-debug@
 		for _,wdb in pairs(dbProfile.windows) do
 			if (wdb.visibility) then
 				if (type(wdb.visibility.plrSpec) ~= "table") then
 					wdb.visibility.plrSpec = cloneTable(DB_DEFAULT_WINDOW.visibility.plrSpec, true)
 				end
-				if (type(wdb.visibility.plrStance) ~= "table") then
+				if (type(DB_DEFAULT_WINDOW.visibility.plrStance) == "table" and type(wdb.visibility.plrStance) ~= "table") then
 					wdb.visibility.plrStance = cloneTable(DB_DEFAULT_WINDOW.visibility.plrStance, true)
 				end
 			end
@@ -615,7 +621,9 @@ function Auracle:ConvertDataStore(dbProfile)
 	end
 	-- version 8: renamed plrStance to plrForm to match event names
 	if (dbProfile.version < 8) then
+--@debug@
 		self:Print("Updating saved vars to version 8")
+--@end-debug@
 		for _,wdb in pairs(dbProfile.windows) do
 			if (wdb.visibility and type(wdb.visibility.plrStance) == "table") then
 				wdb.visibility.plrForm = wdb.visibility.plrStance
