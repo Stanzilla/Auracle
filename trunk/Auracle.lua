@@ -464,14 +464,20 @@ end -- Startup()
 
 function Auracle:Shutdown()
 	-- recycle objects
-	for n,window in ipairs(self.windows) do
-		window:Destroy()
+	if (type(self.windows) == "table") then
+		for n,window in ipairs(self.windows) do
+			window:Destroy()
+		end
 	end
-	for name,ts in pairs(self.trackerStyles) do
-		ts:Destroy()
+	if (type(self.trackerStyles) == "table") then
+		for name,ts in pairs(self.trackerStyles) do
+			ts:Destroy()
+		end
 	end
-	for name,ws in pairs(self.windowStyles) do
-		ws:Destroy()
+	if (type(self.windowStyles) == "table") then
+		for name,ws in pairs(self.windowStyles) do
+			ws:Destroy()
+		end
 	end
 	-- clean up addon
 	self.windowStyles = nil

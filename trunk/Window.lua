@@ -185,8 +185,10 @@ function Window.prototype:Destroy()
 	self.uiFrame:Hide()
 	self.uiFrame:ClearAllPoints()
 	-- destroy tracker frames
-	for n,tracker in ipairs(self.trackers) do
-		tracker:Destroy()
+	if (type(self.trackers) == "table") then
+		for n,tracker in ipairs(self.trackers) do
+			tracker:Destroy()
+		end
 	end
 	-- clean up window
 	self.db = nil
@@ -1054,7 +1056,7 @@ function Window:UpdateFormOptions()
 			name = forms[s],
 			get = sharedOptions_plrForm_get,
 			set = sharedOptions_plrForm_set,
-			order = s + 1
+			order = f + 1
 		}
 	end
 end -- UpdateFormOptions()
