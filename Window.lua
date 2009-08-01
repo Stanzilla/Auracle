@@ -1,15 +1,19 @@
 local LibOOP
 --@alpha@
-LibOOP = LibStub("LibOOP-1.0-alpha",true)
+LibOOP = LibStub("LibOOP-1.0-alpha", true)
 --@end-alpha@
-LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("LibOOP not found")
+LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
 local Window = LibOOP:Class()
+
+local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
+local L = LIB_AceLocale:GetLocale("Auracle")
+
 
 --[[ CONSTANTS ]]--
 
 local DB_DEFAULT_WINDOW = {
 	label = false,
-	style = "Default",
+	style = L.DEFAULT,
 	unit = "target", -- player|target|targettarget|pet|pettarget|focus|focustarget
 	visibility = {
 		plrSpec = {
@@ -33,7 +37,7 @@ local DB_DEFAULT_WINDOW = {
 			[true] = true
 		},
 		plrForm = {
-			Humanoid = false -- backwards logic, so new forms default to visible
+			[L.HUMANOID] = false -- backwards logic, so new forms default to visible
 		},
 		tgtMissing = true,
 		tgtReact = {
@@ -75,12 +79,12 @@ end
 
 Auracle:__window(Window, DB_DEFAULT_WINDOW)
 
-local objectPool = {}
-
 local API_GetCurrentResolution = GetCurrentResolution
 local API_GetNumShapeshiftForms = GetNumShapeshiftForms
 local API_GetScreenResolutions = GetScreenResolutions
 local API_GetShapeshiftFormInfo = GetShapeshiftFormInfo
+
+local objectPool = {}
 
 
 --[[ UTILITY FUNCTIONS ]]--
@@ -155,7 +159,7 @@ function Window:New(db)
 	window.plrInstance = "none"
 	window.plrGroup = "solo"
 	window.plrCombat = false
-	window.plrForm = "Humanoid"
+	window.plrForm = L.HUMANOID
 	window.tgtExists = false
 	window.tgtType = "pc"
 	window.tgtReact = "neutral"
@@ -330,9 +334,6 @@ function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCom
 	self.plrGroup = plrGroup
 	self.plrCombat = plrCombat
 	self.plrForm = plrForm
---@debug@
-	print("(Window):SetPlayerStatus(..., "..tostring(plrForm)..") : "..tostring(not self.db.visibility.plrForm[plrForm]))
---@end-debug@
 	return self:UpdateVisibility()
 end -- SetPlayerStatus()
 
@@ -392,7 +393,7 @@ function Window.prototype:UpdateBackdrop()
 			local sdb = self.style.db
 			if (backdrop.insets and sdb.background.noScale) then
 				local m = {}
-				for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
+				for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
 					m[#m+1] = size
 				end
 				local inset = backdrop.insets.left * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
@@ -429,7 +430,7 @@ function Window.prototype:UpdateLayout()
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
 		local m = {}
-		for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
+		for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
 		local factor = ((768 / self.effectiveScale) / m[2])
@@ -455,7 +456,7 @@ function Window.prototype:UpdateTrackerLayout(tn)
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
 		local m = {}
-		for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
+		for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
 		local factor = ((768 / self.effectiveScale) / m[2])
@@ -490,7 +491,7 @@ function Window.prototype:SetTrackerPosition(tracker, x, y)
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
 		local m = {}
-		for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
+		for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
 			m[#m+1] = size
 		end
 		local factor = ((768 / self.effectiveScale) / m[2])
@@ -619,13 +620,13 @@ local sharedOptions = {
 	args = {
 		window = {
 			type = "group",
-			name = "Window",
+			name = L.WINDOW,
 			inline = false,
 			order = 1,
 			args = {
 				label = {
 					type = "input",
-					name = "Label",
+					name = L.LABEL,
 					get = function(i) return i.handler.db.label end,
 					set = function(i,v)
 						v = strtrim(v)
@@ -637,21 +638,21 @@ local sharedOptions = {
 				},
 				removeWindow = {
 					type = "execute",
-					name = "Remove Window",
+					name = L.REMOVE_WINDOW,
 					func = "Remove",
 					order = 2
 				},
 				unit = {
 					type = "select",
-					name = "Watch Unit",
+					name = L.WATCH_UNIT,
 					values = {
-						player = "Player",
-						target = "Target",
-						targettarget = "Target's Target",
-						pet = "Pet",
-						pettarget = "Pet's Target",
-						focus = "Focus",
-						focustarget = "Focus' Target"
+						player = L.PLAYER,
+						target = L.TARGET,
+						targettarget = L.TARGETTARGET,
+						pet = L.PET,
+						pettarget = L.PETTARGET,
+						focus = L.FOCUS,
+						focustarget = L.FOCUSTARGET
 					},
 					get = function(i) return i.handler.db.unit end,
 					set = function(i,v)
@@ -664,7 +665,7 @@ local sharedOptions = {
 				},
 				style = {
 					type = "select",
-					name = "Window Style",
+					name = L.WINDOW_STYLE,
 					values = function() return Auracle.windowStyleOptions end,
 					get = function(i) return i.handler.db.style end,
 					set = function(i,v)
@@ -681,19 +682,19 @@ local sharedOptions = {
 		},
 		visibility = {
 			type = "group",
-			name = "Visibility",
+			name = L.VISIBILITY,
 			inline = false,
 			order = 2,
 			args = {
 				plrSpec = {
 					type = "group",
-					name = "Show when player is using...",
+					name = L.OPT_SPEC_SHOW,
 					inline = true,
 					order = 1,
 					args = {
 						primary = {
 							type = "toggle",
-							name = "Primary Talents",
+							name = L.PRIMARY_TALENTS,
 							get = function(i) return i.handler.db.visibility.plrSpec[1] end,
 							set = function(i,v)
 								i.handler.db.visibility.plrSpec[1] = v
@@ -704,7 +705,7 @@ local sharedOptions = {
 						},
 						secondary = {
 							type = "toggle",
-							name = "Secondary Talents",
+							name = L.SECONDARY_TALENTS,
 							get = function(i) return i.handler.db.visibility.plrSpec[2] end,
 							set = function(i,v)
 								i.handler.db.visibility.plrSpec[2] = v
@@ -717,13 +718,13 @@ local sharedOptions = {
 				},
 				plrInstance = {
 					type = "group",
-					name = "Show when player is in...",
+					name = L.OPT_INSTANCE_SHOW,
 					inline = true,
 					order = 2,
 					args = {
 						none = {
 							type = "toggle",
-							name = "No Instance",
+							name = L.NO_INSTANCE,
 							width = "full",
 							get = function(i) return i.handler.db.visibility.plrInstance.none end,
 							set = function(i,v)
@@ -735,7 +736,7 @@ local sharedOptions = {
 						},
 						pvp = {
 							type = "toggle",
-							name = "Battleground",
+							name = L.BATTLEGROUND,
 							get = function(i) return i.handler.db.visibility.plrInstance.pvp end,
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.pvp = v
@@ -746,7 +747,7 @@ local sharedOptions = {
 						},
 						arena = {
 							type = "toggle",
-							name = "Arena",
+							name = L.ARENA,
 							get = function(i) return i.handler.db.visibility.plrInstance.arena end,
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.arena = v
@@ -757,7 +758,7 @@ local sharedOptions = {
 						},
 						party = {
 							type = "toggle",
-							name = "Party Instance",
+							name = L.PARTY_INSTANCE,
 							get = function(i) return i.handler.db.visibility.plrInstance.party end,
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.party = v
@@ -768,7 +769,7 @@ local sharedOptions = {
 						},
 						raid = {
 							type = "toggle",
-							name = "Raid Instance",
+							name = L.RAID_INSTANCE,
 							get = function(i) return i.handler.db.visibility.plrInstance.raid end,
 							set = function(i,v)
 								i.handler.db.visibility.plrInstance.raid = v
@@ -781,13 +782,13 @@ local sharedOptions = {
 				},
 				plrGroup = {
 					type = "group",
-					name = "Show when player is...",
+					name = L.OPT_GROUP_SHOW,
 					inline = true,
 					order = 3,
 					args = {
 						solo = {
 							type = "toggle",
-							name = "Solo",
+							name = L.NONE_SOLO,
 							width = "full",
 							get = function(i) return i.handler.db.visibility.plrGroup.solo end,
 							set = function(i,v)
@@ -799,7 +800,7 @@ local sharedOptions = {
 						},
 						party = {
 							type = "toggle",
-							name = "In a Party",
+							name = L.PARTY,
 							get = function(i) return i.handler.db.visibility.plrGroup.party end,
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.party = v
@@ -810,7 +811,7 @@ local sharedOptions = {
 						},
 						raid = {
 							type = "toggle",
-							name = "In a Raid Group",
+							name = L.RAID_GROUP,
 							get = function(i) return i.handler.db.visibility.plrGroup.raid end,
 							set = function(i,v)
 								i.handler.db.visibility.plrGroup.raid = v
@@ -823,13 +824,13 @@ local sharedOptions = {
 				},
 				plrCombat = {
 					type = "group",
-					name = "Show when player is...",
+					name = L.OPT_COMBAT_SHOW,
 					inline = true,
 					order = 4,
 					args = {
 						no = {
 							type = "toggle",
-							name = "Not in Combat",
+							name = L.NOT_IN_COMBAT,
 							get = function(i) return i.handler.db.visibility.plrCombat[false] end,
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[false] = v
@@ -840,7 +841,7 @@ local sharedOptions = {
 						},
 						yes = {
 							type = "toggle",
-							name = "In Combat",
+							name = L.IN_COMBAT,
 							get = function(i) return i.handler.db.visibility.plrCombat[true] end,
 							set = function(i,v)
 								i.handler.db.visibility.plrCombat[true] = v
@@ -853,14 +854,14 @@ local sharedOptions = {
 				},
 				plrForm = {
 					type = "group",
-					name = "Show when player is...",
+					name = L.OPT_FORM_SHOW,
 					inline = true,
 					order = 5,
 					args = {} -- populated in UpdateFormOptions()
 				},
 				tgtMissing = {
 					type = "toggle",
-					name = "Show when unit is Missing",
+					name = L.OPT_UNITMISSING_SHOW,
 					width = "full",
 					get = function(i) return i.handler.db.visibility.tgtMissing end,
 					set = function(i,v)
@@ -871,13 +872,13 @@ local sharedOptions = {
 				},
 				tgtReact = {
 					type = "group",
-					name = "Show when unit is...",
+					name = L.OPT_UNITREACT_SHOW,
 					inline = true,
 					order = 7,
 					args = {
 						hostile = {
 							type = "toggle",
-							name = "Hostile",
+							name = L.HOSTILE,
 							get = function(i) return i.handler.db.visibility.tgtReact.hostile end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtReact.hostile = v
@@ -887,7 +888,7 @@ local sharedOptions = {
 						},
 						neutral = {
 							type = "toggle",
-							name = "Neutral",
+							name = L.NEUTRAL,
 							get = function(i) return i.handler.db.visibility.tgtReact.neutral end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtReact.neutral = v
@@ -897,7 +898,7 @@ local sharedOptions = {
 						},
 						friendly = {
 							type = "toggle",
-							name = "Friendly",
+							name = L.FRIENDLY,
 							get = function(i) return i.handler.db.visibility.tgtReact.friendly end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtReact.friendly = v
@@ -909,13 +910,13 @@ local sharedOptions = {
 				},
 				tgtType = {
 					type = "group",
-					name = "Show when unit is a(n)...",
+					name = L.OPT_UNITTYPE_SHOW,
 					inline = true,
 					order = 8,
 					args = {
 						pc = {
 							type = "toggle",
-							name = "Player",
+							name = L.PLAYER,
 							width = "double",
 							get = function(i) return i.handler.db.visibility.tgtType.pc end,
 							set = function(i,v)
@@ -926,7 +927,7 @@ local sharedOptions = {
 						},
 						worldboss = {
 							type = "toggle",
-							name = "Boss",
+							name = L.BOSS,
 							get = function(i) return i.handler.db.visibility.tgtType.worldboss end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtType.worldboss = v
@@ -936,7 +937,7 @@ local sharedOptions = {
 						},
 						rareelite = {
 							type = "toggle",
-							name = "Rare Elite NPC",
+							name = L.RARE_ELITE_NPC,
 							get = function(i) return i.handler.db.visibility.tgtType.rareelite end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtType.rareelite = v
@@ -946,7 +947,7 @@ local sharedOptions = {
 						},
 						elite = {
 							type = "toggle",
-							name = "Elite NPC",
+							name = L.ELITE_NPC,
 							get = function(i) return i.handler.db.visibility.tgtType.elite end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtType.elite = v
@@ -956,7 +957,7 @@ local sharedOptions = {
 						},
 						rare = {
 							type = "toggle",
-							name = "Rare NPC",
+							name = L.RARE_NPC,
 							get = function(i) return i.handler.db.visibility.tgtType.rare end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtType.rare = v
@@ -966,7 +967,7 @@ local sharedOptions = {
 						},
 						normal = {
 							type = "toggle",
-							name = "NPC",
+							name = L.NPC,
 							get = function(i) return i.handler.db.visibility.tgtType.normal end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtType.normal = v
@@ -976,7 +977,7 @@ local sharedOptions = {
 						},
 						trivial = {
 							type = "toggle",
-							name = "Gray NPC",
+							name = L.GRAY_NPC,
 							get = function(i) return i.handler.db.visibility.tgtType.trivial end,
 							set = function(i,v)
 								i.handler.db.visibility.tgtType.trivial = v
@@ -990,14 +991,14 @@ local sharedOptions = {
 		},
 		layout = {
 			type = "group",
-			name = "Layout",
+			name = L.LAYOUT,
 			inline = false,
 			order = 3,
 			args = {
 				locked = {
 					type = "toggle",
-					name = "Trackers Locked",
-					desc = "When unlocked, trackers may be rearranged by left-click-dragging",
+					name = L.TRACKERS_LOCKED,
+					desc = L.DESC_OPT_TRACKERS_LOCKED,
 					get = "AreTrackersLocked",
 					set = function(i,v)
 						if (v) then
@@ -1010,7 +1011,7 @@ local sharedOptions = {
 				},
 				wrap = {
 					type = "range",
-					name = "Trackers per Row",
+					name = L.TRACKERS_PER_ROW,
 					min = 1,
 					max = 16,
 					step = 1,
@@ -1041,11 +1042,10 @@ end
 
 function Window:UpdateFormOptions()
 	-- get list of available forms
-	local _
-	local forms = { [0] = "Humanoid" }
+	local forms = { [0] = L.HUMANOID }
 	local maxform = API_GetNumShapeshiftForms()
 	for f = 1,maxform do
-		_,forms[f],_,_ = API_GetShapeshiftFormInfo(f)
+		forms[f] = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
 	-- generate toggles for each
 	local pFa = sharedOptions.args.visibility.args.plrForm.args
@@ -1053,7 +1053,7 @@ function Window:UpdateFormOptions()
 	for f = 0,maxform do
 		pFa[forms[f]] = {
 			type = "toggle",
-			name = forms[s],
+			name = forms[f],
 			get = sharedOptions_plrForm_get,
 			set = sharedOptions_plrForm_set,
 			order = f + 1
@@ -1069,13 +1069,13 @@ function Window.prototype:GetOptionsTable()
 			args = {
 				addTracker = {
 					type = "group",
-					name = "|cff7fffff(Add Tracker...)",
+					name = L.LIST_ADD_TRACKER,
 					childGroups = "tab",
 					order = -1,
 					args = {
 						addTracker = {
 							type = "execute",
-							name = "Add Blank Tracker",
+							name = L.ADD_BLANK_TRACKER,
 							func = "AddTracker",
 							order = 1
 						}

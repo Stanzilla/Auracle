@@ -1,14 +1,18 @@
 local LibOOP
 --@alpha@
-LibOOP = LibStub("LibOOP-1.0-alpha",true)
+LibOOP = LibStub("LibOOP-1.0-alpha", true)
 --@end-alpha@
-LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("LibOOP not found")
+LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
 local WindowStyle = LibOOP:Class()
+
+local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
+local L = LIB_AceLocale:GetLocale("Auracle")
+
 
 --[[ CONSTANTS ]]--
 
 local DB_DEFAULT_WINDOWSTYLE = {
-	name = "Default",
+	name = L.DEFAULT,
 	windowOpacity = 1.0,
 	windowScale = 1.0,
 	border = {
@@ -41,12 +45,17 @@ local DB_DEFAULT_WINDOWSTYLE = {
 
 Auracle:__windowstyle(WindowStyle, DB_DEFAULT_WINDOWSTYLE)
 
-local LibSharedMedia = LibStub("LibSharedMedia-3.0")
+local LIB_LibSharedMedia
+
 local backdrop = {}
 local insets = {}
 
 
 --[[ CONSTRUCT & DESTRUCT ]]--
+
+function WindowStyle:Initialize()
+	LIB_LibSharedMedia = LibStub("LibSharedMedia-3.0", true) -- optional
+end -- Initialize()
 
 function WindowStyle:New(db)
 	local obj = self:Super("New")
@@ -110,38 +119,38 @@ end -- Apply()
 local sharedOptions = {
 	style = {
 		type = "group",
-		name = "Style",
+		name = L.STYLE,
 		order = 1,
 		args = {
 			delete = {
 				type = "execute",
-				name = "Delete",
-				disabled = function(i) return i.handler.db.name == "Default" end,
+				name = L.DELETE,
+				disabled = function(i) return i.handler.db.name == L.DEFAULT end,
 				func = function(i) Auracle:RemoveWindowStyle(i.handler) end,
 				order = 10
 			},
 			copy = {
 				type = "execute",
-				name = "Copy",
+				name = L.COPY,
 				func = function(i) Auracle:CopyWindowStyle(i.handler) end,
 				order = 11
 			},
 			name = {
 				type = "input",
-				name = "Name",
+				name = L.NAME,
 				width = "double",
-				disabled = function(i) return i.handler.db.name == "Default" end,
+				disabled = function(i) return i.handler.db.name == L.DEFAULT end,
 				get = function(i) return i.handler.db.name end,
 				set = function(i,v) Auracle:RenameWindowStyle(i.handler, v) end,
 				validate = function(i,v)
-					if (i.handler.db.name == "Default") then
-						return "You cannot rename the Default style"
+					if (i.handler.db.name == L.DEFAULT) then
+						return L.ERR_RENAME_DEFAULT_STYLE
 					end
 					v = strtrim(v)
 					if (v == "") then
-						return "Every style needs a name"
+						return L.ERR_NO_STYLE_NAME
 					elseif (Auracle.windowStyles[v] and Auracle.windowStyles[v] ~= i.handler) then
-						return "Every style name must be unique"
+						return L.ERR_DUP_STYLE_NAME
 					end
 					return true
 				end,
@@ -149,7 +158,7 @@ local sharedOptions = {
 			},
 			windowOpacity = {
 				type = "range",
-				name = "Window Opacity",
+				name = L.WINDOW_OPACITY,
 				width = "double",
 				min = 0.0,
 				max = 1.0,
@@ -163,7 +172,7 @@ local sharedOptions = {
 			},
 			windowScale = {
 				type = "range",
-				name = "Window Scale",
+				name = L.WINDOW_SCALE,
 				width = "double",
 				min = 0.5,
 				max = 2.0,
@@ -179,12 +188,12 @@ local sharedOptions = {
 	},
 	border = {
 		type = "group",
-		name = "Border",
+		name = L.BORDER,
 		order = 2,
 		args = {
 			show = {
 				type = "toggle",
-				name = "Show",
+				name = L.SHOW,
 				width = "full",
 				get = function(i) return i.handler.db.border.show end,
 				set = function(i,v)
@@ -194,26 +203,31 @@ local sharedOptions = {
 				order = 20
 			},
 			texture = {
-				type = "select",
-				dialogControl = "LSM30_Border",
-				name = "Texture",
-				values = AceGUIWidgetLSMlists.border,
+				type = (LIB_LibSharedMedia and "select") or "input",
+				dialogControl = (LIB_LibSharedMedia and "LSM30_Border") or nil,
+				name = L.TEXTURE,
+				values = (LIB_LibSharedMedia and AceGUIWidgetLSMlists.border) or nil,
 				disabled = function(i) return not i.handler.db.border.show end,
-				get = function(i)
+				get = (LIB_LibSharedMedia and function(i)
 					for key,data in pairs(AceGUIWidgetLSMlists.border) do
 						if (data == i.handler.db.border.texture) then return key end
 					end
-					return "None"
-				end,
-				set = function(i,v)
-					i.handler.db.border.texture = LibSharedMedia:Fetch("border", v)
+					return L.NONE
+				end) or (function(i)
+					return i.handler.db.border.texture
+				end),
+				set = (LIB_LibSharedMedia and function(i,v)
+					i.handler.db.border.texture = LIB_LibSharedMedia:Fetch("border", v)
 					i.handler:Apply(nil, "Backdrop")
-				end,
+				end) or (function(i,v)
+					i.handler.db.border.texture = v
+					i.handler:Apply(nil, "Backdrop")
+				end),
 				order = 21
 			},
 			color = {
 				type = "color",
-				name = "Color",
+				name = L.COLOR,
 				width = "half",
 				hasAlpha = true,
 				disabled = function(i) return not i.handler.db.border.show end,
@@ -227,7 +241,7 @@ local sharedOptions = {
 			},
 			edgeSize = {
 				type = "range",
-				name = "Corner Size",
+				name = L.CORNER_SIZE,
 				width = "double",
 				min = 1,
 				max = 32,
@@ -244,12 +258,12 @@ local sharedOptions = {
 	},
 	background = {
 		type = "group",
-		name = "Background",
+		name = L.BACKGROUND,
 		order = 3,
 		args = {
 			show = {
 				type = "toggle",
-				name = "Show",
+				name = L.SHOW,
 				width = "full",
 				get = function(i) return i.handler.db.background.show end,
 				set = function(i,v)
@@ -259,26 +273,31 @@ local sharedOptions = {
 				order = 30
 			},
 			texture = {
-				type = "select",
-				dialogControl = "LSM30_Background",
-				name = "Texture",
-				values = AceGUIWidgetLSMlists.background,
+				type = (LIB_LibSharedMedia and "select") or "input",
+				dialogControl = (LIB_LibSharedMedia and "LSM30_Background") or nil,
+				name = L.TEXTURE,
+				values = (LIB_LibSharedMedia and AceGUIWidgetLSMlists.background) or nil,
 				disabled = function(i) return not i.handler.db.background.show end,
-				get = function(i)
+				get = (LIB_LibSharedMedia and function(i)
 					for key,data in pairs(AceGUIWidgetLSMlists.background) do
 						if (data == i.handler.db.background.texture) then return key end
 					end
-					return "None"
-				end,
-				set = function(i,v)
-					i.handler.db.background.texture = LibSharedMedia:Fetch("background", v)
+					return L.NONE
+				end) or (function(i)
+					return i.handler.db.background.texture
+				end),
+				set = (LIB_LibSharedMedia and function(i,v)
+					i.handler.db.background.texture = LIB_LibSharedMedia:Fetch("background", v)
 					i.handler:Apply(nil, "Backdrop")
-				end,
+				end) or (function(i,v)
+					i.handler.db.background.texture = v
+					i.handler:Apply(nil, "Backdrop")
+				end),
 				order = 31
 			},
 			color = {
 				type = "color",
-				name = "Color",
+				name = L.COLOR,
 				width = "half",
 				hasAlpha = true,
 				disabled = function(i) return not i.handler.db.background.show end,
@@ -292,8 +311,8 @@ local sharedOptions = {
 			},
 			tileSize = {
 				type = "range",
-				name = "Tile Size",
-				desc = "0 to disable background tiling",
+				name = L.TILE_SIZE,
+				desc = L.DESC_OPT_TILE_SIZE,
 				width = "double",
 				min = 0,
 				max = 32,
@@ -308,8 +327,8 @@ local sharedOptions = {
 			},
 			noScale = {
 				type = "toggle",
-				name = "Don't scale inset",
-				desc = "Apply inset in pixels, by canceling out the effective scale",
+				name = L.INSET_NOSCALE,
+				desc = L.DESC_OPT_INSET_NOSCALE,
 				width = "full",
 				disabled = function(i) return not i.handler.db.background.show end,
 				get = function(i) return i.handler.db.background.noScale end,
@@ -321,7 +340,7 @@ local sharedOptions = {
 			},
 			inset = {
 				type = "range",
-				name = "Inset",
+				name = L.INSET,
 				width = "double",
 				min = 0,
 				max = 16,
@@ -338,13 +357,13 @@ local sharedOptions = {
 	},
 	layout = {
 		type = "group",
-		name = "Layout",
+		name = L.LAYOUT,
 		order = 4,
 		args = {
 			noScale = {
 				type = "toggle",
-				name = "Don't scale padding and spacing",
-				desc = "Apply padding and spacing in pixels, by canceling out the effective scale",
+				name = L.LAYOUT_NOSCALE,
+				desc = L.DESC_OPT_LAYOUT_NOSCALE,
 				width = "full",
 				get = function(i) return i.handler.db.layout.noScale end,
 				set = function(i,v)
@@ -355,8 +374,8 @@ local sharedOptions = {
 			},
 			padding = {
 				type = "range",
-				name = "Padding",
-				desc = "The distance between trackers and the window border",
+				name = L.PADDING,
+				desc = L.DESC_OPT_WINDOW_PADDING,
 				width = "double",
 				min = 0,
 				max = 16,
@@ -370,8 +389,8 @@ local sharedOptions = {
 			},
 			spacing = {
 				type = "range",
-				name = "Spacing",
-				desc = "The distance between each tracker",
+				name = L.SPACING,
+				desc = L.DESC_OPT_WINDOW_SPACING,
 				width = "double",
 				min = 0,
 				max = 16,
@@ -385,7 +404,7 @@ local sharedOptions = {
 			},
 			trackerSize = {
 				type = "range",
-				name = "Tracker Size",
+				name = L.TRACKER_SIZE,
 				width = "double",
 				min = 8,
 				max = 64,
