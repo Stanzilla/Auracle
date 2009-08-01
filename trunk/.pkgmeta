@@ -7,14 +7,15 @@ externals:
   libs/AceBucket-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceBucket-3.0
   libs/AceDB-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
   libs/AceDBOptions-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDBOptions-3.0
+  libs/AceLocale-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceLocale-3.0
   libs/AceConsole-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConsole-3.0
   libs/AceGUI-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
   libs/AceConfig-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
-  libs/LibOOP-1.0: svn://svn.wowace.com/wow/liboop/mainline/tags/1.0.0/LibOOP
   libs/LibDataBroker-1.1: git://github.com/tekkub/libdatabroker-1-1.git
   libs/LibDualSpec-1.0: 
     url: git://git.wowace.com/wow/libdualspec-1-0/mainline.git
     tag: v1.0
+  libs/LibOOP-1.0: svn://svn.wowace.com/wow/liboop/mainline/tags/1.0.0/LibOOP
   libs/LibSharedMedia-3.0: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/tags/2/LibSharedMedia-3.0
   libs/AceGUI-3.0-SharedMediaWidgets: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/tags/v3.2.1/AceGUI-3.0-SharedMediaWidgets
 
