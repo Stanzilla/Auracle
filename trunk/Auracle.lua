@@ -1,18 +1,10 @@
-Auracle = LibStub("AceAddon-3.0"):NewAddon("Auracle",
+local LIB_AceAddon = LibStub("AceAddon-3.0") or error("Auracle: Required library AceAddon-3.0 not found")
+Auracle = LIB_AceAddon:NewAddon("Auracle",
 	"AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0")
 local Auracle = Auracle
 
-local AceDB
-local AceDBOptions
-local AceConfig
-local AceConfigDialog
-local AceConfigCmd
-local AceConfigRegistry
-local LibDataBroker
-local LibDualSpec
---local LibUnitID
---local LibUnitAura
---local LibButtonFacade
+local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
+local L = LIB_AceLocale:GetLocale("Auracle")
 
 
 --[[ CONSTANTS ]]--
@@ -30,6 +22,21 @@ local DB_DEFAULT_TRACKER
 
 
 --[[ INIT ]]--
+
+-- ConfigMode
+
+CONFIGMODE_CALLBACKS = CONFIGMODE_CALLBACKS or {}
+function CONFIGMODE_CALLBACKS.Auracle(action)
+	if (Auracle:IsOnline()) then
+		if (action == 'ON') then
+			Auracle:UnlockWindows()
+		elseif (action == 'OFF') then
+			Auracle:LockWindows()
+		end
+	end
+end
+
+-- class registration
 
 local WindowStyle
 function Auracle:__windowstyle(class, db_default)
@@ -63,10 +70,21 @@ function Auracle:__tracker(class, db_default)
 	Window:__tracker(class, db_default)
 end
 
-local commandTable = { type="group", handler=Auracle, args={} }
-local optionsTable = { type="group", handler=Auracle, childGroups="tab", args={} }
-local blizOptionsTable = { type="group", handler=Auracle, args={} }
-local blizOptionsFrame
+-- library references
+
+local LIB_AceDB
+local LIB_AceDBOptions
+local LIB_AceConfig
+local LIB_AceConfigDialog
+local LIB_AceConfigCmd
+local LIB_AceConfigRegistry
+local LIB_LibDataBroker
+local LIB_LibDualSpec
+--local LIB_LibUnitID
+--local LIB_LibUnitAura
+--local LIB_LibButtonFacade
+
+-- API function upvalues
 
 local API_GetActiveTalentGroup = GetActiveTalentGroup
 local API_GetNumPartyMembers = GetNumPartyMembers
@@ -83,6 +101,13 @@ local API_UnitExists = UnitExists
 local API_UnitIsEnemy = UnitIsEnemy
 local API_UnitIsFriend = UnitIsFriend
 local API_UnitPlayerControlled = UnitPlayerControlled
+
+-- options tables
+
+local commandTable = { type="group", handler=Auracle, args={} }
+local optionsTable = { type="group", handler=Auracle, childGroups="tab", args={} }
+local blizOptionsTable = { type="group", handler=Auracle, args={} }
+local blizOptionsFrame
 
 
 --[[ UTILITY FUNCTIONS ]]--
@@ -111,58 +136,73 @@ local __auracle_debug_call = __auracle_debug_call or function() end
 --[[ Ace3 EVENT HANDLERS ]]--
 
 function Auracle:OnInitialize()
+	-- initialize classes
+	if (WindowStyle.Initialize) then WindowStyle:Initialize() end
+	if (TrackerStyle.Initialize) then TrackerStyle:Initialize() end
+	if (Window.Initialize) then Window:Initialize() end
+	if (Tracker.Initialize) then Tracker:Initialize() end
 	-- load libraries
-	AceDB = LibStub("AceDB-3.0")
-	AceDBOptions = LibStub("AceDBOptions-3.0")
-	AceConfig = LibStub("AceConfig-3.0")
-	AceConfigDialog = LibStub("AceConfigDialog-3.0")
-	AceConfigCmd = LibStub("AceConfigCmd-3.0")
-	AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
-	LibDataBroker = LibStub("LibDataBroker-1.1")
-	LibDualSpec = LibStub("LibDualSpec-1.0")
+	LIB_AceDB = LibStub("AceDB-3.0") or error("Auracle: Required library AceDB-3.0 not found")
+	LIB_AceDBOptions = LibStub("AceDBOptions-3.0", true) -- optional
+	LIB_AceConfig = LibStub("AceConfig-3.0", true) -- optional
+	if (LIB_AceConfig) then
+		LIB_AceConfigCmd = LibStub("AceConfigCmd-3.0", true) -- optional
+		LIB_AceConfigDialog = LibStub("AceConfigDialog-3.0", true) -- optional
+		LIB_AceConfigRegistry = LibStub("AceConfigRegistry-3.0", true) -- optional
+	end
+	LIB_LibDataBroker = LibStub("LibDataBroker-1.1", true) -- optional
+	LIB_LibDualSpec = LibStub("LibDualSpec-1.0", true) -- optional
 	-- initialize stored data
-	self.db = AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
-	LibDualSpec:EnhanceDatabase(self.db, "Auracle")
+	self.db = LIB_AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
+	if (LIB_LibDualSpec) then
+		LIB_LibDualSpec:EnhanceDatabase(self.db, "Auracle")
+	end
 	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	-- register configuration interface(s)
-	AceConfig:RegisterOptionsTable("Auracle", commandTable, {"auracle"})
-	AceConfig:RegisterOptionsTable("Auracle Setup", optionsTable)
-	AceConfig:RegisterOptionsTable("Auracle Blizzard Setup", blizOptionsTable)
-	blizOptionsFrame = AceConfigDialog:AddToBlizOptions("Auracle Blizzard Setup", "Auracle")
-	-- register LDB launcher
-	LibDataBroker:NewDataObject("Auracle", {
-		type = "launcher",
-		--icon = "Interface\\Icons\\Spell_Arcane_FocusedPower",
-		--icon = "Interface\\Icons\\Spell_Holy_SpiritualGuidence",
-		icon = "Interface\\Icons\\Spell_Holy_AuraMastery",
-		OnClick = function(frame, button)
-			if (button == "RightButton") then
-				self:OpenOptionsWindow()
-			else -- LeftButton or some other screwy argument
-				if (self:IsEnabled()) then
-					self:Print("Disabled.")
-					self:Disable()
-				else
-					self:Enable()
-					self:Print("Enabled.")
+	if (LIB_AceConfigCmd) then
+		LIB_AceConfig:RegisterOptionsTable("Auracle", commandTable, {"auracle"})
+	end
+	if (LIB_AceConfigDialog) then
+		LIB_AceConfig:RegisterOptionsTable("Auracle Setup", optionsTable)
+		LIB_AceConfig:RegisterOptionsTable("Auracle Blizzard Setup", blizOptionsTable)
+		blizOptionsFrame = LIB_AceConfigDialog:AddToBlizOptions("Auracle Blizzard Setup", "Auracle")
+	end
+	if (LIB_LibDataBroker) then
+		-- register LDB launcher
+		LIB_LibDataBroker:NewDataObject("Auracle", {
+			type = "launcher",
+			--icon = "Interface\\Icons\\Spell_Arcane_FocusedPower",
+			--icon = "Interface\\Icons\\Spell_Holy_SpiritualGuidence",
+			icon = "Interface\\Icons\\Spell_Holy_AuraMastery",
+			OnClick = function(frame, button)
+				if (button == "RightButton") then
+					self:OpenOptionsWindow()
+				else -- LeftButton or some other screwy argument
+					if (self:IsOnline()) then
+						self:Print(L.LDB_MSG_DISABLED)
+						self:Disable()
+					else
+						self:Enable()
+						self:Print(L.LDB_MSG_ENABLED)
+					end
 				end
-			end
-		end,
-		OnTooltipShow = function(tt)
-			--[[ how to make this update when clicked?
-			if (self:IsEnabled()) then
-				tt:AddLine("Auracle |cffffffff(|cff00ff00enabled|cffffffff)")
-			else
-				tt:AddLine("Auracle |cffffffff(|cffff0000disabled|cffffffff)")
-			end
-			--]]
-			tt:AddLine("Auracle")
-			tt:AddLine("|cff7fffffLeft-click|cffffffff to toggle")
-			tt:AddLine("|cff7fffffRight-click|cffffffff to open configuration")
-		end,
-	})
+			end,
+			OnTooltipShow = function(tt)
+				--[[ how to make this update when clicked?
+				if (self:IsOnline()) then
+					tt:AddLine(L.LDB_STAT_ENABLED)
+				else
+					tt:AddLine(L.LDB_STAT_DISABLED)
+				end
+				--]]
+				tt:AddLine("Auracle")
+				tt:AddLine(L.LDB_LEFTCLICK)
+				tt:AddLine(L.LDB_RIGHTCLICK)
+			end,
+		})
+	end
 end -- OnInitialize()
 
 function Auracle:OnEnable()
@@ -176,9 +216,8 @@ function Auracle:OnDisable()
 end -- OnDisable()
 
 function Auracle:OnProfileChanged()
-	if (self:IsEnabled()) then
-		self:Shutdown()
-		self:Startup()
+	if (self:IsOnline()) then
+		self:Startup() -- this calls :Shutdown() to clean up
 	end
 end -- OnProfileChanged()
 
@@ -191,9 +230,9 @@ function Auracle:ACTIVE_TALENT_GROUP_CHANGED()
 end -- ACTIVE_TALENT_GROUP_CHANGED()
 
 function Auracle:PARTY_MEMBERS_CHANGED()
-	if (API_GetNumRaidMembers() > 0) then -- includes player
+	if ((API_GetNumRaidMembers()) > 0) then -- includes player
 		self.plrGroup = "raid"
-	elseif (API_GetNumPartyMembers() > 0) then -- excludes player
+	elseif ((API_GetNumPartyMembers()) > 0) then -- excludes player
 		self.plrGroup = "party"
 	else
 		self.plrGroup = "solo"
@@ -202,8 +241,7 @@ function Auracle:PARTY_MEMBERS_CHANGED()
 end -- PARTY_MEMBERS_CHANGED()
 
 function Auracle:PLAYER_ENTERING_WORLD()
-	local _
-	_,self.plrInstance = API_IsInInstance()
+	self.plrInstance = select(2, API_IsInInstance())
 	self:DispatchPlayerStatus()
 end -- PLAYER_ENTERING_WORLD()
 
@@ -248,16 +286,13 @@ function Auracle:UNIT_TARGET(event, unit)
 end -- UNIT_TARGET()
 
 function Auracle:UPDATE_SHAPESHIFT_FORM()
-	local f,maxform = API_GetShapeshiftForm(),API_GetNumShapeshiftForms()
+	local f API_GetShapeshiftForm()
+	local maxform = API_GetNumShapeshiftForms()
 	if (not f or f < 1 or f > maxform) then
-		self.plrForm = "Humanoid"
+		self.plrForm = L.HUMANOID
 	else
-		local _
-		_,self.plrForm,_,_ = API_GetShapeshiftFormInfo(f)
+		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
---@debug@
-	print('UPDATE_SHAPESHIFT_FORM: '..tostring(f).." = "..self.plrForm)
---@end-debug@
 	self:DispatchPlayerStatus()
 end -- UPDATE_SHAPESHIFT_FORM()
 
@@ -282,8 +317,8 @@ end -- Bucket_UNIT_AURA()
 function Auracle:UpdateUnitIdentity(unit)
 	local ipairs = ipairs
 	if (API_UnitExists(unit)) then
-		local tgtType,tgtReact = "pc","neutral"
 		-- check unit type and reaction
+		local tgtType,tgtReact = "pc","neutral"
 		if (not API_UnitPlayerControlled(unit)) then
 			tgtType = API_UnitClassification(unit)
 		end
@@ -367,23 +402,23 @@ end -- UpdateUnitAuras()
 --[[ SITUATION UPDATE METHODS ]]--
 
 function Auracle:UpdatePlayerStatus(window)
-	local _
 	-- determine player's spec, instance, group, combat and form status
 	self.plrSpec = API_GetActiveTalentGroup()
-	_,self.plrInstance = API_IsInInstance()
-	if (API_GetNumRaidMembers() > 0) then -- includes player
+	self.plrInstance = select(2, API_IsInInstance())
+	if ((API_GetNumRaidMembers()) > 0) then -- includes player
 		self.plrGroup = "raid"
-	elseif (API_GetNumPartyMembers() > 0) then -- excludes player
+	elseif ((API_GetNumPartyMembers()) > 0) then -- excludes player
 		self.plrGroup = "party"
 	else
 		self.plrGroup = "solo"
 	end
-	self.plrCombat = (API_InCombatLockdown() and true) or false
-	local f,maxform = API_GetShapeshiftForm(),API_GetNumShapeshiftForms()
+	self.plrCombat = ((API_InCombatLockdown()) and true) or false
+	local f = API_GetShapeshiftForm()
+	local maxform = API_GetNumShapeshiftForms()
 	if (not f or f < 1 or f > maxform) then
-		self.plrForm = "Humanoid"
+		self.plrForm = L.HUMANOID
 	else
-		_,self.plrForm,_,_ = API_GetShapeshiftFormInfo(f)
+		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
 	-- update windows
 	self:DispatchPlayerStatus(window)
@@ -414,6 +449,8 @@ end -- DispatchPlayerStatus()
 --[[ CONFIG METHODS ]]--
 
 function Auracle:Startup()
+	-- make sure everything was cleaned up from before..
+	self:Shutdown()
 	-- initialize addon
 	self.windowStyles = {}
 	self.windowStyleOptions = {}
@@ -425,7 +462,7 @@ function Auracle:Startup()
 	self.plrInstance = "none"
 	self.plrGroup = "solo"
 	self.plrCombat = false
-	self.plrForm = "Humanoid"
+	self.plrForm = L.HUMANOID
 	-- make sure the Default styles exist
 	if (not self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
 		self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
@@ -460,9 +497,12 @@ function Auracle:Startup()
 	-- initialize configuration options
 	Window:UpdateFormOptions()
 	self:UpdateConfig()
+	-- ready
+	self.online = true
 end -- Startup()
 
 function Auracle:Shutdown()
+	self.online = nil
 	-- recycle objects
 	if (type(self.windows) == "table") then
 		for n,window in ipairs(self.windows) do
@@ -686,7 +726,7 @@ function Auracle:UpdateEventListeners()
 		if (not eForm) then
 			vis = window.db.visibility.plrForm
 			for f = 1,maxform do
-				_,form,_,_ = API_GetShapeshiftFormInfo(f)
+				form = select(2, API_GetShapeshiftFormInfo(f))
 				if (vis[form] ~= vis.Humanoid) then
 					eForm = true
 					break
@@ -737,7 +777,7 @@ function Auracle:RemoveWindow(window)
 	until (not w or w == window)
 	if (wpos and self.db.profile.windows[wpos] == window.db) then
 		if (wpos == 1 and #self.windows == 1) then
-			self:Print("Can't remove the last window; disable the addon instead")
+			self:Print(L.ERR_REMOVE_LAST_WINDOW)
 		else
 			tremove(self.db.profile.windows, wpos)
 			tremove(self.windows, wpos)
@@ -748,6 +788,10 @@ function Auracle:RemoveWindow(window)
 	end
 	return false
 end -- RemoveWindow()
+
+function Auracle:IsOnline()
+	return self.online
+end -- IsOnline()
 
 function Auracle:AreWindowsLocked()
 	return self.windowsLocked
@@ -771,7 +815,7 @@ end -- LockWindows()
 
 function Auracle:RenameWindowStyle(ws, name)
 	name = strtrim(name)
-	if (ws.db.name == "Default" or name == "" or self.windowStyles[name]) then
+	if (ws.db.name == L.DEFAULT or name == "" or self.windowStyles[name]) then
 		return false
 	end
 	self.db.profile.windowStyles[ws.db.name] = nil
@@ -793,10 +837,11 @@ function Auracle:CopyWindowStyle(ws)
 	if (not (ws and ws.db.name and self.windowStyles[ws.db.name] == ws)) then
 		return false
 	end
-	local c,name = 1,"Copy of "..ws.db.name
+	local c = 1
+	local name = L.FMT_COPY_OF .. " " .. ws.db.name
 	while (self.windowStyles[name]) do
 		c = c + 1
-		name = "Copy ("..c..") of "..ws.db.name
+		name = format(L["FMT_COPY_%d_OF"], c) .. " " .. ws.db.name
 	end
 	local wdb = cloneTable(ws.db, true)
 	wdb.name = name
@@ -809,12 +854,12 @@ function Auracle:CopyWindowStyle(ws)
 end -- CopyWindowStyle()
 
 function Auracle:RemoveWindowStyle(ws)
-	if (not (ws and ws.db.name and ws.db.name ~= "Default" and self.windowStyles[ws.db.name] == ws)) then
+	if (not (ws and ws.db.name and ws.db.name ~= L.DEFAULT and self.windowStyles[ws.db.name] == ws)) then
 		return false
 	end
 	for n,window in ipairs(self.windows) do
 		if (window.style == ws) then
-			window.db.style = "Default"
+			window.db.style = L.DEFAULT
 			window.style = self.windowStyles.Default
 			window.style:Apply(window)
 		end
@@ -829,7 +874,7 @@ end -- RemoveWindowStyle()
 
 function Auracle:RenameTrackerStyle(ts, name)
 	name = strtrim(name)
-	if (ts.db.name == "Default" or name == "" or self.trackerStyles[name]) then
+	if (ts.db.name == L.DEFAULT or name == "" or self.trackerStyles[name]) then
 		return false
 	end
 	self.db.profile.trackerStyles[ts.db.name] = nil
@@ -853,10 +898,11 @@ function Auracle:CopyTrackerStyle(ts)
 	if (not (ts and ts.db.name and self.trackerStyles[ts.db.name] == ts)) then
 		return false
 	end
-	local c,name = 1,"Copy of "..ts.db.name
+	local c = 1
+	local name = L.FMT_COPY_OF .. " " .. ts.db.name
 	while (self.trackerStyles[name]) do
 		c = c + 1
-		name = "Copy ("..c..") of "..ts.db.name
+		name = format(L["FMT_COPY_%d_OF"], c) .. " " .. ts.db.name
 	end
 	local tdb = cloneTable(ts.db, true)
 	tdb.name = name
@@ -869,13 +915,13 @@ function Auracle:CopyTrackerStyle(ts)
 end -- CopyTrackerStyle()
 
 function Auracle:RemoveTrackerStyle(ts)
-	if (not (ts and ts.db.name and ts.db.name ~= "Default" and self.trackerStyles[ts.db.name] == ts)) then
+	if (not (ts and ts.db.name and ts.db.name ~= L.DEFAULT and self.trackerStyles[ts.db.name] == ts)) then
 		return false
 	end
 	for n,window in ipairs(self.windows) do
 		for m,tracker in ipairs(window.trackers) do
 			if (tracker.style == ts) then
-				tracker.db.style = "Default"
+				tracker.db.style = L.DEFAULT
 				tracker.style = self.trackerStyles.Default
 				tracker.style:Apply(tracker)
 			end
@@ -904,31 +950,34 @@ function Auracle:UpdateCommandTable()
 		args = {
 			config = {
 				type = "execute",
-				name = "Configure",
-				desc = "Open configuration panel",
+				name = L.CONFIGURE,
+				desc = L.DESC_CMD_CONFIGURE,
 				func = "OpenOptionsWindow",
 				order = 1
 			},
 			enable = {
 				type = "execute",
-				name = "Enable Auracle",
+				name = L.ENABLE_ADDON,
 				func = "Enable",
 				order = 2
 			},
 			disable = {
 				type = "execute",
-				name = "Disable Auracle",
+				name = L.DISABLE_ADDON,
 				func = "Disable",
 				order = 2
 			}
 		}
 		commandTable.args = args
 	end
-	args.disable.disabled = not self:IsEnabled()
-	args.disable.hidden = not self:IsEnabled()
-	args.enable.disabled = self:IsEnabled()
-	args.enable.hidden = self:IsEnabled()
-	AceConfigRegistry:NotifyChange("Auracle")
+	local online = self:IsOnline()
+	args.disable.disabled = not online
+	args.disable.hidden = not online
+	args.enable.disabled = online
+	args.enable.hidden = online
+	if (LIB_AceConfigRegistry) then
+		LIB_AceConfigRegistry:NotifyChange("Auracle")
+	end
 end -- UpdateCommandTable()
 
 function Auracle:UpdateOptionsTable()
@@ -937,80 +986,86 @@ function Auracle:UpdateOptionsTable()
 		args = {
 			general = {
 				type = "group",
-				name = "General",
+				name = L.GENERAL,
 				order = 1,
 				args = {
 					enabled = {
 						type = "toggle",
-						name = "Auracle Enabled",
+						name = L.ADDON_ENABLED,
 						width = "full",
-						get = "IsEnabled",
-						set = function(i,v) if (v) then i.handler:Enable() else i.handler:Disable() end end,
+						get = "IsOnline",
+						set = function(i,v) if (v) then Auracle:Enable() else Auracle:Disable() end end,
 						order = 10
 					},
 					locked = {
 						type = "toggle",
-						name = "Windows Locked",
-						desc = "When unlocked, windows may be moved by left-click-dragging",
+						name = L.WINDOWS_LOCKED,
+						desc = L.DESC_OPT_WINDOWS_LOCKED,
 						width = "full",
 						get = "AreWindowsLocked",
-						set = function(i,v) if (v) then i.handler:LockWindows() else i.handler:UnlockWindows() end end,
+						set = function(i,v) if (v) then Auracle:LockWindows() else Auracle:UnlockWindows() end end,
 						order = 11
 					}
 				}
 			},
 			windowStyles = {
 				type = "group",
-				name = "Window Styles",
+				name = L.WINDOW_STYLES,
 				childGroups = "tree",
 				order = 2,
 				args = {}
 			},
 			trackerStyles = {
 				type = "group",
-				name = "Tracker Styles",
+				name = L.TRACKER_STYLES,
 				childGroups = "tree",
 				order = 3,
 				args = {}
 			},
 			windows = {
 				type = "group",
-				name = "Windows",
+				name = L.WINDOWS,
 				childGroups = "tree",
 				order = 4,
 				args = {
 					addWindow = {
 						type = "group",
-						name = "|cff7fffff(Add Window...)",
+						name = L.LIST_ADD_WINDOW,
 						order = -1,
 						args = {
 							addWindow = {
 								type = "execute",
-								name = "Add Window",
+								name = L.ADD_WINDOW,
 								func = "AddWindow"
 							}
 						}
 					}
 				}
 			},
-			profiles = AceDBOptions:GetOptionsTable(self.db),
+		--	profiles = ...
 --[[ TODO
 			about = {
 				type = "group",
-				name = "About",
+				name = L.ABOUT,
 				order = -1,
 				args = {
 				}
 			}
 --]]
 		}
-		LibDualSpec:EnhanceOptions(args.profiles, self.db)
+		if (LIB_AceDBOptions) then
+			args.profiles = LIB_AceDBOptions:GetOptionsTable(self.db)
+			if (args.profiles and LIB_LibDualSpec) then
+				LIB_LibDualSpec:EnhanceOptions(args.profiles, self.db)
+			end
+		end
 		optionsTable.args = args
 	end
-	args.general.args.locked.disabled = not self:IsEnabled()
-	args.windowStyles.disabled = not self:IsEnabled()
-	args.trackerStyles.disabled = not self:IsEnabled()
-	args.windows.disabled = not self:IsEnabled()
+	local online = self:IsOnline()
+	args.general.args.locked.disabled = not online
+	args.windowStyles.disabled = not online
+	args.trackerStyles.disabled = not online
+	args.windows.disabled = not online
 	-- populate windowstyle subtables
 	wipe(args.windowStyles.args)
 	if (self.windowStyles) then
@@ -1018,7 +1073,7 @@ function Auracle:UpdateOptionsTable()
 		for name,ws in pairs(self.windowStyles) do
 			i = i + 1
 			args.windowStyles.args["ws"..i] = ws:GetOptionsTable()
-			if (name == "Default") then args.windowStyles.args["ws"..i].order = 1 end
+			if (name == L.DEFAULT) then args.windowStyles.args["ws"..i].order = 1 end
 		end
 	end
 	-- populate trackerstyle subtables
@@ -1028,7 +1083,7 @@ function Auracle:UpdateOptionsTable()
 		for name,ts in pairs(self.trackerStyles) do
 			i = i + 1
 			args.trackerStyles.args["ts"..i] = ts:GetOptionsTable()
-			if (name == "Default") then args.trackerStyles.args["ts"..i].order = 1 end
+			if (name == L.DEFAULT) then args.trackerStyles.args["ts"..i].order = 1 end
 		end
 	end
 	-- populate window subtables
@@ -1041,11 +1096,15 @@ function Auracle:UpdateOptionsTable()
 			args.windows.args["window"..n].order = (args.windows.order*10) + n
 		end
 	end
-	AceConfigRegistry:NotifyChange("Auracle Setup")
+	if (LIB_AceConfigRegistry) then
+		LIB_AceConfigRegistry:NotifyChange("Auracle Setup")
+	end
 end -- UpdateOptionsTable()
 
 function Auracle:OpenOptionsWindow()
-	AceConfigDialog:Open("Auracle Setup")
+	if (LIB_AceConfigDialog) then
+		LIB_AceConfigDialog:Open("Auracle Setup")
+	end
 end -- OpenOptionsWindow()
 
 function Auracle:UpdateBlizOptions()
@@ -1054,34 +1113,22 @@ function Auracle:UpdateBlizOptions()
 		args = {
 			enabled = {
 				type = "toggle",
-				name = "Auracle Enabled",
-				get = "IsEnabled",
+				name = L.ADDON_ENABLED,
+				get = "IsOnline",
 				set = function(i,v) if (v) then Auracle:Enable() else Auracle:Disable() end end,
 				order = 1
 			},
 			configure = {
 				type = "execute",
-				name = "Open Configuration",
+				name = L.OPEN_CONFIGURATION,
 				func = "OpenOptionsWindow",
 				order = 2
 			}
 		}
 		blizOptionsTable.args = args
 	end
-	AceConfigRegistry:NotifyChange("Auracle Blizzard Setup")
-end -- UpdateBlizOptions()
-
-
---[[ CROSS-INIT ]]--
-
-CONFIGMODE_CALLBACKS = CONFIGMODE_CALLBACKS or {}
-function CONFIGMODE_CALLBACKS.Auracle(action)
-	if (Auracle:IsEnabled()) then
-		if (action == 'ON') then
-			Auracle:UnlockWindows()
-		elseif (action == 'OFF') then
-			Auracle:LockWindows()
-		end
+	if (LIB_AceConfigRegistry) then
+		LIB_AceConfigRegistry:NotifyChange("Auracle Blizzard Setup")
 	end
-end
+end -- UpdateBlizOptions()
 

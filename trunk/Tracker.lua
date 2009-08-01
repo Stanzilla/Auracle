@@ -1,16 +1,20 @@
 local LibOOP
 --@alpha@
-LibOOP = LibStub("LibOOP-1.0-alpha",true)
+LibOOP = LibStub("LibOOP-1.0-alpha", true)
 --@end-alpha@
-LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("LibOOP not found")
+LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
 local Tracker = LibOOP:Class()
+
+local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
+local L = LIB_AceLocale:GetLocale("Auracle")
+
 
 --[[ CONSTANTS ]]--
 
 local ICON_QM = "Interface\\Icons\\INV_Misc_QuestionMark"
 local DB_DEFAULT_TRACKER = {
 	label = false,
-	style = "Default",
+	style = L.DEFAULT,
 	auratype = "debuff", -- buff|debuff
 	auras = {},
 	showOthers = true,
@@ -52,12 +56,12 @@ local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, i
 
 Auracle:__tracker(Tracker, DB_DEFAULT_TRACKER)
 
-local ceil,max,min,tostring = ceil,max,min,tostring
-local objectPool = {}
-
+local ceil,max,min,select,tostring = ceil,max,min,select,tostring
 local API_GetCurrentResolution = GetCurrentResolution
 local API_GetScreenResolutions = GetScreenResolutions
 local API_GetTime = GetTime
+
+local objectPool = {}
 
 
 --[[ UTILITY FUNCTIONS ]]--
@@ -118,21 +122,22 @@ local function Frame_OnEnter(self)
 			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
 			tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, ((tracker.db.auratype == "buff") and "HELPFUL") or "HARMFUL")
 		elseif (mode == "summary") then
-			local now,timeleft = API_GetTime(),nil
+			local now = API_GetTime()
+			local timeleft
 			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
 			tt:ClearLines()
-			tt:AddLine(tracker.db.label or tracker.db.auras[1] or "New Tracker", 1, 1, 0)
+			tt:AddLine(tracker.db.label or tracker.db.auras[1] or L.NEW_TRACKER, 1, 1, 0)
 			for i,aura in pairs(tracker.db.auras) do
 				if (tracker.summary[aura] == true) then
 					tt:AddLine(aura, 0, 1, 0)
 				elseif (tracker.summary[aura]) then
 					timeleft = tracker.summary[aura] - now
 					if (timeleft >= 3600) then
-						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 3600)).."h", 0, 1, 0, 0, 1, 0)
+						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 3600))..L["_HOURS_ABBREV_"], 0, 1, 0, 0, 1, 0)
 					elseif (timeleft >= 60) then
-						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 60)).."m", 0, 1, 0, 0, 1, 0)
+						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 60))..L["_MINUTES_ABBREV_"], 0, 1, 0, 0, 1, 0)
 					else
-						tt:AddDoubleLine(aura, tostring(ceil(timeleft)).."s", 0, 1, 0, 0, 1, 0)
+						tt:AddDoubleLine(aura, tostring(ceil(timeleft))..L["_SECONDS_ABBREV_"], 0, 1, 0, 0, 1, 0)
 					end
 				else
 					tt:AddLine(aura, 1, 0, 0)
@@ -150,7 +155,7 @@ local function Frame_OnLeave(self)
 end -- Frame_OnLeave()
 
 local function Cooldown_OnUpdate_Stacks(self, elapsed)
-	self:SetCooldown(API_GetTime() - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.spiral.maxStacks)
+	self:SetCooldown((API_GetTime()) - self.Auracle_tracker.auraStacks, self.Auracle_tracker.db.spiral.maxStacks)
 end -- Cooldown_OnUpdate_Stacks()
 
 local function TrackerOverlay_OnUpdate(self, elapsed)
@@ -167,9 +172,9 @@ local function TrackerOverlay_OnUpdate(self, elapsed)
 	if (dbtext.mode == "time") then
 		local text
 		if (auraTimeleft >= 3600) then
-			text = tostring(ceil(auraTimeleft / 3600)).."h"
+			text = tostring(ceil(auraTimeleft / 3600))..L["_HOURS_ABBREV_"]
 		elseif (auraTimeleft >= 60) then
-			text = tostring(ceil(auraTimeleft / 60)).."m"
+			text = tostring(ceil(auraTimeleft / 60))..L["_MINUTES_ABBREV_"]
 		else
 			text = tostring(ceil(auraTimeleft))
 		end
@@ -507,7 +512,7 @@ function Tracker.prototype:UpdateBackdrop()
 			local borderSize = sdb[S_SIZE[self.auraOrigin]]
 			if (sdb.noScale) then
 				local m = {}
-				for size in string.gmatch(select(API_GetCurrentResolution(), API_GetScreenResolutions()), "[0-9]+") do
+				for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
 					m[#m+1] = size
 				end
 				borderSize = borderSize * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
@@ -583,9 +588,9 @@ function Tracker.prototype:UpdateText()
 			if (self.auraTimeleft) then
 				self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
 				if (self.auraTimeleft >= 3600) then
-					text = tostring(ceil(self.auraTimeleft / 3600)).."h"
+					text = tostring(ceil(self.auraTimeleft / 3600))..L["_HOURS_ABBREV_"]
 				elseif (self.auraTimeleft >= 60) then
-					text = tostring(ceil(self.auraTimeleft / 60)).."m"
+					text = tostring(ceil(self.auraTimeleft / 60))..L["_MINUTES_ABBREV_"]
 				else
 					text = tostring(ceil(self.auraTimeleft or 0))
 				end
@@ -664,12 +669,12 @@ end -- Lock()
 local sharedOptions = {
 	tracker = {
 		type = "group",
-		name = "Tracker",
+		name = L.TRACKER,
 		order = 1,
 		args = {
 			label = {
 				type = "input",
-				name = "Label",
+				name = L.LABEL,
 				get = function(i) return i.handler.db.label end,
 				set = function(i,v)
 					v = strtrim(v)
@@ -681,16 +686,16 @@ local sharedOptions = {
 			},
 			removeTracker = {
 				type = "execute",
-				name = "Remove Tracker",
+				name = L.REMOVE_TRACKER,
 				func = "Remove",
 				order = 11
 			},
 			auratype = {
 				type = "select",
-				name = "Aura Type",
+				name = L.AURA_TYPE,
 				values = {
-					buff = "Buffs",
-					debuff = "Debuffs"
+					buff = L.BUFFS,
+					debuff = L.DEBUFFS
 				},
 				get = function(i) return i.handler.db.auratype end,
 				set = function(i,v)
@@ -701,7 +706,7 @@ local sharedOptions = {
 			},
 			style = {
 				type = "select",
-				name = "Tracker Style",
+				name = L.TRACKER_STYLE,
 				values = function() return Auracle.trackerStyleOptions end,
 				get = function(i) return i.handler.db.style end,
 				set = function(i,v)
@@ -716,8 +721,8 @@ local sharedOptions = {
 			},
 			auras = {
 				type = "input",
-				name = "Auras",
-				usage = "One buff or debuff name per line",
+				name = L.AURAS,
+				usage = L.DESC_OPT_AURAS,
 				multiline = true,
 				width = "double",
 				get = function(i)
@@ -744,7 +749,7 @@ local sharedOptions = {
 			},
 			showOthers = {
 				type = "toggle",
-				name = "Track Other's",
+				name = L.OPT_OTHERS_TRACK,
 				get = function(i) return i.handler.db.showOthers end,
 				set = function(i,v)
 					i.handler.db.showOthers = v
@@ -754,7 +759,7 @@ local sharedOptions = {
 			},
 			showMine = {
 				type = "toggle",
-				name = "Track Mine",
+				name = L.OPT_MINE_TRACK,
 				get = function(i) return i.handler.db.showMine end,
 				set = function(i,v)
 					i.handler.db.showMine = v
@@ -766,13 +771,13 @@ local sharedOptions = {
 	},
 	icon = {
 		type = "group",
-		name = "Icon",
+		name = L.ICON,
 		order = 2,
 		args = {
 			autoIcon = {
 				type = "toggle",
-				name = "Autoupdate",
-				desc = "Update icon texture whenever a new aura activates the tracker",
+				name = L.AUTOUPDATE,
+				desc = L.DESC_OPT_AUTOUPDATE,
 				get = function(i) return i.handler.db.icon.autoIcon end,
 				set = function(i,v)
 					i.handler.db.icon.autoIcon = v
@@ -782,7 +787,7 @@ local sharedOptions = {
 			},
 			texture = {
 				type = "input",
-				name = "Texture",
+				name = L.TEXTURE,
 				get = function(i) return i.handler.db.icon.texture end,
 				set = function(i,v)
 					i.handler.db.icon.texture = v
@@ -794,15 +799,15 @@ local sharedOptions = {
 	},
 	spiral = {
 		type = "group",
-		name = "Spiral",
+		name = L.SPIRAL,
 		order = 3,
 		args = {
 			mode = {
 				type = "select",
-				name = "Display",
+				name = L.DISPLAY,
 				values = {
-					stacks = "Stacks",
-					time = "Time Left"
+					stacks = L.STACKS,
+					time = L.TIME_LEFT
 				},
 				get = function(i) return i.handler.db.spiral.mode end,
 				set = function(i,v)
@@ -813,10 +818,10 @@ local sharedOptions = {
 			},
 			reverse = {
 				type = "select",
-				name = "Direction",
+				name = L.DIRECTION,
 				values = {
-					drain = "Drain Clockwise",
-					fill = "Fill Clockwise"
+					drain = L.DRAIN_CLOCKWISE,
+					fill = L.FILL_CLOCKWISE
 				},
 				get = function(i) return (i.handler.db.spiral.reverse and "drain") or "fill" end,
 				set = function(i,v)
@@ -827,18 +832,18 @@ local sharedOptions = {
 			},
 			maxTime = {
 				type = "group",
-				name = "Maximum Duration",
+				name = L.MAXIMUM_DURATION,
 				inline = true,
 				order = 32,
 				args = {
 					mode = {
 						type = "select",
-						name = "Autoupdate Mode",
+						name = L.AUTOUPDATE_MODE,
 						disabled = function(i) return i.handler.db.spiral.mode ~= "time" end,
 						values = {
-							auto = "Update Always",
-							autoUp = "Update Upwards",
-							static = "Static"
+							auto = L.UPDATE_ALWAYS,
+							autoUp = L.UPDATE_UPWARDS,
+							static = L.STATIC
 						},
 						get = function(i) return i.handler.db.spiral.maxTimeMode end,
 						set = function(i,v)
@@ -849,7 +854,7 @@ local sharedOptions = {
 					},
 					maxTime = {
 						type = "input",
-						name = "Value",
+						name = L.VALUE,
 						disabled = function(i) return i.handler.db.spiral.mode ~= "time" end,
 						get = function(i) return tostring(i.handler.db.spiral.maxTime or "") end,
 						set = function(i,v)
@@ -862,18 +867,18 @@ local sharedOptions = {
 			},
 			maxStacks = {
 				type = "group",
-				name = "Maximum Stacks",
+				name = L.MAXIMUM_STACKS,
 				inline = true,
 				order = 33,
 				args = {
 					mode = {
 						type = "select",
-						name = "Autoupdate Mode",
+						name = L.AUTOUPDATE_MODE,
 						disabled = function(i) return i.handler.db.spiral.mode ~= "stacks" end,
 						values = {
-							auto = "Update Always",
-							autoUp = "Update Upwards",
-							static = "Static"
+							auto = L.UPDATE_ALWAYS,
+							autoUp = L.UPDATE_UPWARDS,
+							static = L.STATIC
 						},
 						get = function(i) return i.handler.db.spiral.maxStacksMode end,
 						set = function(i,v)
@@ -884,7 +889,7 @@ local sharedOptions = {
 					},
 					maxStacks = {
 						type = "input",
-						name = "Value",
+						name = L.VALUE,
 						disabled = function(i) return i.handler.db.spiral.mode ~= "stacks" end,
 						get = function(i) return tostring(i.handler.db.spiral.maxStacks or "") end,
 						set = function(i,v)
@@ -899,16 +904,16 @@ local sharedOptions = {
 	},
 	text = {
 		type = "group",
-		name = "Text",
+		name = L.TEXT,
 		order = 4,
 		args = {
 			mode = {
 				type = "select",
-				name = "Display",
+				name = L.DISPLAY,
 				values = {
-					label = "Label",
-					stacks = "Stacks",
-					time = "Time Left"
+					label = L.LABEL,
+					stacks = L.STACKS,
+					time = L.TIME_LEFT
 				},
 				get = function(i) return i.handler.db.text.mode end,
 				set = function(i,v)
@@ -919,11 +924,11 @@ local sharedOptions = {
 			},
 			color = {
 				type = "select",
-				name = "Color By",
+				name = L.COLOR_BY,
 				values = {
-					time = "Absolute Duration",
-					timeRel = "Relative Duration",
-					stacks = "Relative Stacks"
+					time = L.ABSOLUTE_DURATION,
+					timeRel = L.RELATIVE_DURATION,
+					stacks = L.RELATIVE_STACKS
 				},
 				get = function(i) return i.handler.db.text.color end,
 				set = function(i,v)
@@ -934,18 +939,18 @@ local sharedOptions = {
 			},
 			maxTime = {
 				type = "group",
-				name = "Maximum Duration",
+				name = L.MAXIMUM_DURATION,
 				inline = true,
 				order = 42,
 				args = {
 					mode = {
 						type = "select",
-						name = "Autoupdate Mode",
+						name = L.AUTOUPDATE_MODE,
 						disabled = function(i) return i.handler.db.text.mode ~= "time" and i.handler.db.text.color ~= "timeRel" end,
 						values = {
-							auto = "Update Always",
-							autoUp = "Update Upwards",
-							static = "Static"
+							auto = L.UPDATE_ALWAYS,
+							autoUp = L.UPDATE_UPWARDS,
+							static = L.STATIC
 						},
 						get = function(i) return i.handler.db.text.maxTimeMode end,
 						set = function(i,v)
@@ -956,7 +961,7 @@ local sharedOptions = {
 					},
 					maxTime = {
 						type = "input",
-						name = "Value",
+						name = L.VALUE,
 						disabled = function(i) return i.handler.db.text.mode ~= "time" and i.handler.db.text.color ~= "timeRel" end,
 						get = function(i) return tostring(i.handler.db.text.maxTime or "") end,
 						set = function(i,v)
@@ -969,18 +974,18 @@ local sharedOptions = {
 			},
 			maxStacks = {
 				type = "group",
-				name = "Maximum Stacks",
+				name = L.MAXIMUM_STACKS,
 				inline = true,
 				order = 43,
 				args = {
 					mode = {
 						type = "select",
-						name = "Autoupdate Mode",
+						name = L.AUTOUPDATE_MODE,
 						disabled = function(i) return i.handler.db.text.mode ~= "stacks" and i.handler.db.text.color ~= "stacks" end,
 						values = {
-							auto = "Update Always",
-							autoUp = "Update Upwards",
-							static = "Static"
+							auto = L.UPDATE_ALWAYS,
+							autoUp = L.UPDATE_UPWARDS,
+							static = L.STATIC
 						},
 						get = function(i) return i.handler.db.text.maxStacksMode end,
 						set = function(i,v)
@@ -991,7 +996,7 @@ local sharedOptions = {
 					},
 					maxStacks = {
 						type = "input",
-						name = "Value",
+						name = L.VALUE,
 						disabled = function(i) return i.handler.db.text.mode ~= "stacks" and i.handler.db.text.color ~= "stacks" end,
 						get = function(i) return tostring(i.handler.db.text.maxStacks or "") end,
 						set = function(i,v)
@@ -1006,15 +1011,15 @@ local sharedOptions = {
 	},
 	tooltip = {
 		type = "group",
-		name = "Tooltip",
+		name = L.TOOLTIP,
 		order = 5,
 		args = {
 			modeMissing = {
 				type = "select",
-				name = "Display when Missing",
+				name = L.OPT_MISSING_DISPLAY,
 				values = {
-					summary = "Summary",
-					off = "Nothing"
+					summary = L.SUMMARY,
+					off = L.NOTHING
 				},
 				get = function(i) return i.handler.db.tooltip.showMissing end,
 				set = function(i,v)
@@ -1035,11 +1040,11 @@ local sharedOptions = {
 			},
 			modeOthers = {
 				type = "select",
-				name = "Display when Other's",
+				name = L.OPT_OTHERS_DISPLAY,
 				values = {
-					aura = "Aura's Tooltip",
-					summary = "Summary",
-					off = "Nothing"
+					aura = L.AURAS_TOOLTIP,
+					summary = L.SUMMARY,
+					off = L.NOTHING
 				},
 				get = function(i) return i.handler.db.tooltip.showOthers end,
 				set = function(i,v)
@@ -1054,11 +1059,11 @@ local sharedOptions = {
 			},
 			modeMine = {
 				type = "select",
-				name = "Display when Mine",
+				name = L.OPT_MINE_DISPLAY,
 				values = {
-					aura = "Aura's Tooltip",
-					summary = "Summary",
-					off = "Nothing"
+					aura = L.AURAS_TOOLTIP,
+					summary = L.SUMMARY,
+					off = L.NOTHING
 				},
 				get = function(i) return i.handler.db.tooltip.showMine end,
 				set = function(i,v)
@@ -1073,7 +1078,7 @@ local sharedOptions = {
 			},
 			_1 = {
 				type = "description",
-				name = "Note that enabling any tooltip will cause the tracker to block mouse clicks even while locked.  If the tracker is near the middle of the screen, this can interfere with your camera and movement control.",
+				name = L.WARN_TOOLTIP_BLOCKS_MOUSE,
 				width = "double",
 				order = 54
 			}
@@ -1093,7 +1098,7 @@ function Tracker.prototype:GetOptionsTable()
 			args = sharedOptions
 		}
 	end
-	self.optionsTable.name = self.db.label or self.db.auras[1] or "New Tracker"
+	self.optionsTable.name = self.db.label or self.db.auras[1] or L.NEW_TRACKER
 	return self.optionsTable
 end -- GetOptionsTable()
 
