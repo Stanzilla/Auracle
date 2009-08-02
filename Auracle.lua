@@ -43,7 +43,6 @@ function Auracle:__windowstyle(class, db_default)
 	self.__windowstyle = nil
 	WindowStyle = class
 	DB_DEFAULT_WINDOWSTYLE = db_default
-	--DB_DEFAULT.windowStyles.Default = DB_DEFAULT_WINDOWSTYLE
 end
 
 local TrackerStyle
@@ -51,7 +50,6 @@ function Auracle:__trackerstyle(class, db_default)
 	self.__trackerstyle = nil
 	TrackerStyle = class
 	DB_DEFAULT_TRACKERSTYLE = db_default
-	--DB_DEFAULT.trackerStyles.Default = DB_DEFAULT_TRACKERSTYLE
 end
 
 local Window
@@ -59,7 +57,6 @@ function Auracle:__window(class, db_default)
 	self.__window = nil
 	Window = class
 	DB_DEFAULT_WINDOW = db_default
-	--DB_DEFAULT.windows[1] = DB_DEFAULT_WINDOW
 end
 
 local Tracker
@@ -677,6 +674,18 @@ function Auracle:ConvertDataStore(dbProfile)
 			end
 		end
 		dbProfile.version = 8
+	end
+	-- version 9: double-check plrForm
+	if (dbProfile.version < 9) then
+--@debug@
+		self:Print("Updating saved vars to version 9")
+--@end-debug@
+		for _,wdb in pairs(dbProfile.windows) do
+			if (type(wdb.visibility.plrForm) ~= "table") then
+				wdb.visibility.plrForm = cloneTable(DB_DEFAULT_WINDOW.visibility.plrForm, true)
+			end
+		end
+		dbProfile.version = 9
 	end
 end -- ConvertDataStore()
 
