@@ -9,9 +9,17 @@ local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required libra
 local L = LIB_AceLocale:GetLocale("Auracle")
 
 
---[[ CONSTANTS ]]--
+--[[ DECLARATIONS ]]--
+
+-- constants
 
 local ICON_QM = "Interface\\Icons\\INV_Misc_QuestionMark"
+local S_SHOW  = { [false]="showMissing",  others="showOthers",   mine="showMine"  }
+local S_SIZE  = { [false]="sizeMissing",  others="sizeOthers",   mine="sizeMine"  }
+local S_GRAY  = { [false]="grayMissing",  others="grayOthers",   mine="grayMine"  }
+local S_COLOR = { [false]="colorMissing", others="colorOthers",  mine="colorMine" }
+local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, insets={left=0,right=0,top=0,bottom=0} }
+
 local DB_DEFAULT_TRACKER = {
 	label = false,
 	style = L.DEFAULT,
@@ -44,47 +52,110 @@ local DB_DEFAULT_TRACKER = {
 		showOthers = "off", -- off|summary|aura
 		showMine = "off" -- off|summary|aura
 	}
-}
-local S_SHOW  = { [false]="showMissing",  others="showOthers",   mine="showMine"  }
-local S_SIZE  = { [false]="sizeMissing",  others="sizeOthers",   mine="sizeMine"  }
-local S_GRAY  = { [false]="grayMissing",  others="grayOthers",   mine="grayMine"  }
-local S_COLOR = { [false]="colorMissing", others="colorOthers",  mine="colorMine" }
-local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, insets={left=0,right=0,top=0,bottom=0} }
+} -- {DB_DEFAULT_TRACKER}
 
+local DB_VALID_TRACKER = {
+	label = function(v) return (type(v) == "string" or v == false) end,
+	style = "string",
+	auratype = "string",
+	auras = function(v)
+		if (type(v) ~= "table") then return false end
+		for _,aura in pairs(v) do
+			if (type(aura) ~= "string") then return false end
+		end
+		return true
+	end,
+	showOthers = "boolean",
+	showMine = "boolean",
+	spiral = {
+		mode = "string",
+		reverse = "boolean",
+		maxTime = function(v) return (type(v) == "number" or v == false) end,
+		maxTimeMode = "string",
+		maxStacks = function(v) return (type(v) == "number" or v == false) end,
+		maxStacksMode = "string"
+	},
+	icon = {
+		texture = "string",
+		autoIcon = "boolean"
+	},
+	text = {
+		mode = "string",
+		color = "string",
+		maxTime = function(v) return (type(v) == "number" or v == false) end,
+		maxTimeMode = "string",
+		maxStacks = function(v) return (type(v) == "number" or v == false) end,
+		maxStacksMode = "string"
+	},
+	tooltip = {
+		showMissing = "string",
+		showOthers = "string",
+		showMine = "string"
+	}
+} -- {DB_VALID_TRACKER}
 
---[[ INIT ]]--
-
-Auracle:__tracker(Tracker, DB_DEFAULT_TRACKER)
+-- API function upvalues
 
 local ceil,max,min,select,tostring = ceil,max,min,select,tostring
 local API_GetCurrentResolution = GetCurrentResolution
 local API_GetScreenResolutions = GetScreenResolutions
 local API_GetTime = GetTime
 
-local objectPool = {}
 
+--[[ CLASS METHODS ]]--
 
---[[ UTILITY FUNCTIONS ]]--
-
-local cloneTable = false
-do
-	local flag = {}
-	cloneTable = function(tbl, cloneV, cloneK)
-		assert(not flag[tbl], "cannot deep-clone table that contains reference to itself")
-		flag[tbl] = 1
-		local newtbl = {}
-		for k,v in pairs(tbl) do
-			if (cloneK and type(k)=="table") then k = cloneTable(k, cloneV, cloneK) end
-			if (cloneV and type(v)=="table") then v = cloneTable(v, cloneV, cloneK) end
-			newtbl[k] = v
-		end
-		flag[tbl] = nil
-		return newtbl
-	end -- cloneTable()
-end
-local __auracle_debug_table = __auracle_debug_table or function() return "" end
-local __auracle_debug_array = __auracle_debug_array or function() return "" end
-local __auracle_debug_call = __auracle_debug_call or function() end
+function Tracker:UpdateSavedVars(version, db)
+	-- v4: renamed trackOthers to showOthers
+	if (type(db.trackOthers) == "boolean") then
+		db.showOthers = db.trackOthers
+		db.trackOthers = nil
+	end
+	-- v4: renamed trackMine to showMine
+	if (type(db.trackMine) == "boolean") then
+		db.showMine = db.trackMine
+		db.trackMine = nil
+	end
+	-- v4: moved spiral,spiralReverse,maxTime,autoMaxTime,maxStacks,autoMaxStacks into spiral subtable
+	if (type(db.spiral) == "string") then
+		local spiral = {
+			mode = db.spiral,
+			reverse = ((db.spiralReverse == nil) and true) or db.spiralReverse,
+			maxTime = db.maxTime or false,
+			maxTimeMode = ((db.autoMaxTime == false) and "static") or "auto",
+			maxStacks = maxStacks or false,
+			maxStacksMode = ((db.autoMaxStacks == false) and "static") or "auto"
+		}
+		db.spiral = spiral
+	end
+	-- v4: moved text,textColor,maxTime,autoMaxTime,maxStacks,autoMaxStacks into text subtable
+	if (type(db.text) == "string") then
+		local text = {
+			mode = db.text,
+			color = db.textColor or "time",
+			maxTime = db.maxTime or false,
+			maxTimeMode = ((db.autoMaxTime == false) and "static") or "auto",
+			maxStacks = maxStacks or false,
+			maxStacksMode = ((db.autoMaxStacks == false) and "static") or "auto"
+		}
+		db.text = text
+	end
+	db.spiralReverse = nil
+	db.textColor = nil
+	db.maxTime = nil
+	db.autoMaxTime = nil
+	db.maxStacks = nil
+	db.autoMaxStacks = nil
+	-- v4: moved icon,autoIcon into icon subtable
+	if (type(db.icon) == "string") then
+		local icon = {
+			texture = db.icon,
+			autoIcon = ((db.autoIcon == nil) and true) or db.autoIcon
+		}
+		db.icon = icon
+	end
+	db.autoIcon = nil
+	return 4
+end -- UpdateSavedVars()
 
 
 --[[ EVENT HANDLERS ]]--
@@ -201,95 +272,100 @@ end -- TrackerOverlay_OnUpdate()
 
 --[[ CONSTRUCT & DESTRUCT ]]--
 
-function Tracker:New(db, window, parentFrame)
-	-- re-use a tracker from the pool, or create a new one
-	local tracker = next(objectPool)
-	if (not tracker) then
-		tracker = self:Super("New")
-		tracker.uiFrame = CreateFrame("Frame") -- UIObject,Region
-		tracker.uiFrame:SetFrameStrata("LOW")
-		tracker.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
-		tracker.uiFrame.Auracle_tracker = tracker
-		tracker.uiIcon = tracker.uiFrame:CreateTexture(nil, "BACKGROUND") -- UIObject,Region,LayeredRegion
-		tracker.uiIcon:SetAllPoints()
-		tracker.uiCooldown = CreateFrame("Cooldown", nil, tracker.uiFrame) -- UIObject,Region,Frame
-		tracker.uiCooldown:SetAllPoints()
-		tracker.uiCooldown.Auracle_tracker = tracker
-		tracker.uiOverlay = CreateFrame("Frame", nil, tracker.uiFrame) -- UIObject,Region
-		tracker.uiOverlay:SetAllPoints()
-		tracker.uiOverlay.Auracle_tracker = tracker
-		tracker.uiText = tracker.uiOverlay:CreateFontString(nil, "OVERLAY") -- UIObject,FontInstance,Region,LayeredRegion
-		tracker.uiText:SetPoint("CENTER") -- SetAllPoints() makes it just display "..." if it would overflow
-		tracker.uiText:SetNonSpaceWrap(false)
-		tracker.uiText:SetJustifyH("CENTER")
-		tracker.uiText:SetJustifyV("MIDDLE")
-	end
-	objectPool[tracker] = nil
+do
+	local objectPool = {}
 	
-	-- (re?)initialize tracker
-	tracker.window = window
-	tracker.db = db
-	tracker.style = Auracle.trackerStyles[db.style]
-	tracker.locked = true
-	tracker.moving = false
-	tracker.backdrop = { edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=1 }
-	tracker.size = 4
-	tracker.text = ""
-	tracker.auraIndex = false
-	tracker.auraOrigin = false
-	tracker.auraApplied = false
-	tracker.auraExpires = false
-	tracker.auraStacks = false
-	tracker.auralist = false
-	tracker.summary = {}
+	function Tracker:New(db, window, parentFrame)
+		-- re-use a tracker from the pool, or create a new one
+		local tracker = next(objectPool)
+		if (not tracker) then
+			tracker = self:Super("New")
+			tracker.uiFrame = CreateFrame("Frame") -- UIObject,Region
+			tracker.uiFrame:SetFrameStrata("LOW")
+			tracker.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
+			tracker.uiFrame.Auracle_tracker = tracker
+			tracker.uiIcon = tracker.uiFrame:CreateTexture(nil, "BACKGROUND") -- UIObject,Region,LayeredRegion
+			tracker.uiIcon:SetAllPoints()
+			tracker.uiCooldown = CreateFrame("Cooldown", nil, tracker.uiFrame) -- UIObject,Region,Frame
+			tracker.uiCooldown:SetAllPoints()
+			tracker.uiCooldown.Auracle_tracker = tracker
+			tracker.uiOverlay = CreateFrame("Frame", nil, tracker.uiFrame) -- UIObject,Region
+			tracker.uiOverlay:SetAllPoints()
+			tracker.uiOverlay.Auracle_tracker = tracker
+			tracker.uiText = tracker.uiOverlay:CreateFontString(nil, "OVERLAY") -- UIObject,FontInstance,Region,LayeredRegion
+			tracker.uiText:SetPoint("CENTER") -- SetAllPoints() makes it just display "..." if it would overflow
+			tracker.uiText:SetNonSpaceWrap(false)
+			tracker.uiText:SetJustifyH("CENTER")
+			tracker.uiText:SetJustifyV("MIDDLE")
+		end
+		objectPool[tracker] = nil
+		
+		-- (re?)initialize tracker
+		tracker.window = window
+		tracker.db = db
+		tracker.style = Auracle.trackerStyles[db.style]
+		tracker.locked = true
+		tracker.moving = false
+		tracker.backdrop = { edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=1 }
+		tracker.size = 4
+		tracker.text = ""
+		tracker.auraIndex = false
+		tracker.auraOrigin = false
+		tracker.auraApplied = false
+		tracker.auraExpires = false
+		tracker.auraStacks = false
+		tracker.auralist = false
+		tracker.summary = {}
+		
+		-- (re?)initialize frames
+		tracker.uiFrame:SetParent(parentFrame)
+		tracker.uiFrame:SetScript("OnSizeChanged", Frame_OnSizeChanged)
+		tracker.uiFrame:Show()
+		tracker:Lock()
+		
+		-- (re?)apply preferences
+		tracker:UpdateStyle()
+		
+		return tracker
+	end -- New()
 	
-	-- (re?)initialize frames
-	tracker.uiFrame:SetParent(parentFrame)
-	tracker.uiFrame:SetScript("OnSizeChanged", Frame_OnSizeChanged)
-	tracker.uiFrame:Show()
-	tracker:Lock()
+	function Tracker.prototype:Destroy()
+		self:StopMoving()
+		-- clean up frame
+		self.uiOverlay:SetScript("OnUpdate", nil)
+		self.uiCooldown:Hide()
+		self.uiCooldown:SetScript("OnUpdate", nil)
+		self.uiFrame:Hide()
+		self.uiFrame:SetScript("OnUpdate", nil)
+		self.uiFrame:SetScript("OnMouseDown", nil)
+		self.uiFrame:SetScript("OnMouseUp", nil)
+		self.uiFrame:SetScript("OnHide", nil)
+		self.uiFrame:SetScript("OnSizeChanged", nil)
+		self.uiFrame:SetScript("OnEnter", nil)
+		self.uiFrame:SetScript("OnLeave", nil)
+		self.uiFrame:ClearAllPoints()
+		self.uiFrame:SetParent(UIParent)
+		-- clean up tracker
+		self.window = nil
+		self.db = nil
+		self.style = nil
+		self.locked = nil
+		self.moving = nil
+		self.backdrop = nil
+		self.size = nil
+		self.text = nil
+		self.auraIndex = nil
+		self.auraOrigin = nil
+		self.auraApplied = nil
+		self.auraExpires = nil
+		self.auraStacks = nil
+		self.auralist = nil
+		self.summary = nil
+		-- add object to the pool for later re-use
+		objectPool[self] = true
+	end -- Destroy()
 	
-	-- (re?)apply preferences
-	tracker:UpdateStyle()
-	
-	return tracker
-end -- New()
-
-function Tracker.prototype:Destroy()
-	self:StopMoving()
-	-- clean up frame
-	self.uiOverlay:SetScript("OnUpdate", nil)
-	self.uiCooldown:Hide()
-	self.uiCooldown:SetScript("OnUpdate", nil)
-	self.uiFrame:Hide()
-	self.uiFrame:SetScript("OnUpdate", nil)
-	self.uiFrame:SetScript("OnMouseDown", nil)
-	self.uiFrame:SetScript("OnMouseUp", nil)
-	self.uiFrame:SetScript("OnHide", nil)
-	self.uiFrame:SetScript("OnSizeChanged", nil)
-	self.uiFrame:SetScript("OnEnter", nil)
-	self.uiFrame:SetScript("OnLeave", nil)
-	self.uiFrame:ClearAllPoints()
-	self.uiFrame:SetParent(UIParent)
-	-- clean up tracker
-	self.window = nil
-	self.db = nil
-	self.style = nil
-	self.locked = nil
-	self.moving = nil
-	self.backdrop = nil
-	self.size = nil
-	self.text = nil
-	self.auraIndex = nil
-	self.auraOrigin = nil
-	self.auraApplied = nil
-	self.auraExpires = nil
-	self.auraStacks = nil
-	self.auralist = nil
-	self.summary = nil
-	-- add object to the pool for later re-use
-	objectPool[self] = true
-end -- Destroy()
+end
 
 function Tracker.prototype:Remove()
 	if (self.window:RemoveTracker(self)) then
@@ -858,7 +934,7 @@ local sharedOptions = {
 						disabled = function(i) return i.handler.db.spiral.mode ~= "time" end,
 						get = function(i) return tostring(i.handler.db.spiral.maxTime or "") end,
 						set = function(i,v)
-							i.handler.db.spiral.maxTime = tonumber(v)
+							i.handler.db.spiral.maxTime = tonumber(v) or false
 							if (i.handler.db.spiral.mode == "time") then i.handler:UpdateSpiral() end
 						end,
 						order = 321
@@ -893,7 +969,7 @@ local sharedOptions = {
 						disabled = function(i) return i.handler.db.spiral.mode ~= "stacks" end,
 						get = function(i) return tostring(i.handler.db.spiral.maxStacks or "") end,
 						set = function(i,v)
-							i.handler.db.spiral.maxStacks = tonumber(v)
+							i.handler.db.spiral.maxStacks = tonumber(v) or false
 							if (i.handler.db.spiral.mode == "stacks") then i.handler:UpdateSpiral() end
 						end,
 						order = 331
@@ -965,7 +1041,7 @@ local sharedOptions = {
 						disabled = function(i) return i.handler.db.text.mode ~= "time" and i.handler.db.text.color ~= "timeRel" end,
 						get = function(i) return tostring(i.handler.db.text.maxTime or "") end,
 						set = function(i,v)
-							i.handler.db.text.maxTime = tonumber(v)
+							i.handler.db.text.maxTime = tonumber(v) or false
 							if (i.handler.db.text.color == "timeRel") then i.handler:UpdateText() end
 						end,
 						order = 421
@@ -1000,7 +1076,7 @@ local sharedOptions = {
 						disabled = function(i) return i.handler.db.text.mode ~= "stacks" and i.handler.db.text.color ~= "stacks" end,
 						get = function(i) return tostring(i.handler.db.text.maxStacks or "") end,
 						set = function(i,v)
-							i.handler.db.text.maxStacks = tonumber(v)
+							i.handler.db.text.maxStacks = tonumber(v) or false
 							if (i.handler.db.text.color == "stacks") then i.handler:UpdateText() end
 						end,
 						order = 431
@@ -1101,4 +1177,9 @@ function Tracker.prototype:GetOptionsTable()
 	self.optionsTable.name = self.db.label or self.db.auras[1] or L.NEW_TRACKER
 	return self.optionsTable
 end -- GetOptionsTable()
+
+
+--[[ INIT ]]--
+
+Auracle:__tracker(Tracker, DB_DEFAULT_TRACKER, DB_VALID_TRACKER)
 
