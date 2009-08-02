@@ -9,7 +9,19 @@ local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required libra
 local L = LIB_AceLocale:GetLocale("Auracle")
 
 
---[[ CONSTANTS ]]--
+--[[ DECLARATIONS ]]--
+
+-- constants
+
+local S_5     = {                         others="others5",     mine="mine5"     }
+local S_10    = {                         others="others10",    mine="mine10"    }
+local S_20    = {                         others="others20",    mine="mine20"    }
+local S_30    = {                         others="others30",    mine="mine30"    }
+local S_40    = {                         others="others40",    mine="mine40"    }
+local S_60    = {                         others="others60",    mine="mine60"    }
+local S_80    = {                         others="others80",    mine="mine80"    }
+local S_100   = {                         others="others100",   mine="mine100"   }
+local S_LONG  = {                         others="othersLong",  mine="mineLong"  }
 
 local DB_DEFAULT_TRACKERSTYLE = {
 	name = L.DEFAULT,
@@ -78,30 +90,94 @@ local DB_DEFAULT_TRACKERSTYLE = {
 			mineLong   = {   1,   1,   1,   1 }
 		}
 	}
-}
-local S_5     = {                         others="others5",     mine="mine5"     }
-local S_10    = {                         others="others10",    mine="mine10"    }
-local S_20    = {                         others="others20",    mine="mine20"    }
-local S_30    = {                         others="others30",    mine="mine30"    }
-local S_40    = {                         others="others40",    mine="mine40"    }
-local S_60    = {                         others="others60",    mine="mine60"    }
-local S_80    = {                         others="others80",    mine="mine80"    }
-local S_100   = {                         others="others100",   mine="mine100"   }
-local S_LONG  = {                         others="othersLong",  mine="mineLong"  }
+} -- {DB_DEFAULT_TRACKERSTYLE}
 
+local DB_VALID_TRACKERSTYLE = {
+	name = "string",
+	border = {
+		noScale        = "boolean",
+		showMissing    = "boolean",
+		sizeMissing    = "number",
+		colorMissing   = {"number","number","number","number"},
+		showOthers     = "boolean",
+		sizeOthers     = "number",
+		colorOthers    = {"number","number","number","number"},
+		showMine       = "boolean",
+		sizeMine       = "number",
+		colorMine      = {"number","number","number","number"}
+	},
+	icon = {
+		zoom           = "boolean",
+		showMissing    = "boolean",
+		grayMissing    = "boolean",
+		colorMissing   = {"number","number","number","number"},
+		showOthers     = "boolean",
+		grayOthers     = "boolean",
+		colorOthers    = {"number","number","number","number"},
+		showMine       = "boolean",
+		grayMine       = "boolean",
+		colorMine      = {"number","number","number","number"}
+	},
+	spiral = {
+		showOthers     = "boolean",
+		showMine       = "boolean",
+		noCC           = "boolean",
+	},
+	text = {
+		font           = "string",
+		outline        = "string",
+		sizeMult       = "number",
+		size           = "number",
+		smooth         = "boolean",
+		smoothRate     = "number",
+		showMissing    = "boolean",
+		colorMissing   = {"number","number","number","number"},
+		showOthers     = "boolean",
+		showMine       = "boolean",
+		colorRel = {
+			others20   = {"number","number","number","number"},
+			mine20     = {"number","number","number","number"},
+			others40   = {"number","number","number","number"},
+			mine40     = {"number","number","number","number"},
+			others60   = {"number","number","number","number"},
+			mine60     = {"number","number","number","number"},
+			others80   = {"number","number","number","number"},
+			mine80     = {"number","number","number","number"},
+			others100  = {"number","number","number","number"},
+			mine100    = {"number","number","number","number"}
+		},
+		colorTime = {
+			others5    = {"number","number","number","number"},
+			mine5      = {"number","number","number","number"},
+			others10   = {"number","number","number","number"},
+			mine10     = {"number","number","number","number"},
+			others20   = {"number","number","number","number"},
+			mine20     = {"number","number","number","number"},
+			others30   = {"number","number","number","number"},
+			mine30     = {"number","number","number","number"},
+			othersLong = {"number","number","number","number"},
+			mineLong   = {"number","number","number","number"}
+		}
+	}
+} -- {DB_VALID_TRACKERSTYLE}
 
---[[ INIT ]]--
-
-Auracle:__trackerstyle(TrackerStyle, DB_DEFAULT_TRACKERSTYLE)
+-- library references
 
 local LIB_LibSharedMedia
 
 
---[[ CONSTRUCT & DESTRUCT ]]--
+--[[ CLASS METHODS ]]--
 
 function TrackerStyle:Initialize()
 	LIB_LibSharedMedia = LibStub("LibSharedMedia-3.0", true) -- optional
 end -- Initialize()
+
+function TrackerStyle:UpdateSavedVars(version, db)
+	return 0
+end -- UpdateSavedVars()
+
+
+--[[ CONSTRUCT & DESTRUCT ]]--
 
 function TrackerStyle:New(db)
 	local obj = self:Super("New")
@@ -959,4 +1035,9 @@ function TrackerStyle.prototype:GetOptionsTable()
 	self.optionsTable.name = self.db.name
 	return self.optionsTable
 end -- GetOptionsTable()
+
+
+--[[ INIT ]]--
+
+Auracle:__trackerstyle(TrackerStyle, DB_DEFAULT_TRACKERSTYLE, DB_VALID_TRACKERSTYLE)
 

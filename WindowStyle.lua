@@ -9,7 +9,9 @@ local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required libra
 local L = LIB_AceLocale:GetLocale("Auracle")
 
 
---[[ CONSTANTS ]]--
+--[[ DECLARATIONS ]]--
+
+-- constants
 
 local DB_DEFAULT_WINDOWSTYLE = {
 	name = L.DEFAULT,
@@ -23,13 +25,10 @@ local DB_DEFAULT_WINDOWSTYLE = {
 	},
 	background = {
 		show = true,
-		--texture = "Interface\\ChatFrame\\ChatFrameBackground",
 		texture = "Interface\\DialogFrame\\UI-DialogBox-Background",
-		--tileSize = 32,
 		tileSize = 0,
 		noScale = true,
 		inset = 4,
-		--color = {  0,   0,   0, 0.75}
 		color = {  1,   1,   1, 0.75}
 	},
 	layout = {
@@ -40,22 +39,53 @@ local DB_DEFAULT_WINDOWSTYLE = {
 	}
 }
 
+local DB_VALID_WINDOWSTYLE = {
+	name = "string",
+	windowOpacity = "number",
+	windowScale = "number",
+	border = {
+		show = "boolean",
+		texture = "string",
+		edgeSize = "number",
+		color = {"number","number","number","number"}
+	},
+	background = {
+		show = "boolean",
+		texture = "string",
+		tileSize = "number",
+		noScale = "boolean",
+		inset = "number",
+		color = {"number","number","number","number"}
+	},
+	layout = {
+		noScale = "boolean",
+		padding = "number",
+		spacing = "number",
+		trackerSize = "number"
+	}
+}
 
---[[ INIT ]]--
-
-Auracle:__windowstyle(WindowStyle, DB_DEFAULT_WINDOWSTYLE)
+-- library references
 
 local LIB_LibSharedMedia
 
-local backdrop = {}
-local insets = {}
 
-
---[[ CONSTRUCT & DESTRUCT ]]--
+--[[ CLASS METHODS ]]--
 
 function WindowStyle:Initialize()
 	LIB_LibSharedMedia = LibStub("LibSharedMedia-3.0", true) -- optional
 end -- Initialize()
+
+function WindowStyle:UpdateSavedVars(version, db)
+	-- v4: changed default window background
+	if (version < 4 and type(db.background) == "table" and db.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
+		db.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
+	end
+	return 4
+end -- UpdateSavedVars()
+
+
+--[[ CONSTRUCT & DESTRUCT ]]--
 
 function WindowStyle:New(db)
 	local obj = self:Super("New")
@@ -70,32 +100,37 @@ end -- Destroy()
 
 --[[ STYLE METHODS ]]--
 
-function WindowStyle.prototype:GetBackdropTable()
-	-- build config table
-	local backdrop = backdrop
-	wipe(backdrop)
-	local sdbBorder = self.db.border
-	if (sdbBorder.show) then
-		backdrop.edgeFile = sdbBorder.texture
-		backdrop.edgeSize = sdbBorder.edgeSize
-	end
-	local sdbBackground = self.db.background
-	if (sdbBackground.show) then
-		backdrop.bgFile = sdbBackground.texture
-		if (sdbBackground.tileSize > 0) then
-			backdrop.tile = true
-			backdrop.tileSize = sdbBackground.tileSize
-		else
-			backdrop.tile = false
+do
+	local backdrop = {}
+	local insets = {}
+	
+	function WindowStyle.prototype:GetBackdropTable()
+		-- build config table
+		wipe(backdrop)
+		local sdbBorder = self.db.border
+		if (sdbBorder.show) then
+			backdrop.edgeFile = sdbBorder.texture
+			backdrop.edgeSize = sdbBorder.edgeSize
 		end
-		insets.left = sdbBackground.inset
-		insets.right = sdbBackground.inset
-		insets.top = sdbBackground.inset
-		insets.bottom = sdbBackground.inset
-		backdrop.insets = insets
-	end
-	return backdrop
-end -- GetBackdropTable()
+		local sdbBackground = self.db.background
+		if (sdbBackground.show) then
+			backdrop.bgFile = sdbBackground.texture
+			if (sdbBackground.tileSize > 0) then
+				backdrop.tile = true
+				backdrop.tileSize = sdbBackground.tileSize
+			else
+				backdrop.tile = false
+			end
+			insets.left = sdbBackground.inset
+			insets.right = sdbBackground.inset
+			insets.top = sdbBackground.inset
+			insets.bottom = sdbBackground.inset
+			backdrop.insets = insets
+		end
+		return backdrop
+	end -- GetBackdropTable()
+	
+end
 
 
 --[[ UPDATE METHODS ]]--
@@ -443,4 +478,9 @@ function WindowStyle.prototype:GetOptionsTable()
 	self.optionsTable.name = self.db.name
 	return self.optionsTable
 end -- GetOptionsTable()
+
+
+--[[ INIT ]]--
+
+Auracle:__windowstyle(WindowStyle, DB_DEFAULT_WINDOWSTYLE, DB_VALID_WINDOWSTYLE)
 

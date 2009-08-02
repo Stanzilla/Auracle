@@ -9,7 +9,15 @@ local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required libra
 local L = LIB_AceLocale:GetLocale("Auracle")
 
 
---[[ CONSTANTS ]]--
+--[[ DECLARATIONS ]]--
+
+-- classes
+
+local Tracker,      DB_DEFAULT_TRACKER,      DB_VALID_TRACKER
+
+-- constants
+
+local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, insets={left=0,right=0,top=0,bottom=0} }
 
 local DB_DEFAULT_WINDOW = {
 	label = false,
@@ -63,51 +71,112 @@ local DB_DEFAULT_WINDOW = {
 		y = UIParent:GetHeight() / -2,
 	},
 	trackers = {}
-}
-local DB_DEFAULT_TRACKER
-local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, insets={left=0,right=0,top=0,bottom=0} }
+} -- {DB_DEFAULT_WINDOW}
 
+local DB_VALID_WINDOW = {
+	label = function(v) return (type(v) == "string" or v == false) end,
+	style = "string",
+	unit = "string",
+	visibility = {
+		plrSpec = {
+			[1] = "boolean",
+			[2] = "boolean"
+		},
+		plrInstance = {
+			none = "boolean",
+			pvp = "boolean",
+			arena = "boolean",
+			party = "boolean",
+			raid = "boolean"
+		},
+		plrGroup = {
+			solo = "boolean",
+			party = "boolean",
+			raid = "boolean"
+		},
+		plrCombat = {
+			[false] = "boolean",
+			[true] = "boolean"
+		},
+		plrForm = function(v)
+			if (type(v) ~= "table") then return false end
+			for form,vis in pairs(v) do
+				if (type(form) ~= "string" or type(vis) ~= "boolean") then return false end
+			end
+			return true
+		end,
+		tgtMissing = "boolean",
+		tgtReact = {
+			hostile = "boolean",
+			neutral = "boolean",
+			friendly = "boolean"
+		},
+		tgtType = {
+			pc = "boolean",
+			worldboss = "boolean",
+			rareelite = "boolean",
+			elite = "boolean",
+			rare = "boolean",
+			normal = "boolean",
+			trivial = "boolean",
+		}
+	},
+	layout = {
+		wrap = "number"
+	},
+	pos = {
+		x = "number",
+		y = "number"
+	},
+	trackers = function(v)
+		if (type(v) ~= "table") then return false end
+		for _,tdb in ipairs(v) do
+			Auracle:ValidateSavedVars(tdb, DB_DEFAULT_TRACKER, DB_VALID_TRACKER)
+		end
+		return true
+	end
+} -- {DB_VALID_WINDOW}
 
---[[ INIT ]]--
-
-local Tracker
-function Window:__tracker(class, db_default)
-	self.__tracker = nil
-	Tracker = class
-	DB_DEFAULT_TRACKER = db_default
-end
-
-Auracle:__window(Window, DB_DEFAULT_WINDOW)
+-- API function upvalues
 
 local API_GetCurrentResolution = GetCurrentResolution
 local API_GetNumShapeshiftForms = GetNumShapeshiftForms
 local API_GetScreenResolutions = GetScreenResolutions
 local API_GetShapeshiftFormInfo = GetShapeshiftFormInfo
 
-local objectPool = {}
-
 
 --[[ UTILITY FUNCTIONS ]]--
 
-local cloneTable = false
-do
-	local flag = {}
-	cloneTable = function(tbl, cloneV, cloneK)
-		assert(not flag[tbl], "cannot deep-clone table that contains reference to itself")
-		flag[tbl] = 1
-		local newtbl = {}
-		for k,v in pairs(tbl) do
-			if (cloneK and type(k)=="table") then k = cloneTable(k, cloneV, cloneK) end
-			if (cloneV and type(v)=="table") then v = cloneTable(v, cloneV, cloneK) end
-			newtbl[k] = v
+function Window:__tracker(class, db_default, db_valid)
+	self.__tracker = function() error("Auracle/Window: redeclaration of Tracker class") end
+	Tracker = class
+	DB_DEFAULT_TRACKER = db_default
+	DB_VALID_TRACKER = db_valid
+end -- __tracker()
+
+
+--[[ CLASS METHODS ]]--
+
+function Window:UpdateSavedVars(version, db)
+	-- v8: renamed plrStance to plrForm to match event names
+	if (type(db.visibility) == "table" and type(db.visibility.plrStance) == "table") then
+		db.visibility.plrForm = db.visibility.plrStance
+		db.visibility.plrStance = nil
+	end
+	-- trackers
+	local newVersion = 8
+	local newTrackers = {}
+	if (type(db.trackers) == "table") then
+		for _,tdb in ipairs(db.trackers) do
+			if (type(tdb) == "table") then
+				newVersion = max(Tracker:UpdateSavedVars(version, tdb), newVersion)
+				newTrackers[#newTrackers] = tdb
+			end
 		end
-		flag[tbl] = nil
-		return newtbl
-	end -- cloneTable()
-end
-local __auracle_debug_table = __auracle_debug_table or function() return "" end
-local __auracle_debug_array = __auracle_debug_array or function() return "" end
-local __auracle_debug_call = __auracle_debug_call or function() end
+	end
+	db.trackers = newTrackers
+	return newVersion
+end -- UpdateSavedVars()
 
 
 --[[  EVENT HANDLERS ]]--
@@ -137,82 +206,87 @@ end -- Frame_OnSizeChanged()
 
 --[[ CONSTRUCT & DESTRUCT ]]--
 
-function Window:New(db)
-	-- re-use a window from the pool, or create a new one
-	local window = next(objectPool)
-	if (not window) then
-		window = self:Super("New")
-		window.uiFrame = CreateFrame("Frame", nil, UIParent)
-		window.uiFrame.Auracle_window = window
-		window.uiFrame:SetFrameStrata("LOW")
-		window.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
-	end
-	objectPool[window] = nil
+do
+	local objectPool = {}
 	
-	-- (re?)initialize window
-	window.db = db
-	window.style = Auracle.windowStyles[db.style]
-	window.locked = true
-	window.moving = false
-	window.effectiveScale = 1.0
-	window.plrSpec = 1
-	window.plrInstance = "none"
-	window.plrGroup = "solo"
-	window.plrCombat = false
-	window.plrForm = L.HUMANOID
-	window.tgtExists = false
-	window.tgtType = "pc"
-	window.tgtReact = "neutral"
-	window.trackersLocked = true
-	window.trackers = {}
-	
-	-- (re?)initialize frame
-	window.uiFrame:SetPoint("TOPLEFT", UIParent,"TOPLEFT", db.pos.x, db.pos.y) -- TODO pref anchor points
-	
-	-- create and initialize trackers
-	local tracker
-	for n,tdb in ipairs(db.trackers) do
-		tracker = Tracker(tdb, window, window.uiFrame)
-		window.trackers[n] = tracker
-	end
-	
-	-- (re?)apply preferences
-	window:UpdateStyle()
-	window:UpdateVisibility()
-	
-	return window
-end -- New()
-
-function Window.prototype:Destroy()
-	-- clean up frame
-	self:Lock()
-	self.uiFrame:Hide()
-	self.uiFrame:ClearAllPoints()
-	-- destroy tracker frames
-	if (type(self.trackers) == "table") then
-		for n,tracker in ipairs(self.trackers) do
-			tracker:Destroy()
+	function Window:New(db)
+		-- re-use a window from the pool, or create a new one
+		local window = next(objectPool)
+		if (not window) then
+			window = self:Super("New")
+			window.uiFrame = CreateFrame("Frame", nil, UIParent)
+			window.uiFrame.Auracle_window = window
+			window.uiFrame:SetFrameStrata("LOW")
+			window.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
 		end
-	end
-	-- clean up window
-	self.db = nil
-	self.style = nil
-	self.locked = nil
-	self.moving = nil
-	self.effectiveScale = nil
-	self.plrSpec = nil
-	self.plrInstance = nil
-	self.plrGroup = nil
-	self.plrCombat = nil
-	self.plrForm = nil
-	self.tgtExists = nil
-	self.tgtType = nil
-	self.tgtReact = nil
-	self.trackersLocked = nil
-	self.trackers = nil
-	-- add object to the pool for later re-use
-	objectPool[self] = true
-end -- Destroy()
+		objectPool[window] = nil
+		
+		-- (re?)initialize window
+		window.db = db
+		window.style = Auracle.windowStyles[db.style]
+		window.locked = true
+		window.moving = false
+		window.effectiveScale = 1.0
+		window.plrSpec = 1
+		window.plrInstance = "none"
+		window.plrGroup = "solo"
+		window.plrCombat = false
+		window.plrForm = L.HUMANOID
+		window.tgtExists = false
+		window.tgtType = "pc"
+		window.tgtReact = "neutral"
+		window.trackersLocked = true
+		window.trackers = {}
+		
+		-- (re?)initialize frame
+		window.uiFrame:SetPoint("TOPLEFT", UIParent,"TOPLEFT", db.pos.x, db.pos.y) -- TODO pref anchor points
+		
+		-- create and initialize trackers
+		local tracker
+		for n,tdb in ipairs(db.trackers) do
+			tracker = Tracker(tdb, window, window.uiFrame)
+			window.trackers[n] = tracker
+		end
+		
+		-- (re?)apply preferences
+		window:UpdateStyle()
+		window:UpdateVisibility()
+		
+		return window
+	end -- New()
+
+	function Window.prototype:Destroy()
+		-- clean up frame
+		self:Lock()
+		self.uiFrame:Hide()
+		self.uiFrame:ClearAllPoints()
+		-- destroy tracker frames
+		if (type(self.trackers) == "table") then
+			for n,tracker in ipairs(self.trackers) do
+				tracker:Destroy()
+			end
+		end
+		-- clean up window
+		self.db = nil
+		self.style = nil
+		self.locked = nil
+		self.moving = nil
+		self.effectiveScale = nil
+		self.plrSpec = nil
+		self.plrInstance = nil
+		self.plrGroup = nil
+		self.plrCombat = nil
+		self.plrForm = nil
+		self.tgtExists = nil
+		self.tgtType = nil
+		self.tgtReact = nil
+		self.trackersLocked = nil
+		self.trackers = nil
+		-- add object to the pool for later re-use
+		objectPool[self] = true
+	end -- Destroy()
+	
+end
 
 function Window.prototype:Remove()
 	if (Auracle:RemoveWindow(self)) then
@@ -329,6 +403,9 @@ end -- EndAuraUpdate()
 --[[ SITUATION UPDATE METHODS ]]--
 
 function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCombat, plrForm)
+--@debug@
+print("Auracle.Window["..tostring(self.db.label).."]:SetPlayerStatus(..., "..tostring(plrForm)..")")
+--@end-debug@
 	self.plrSpec = plrSpec
 	self.plrInstance = plrInstance
 	self.plrGroup = plrGroup
@@ -356,7 +433,7 @@ function Window.prototype:UpdateVisibility()
 			and dbvis.plrInstance[self.plrInstance]
 			and dbvis.plrGroup[self.plrGroup]
 			and dbvis.plrCombat[self.plrCombat]
-			and not dbvis.plrForm[self.plrForm] -- backwards logic, so new forms default to visible
+			and (not dbvis.plrForm[self.plrForm]) -- backwards logic, so new forms default to visible
 			and (
 				(
 					self.tgtExists
@@ -370,6 +447,9 @@ function Window.prototype:UpdateVisibility()
 			)
 		)
 	)
+--@debug@
+print("Auracle.Window["..tostring(self.db.label).."]:UpdateVisibility(): plrForm["..tostring(self.plrForm).."] = "..tostring(not dbvis.plrForm[self.plrForm]))
+--@end-debug@
 	if (nowVis) then
 		self.uiFrame:Show()
 	else
@@ -555,7 +635,7 @@ end -- Lock()
 
 function Window.prototype:AddTracker()
 	local n = #self.trackers + 1
-	local tdb = cloneTable(DB_DEFAULT_TRACKER, true)
+	local tdb = Auracle:__cloneTable(DB_DEFAULT_TRACKER, true)
 	self.db.trackers[n] = tdb
 	local tracker = Tracker(tdb, self, self.uiFrame)
 	self.trackers[n] = tracker
@@ -1031,16 +1111,22 @@ local sharedOptions = {
 --[[ MENU METHODS ]]--
 
 local sharedOptions_plrForm_get = function(i)
-	return not i.handler.db.visibility.plrForm[i[#i]] -- backwards logic, so new forms default to visible
+	return not i.handler.db.visibility.plrForm[i.option.name] -- backwards logic, so new forms default to visible
 end
 
 local sharedOptions_plrForm_set = function(i,v)
-	i.handler.db.visibility.plrForm[i[#i]] = (not v) or nil -- backwards logic, so new forms default to visible
+	i.handler.db.visibility.plrForm[i.option.name] = not v -- backwards logic, so new forms default to visible
+--@debug@
+print("Auracle.Window["..tostring(i.handler.db.label).."] plrForm["..tostring(i.option.name).."] = "..tostring(not v))
+--@end-debug@
 	Auracle:UpdateEventListeners()
 	Auracle:UpdatePlayerStatus(i.handler)
 end
 
 function Window:UpdateFormOptions()
+--@debug@
+print("Auracle.Window:UpdateFormOptions()")
+--@end-debug@
 	-- get list of available forms
 	local forms = { [0] = L.HUMANOID }
 	local maxform = API_GetNumShapeshiftForms()
@@ -1051,7 +1137,7 @@ function Window:UpdateFormOptions()
 	local pFa = sharedOptions.args.visibility.args.plrForm.args
 	wipe(pFa)
 	for f = 0,maxform do
-		pFa[forms[f]] = {
+		pFa["form"..f] = {
 			type = "toggle",
 			name = forms[f],
 			get = sharedOptions_plrForm_get,
@@ -1459,4 +1545,9 @@ function Window.prototype:GetOptionsTable()
 	end
 	return self.optionsTable
 end -- GetOptionsTable()
+
+
+--[[ INIT ]]--
+
+Auracle:__window(Window, DB_DEFAULT_WINDOW, DB_VALID_WINDOW)
 

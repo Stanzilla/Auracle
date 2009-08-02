@@ -7,79 +7,14 @@ local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required libra
 local L = LIB_AceLocale:GetLocale("Auracle")
 
 
---[[ CONSTANTS ]]--
+--[[ DECLARATIONS ]]--
 
-local DB_DEFAULT = {
-	version = 0,
-	windowStyles = {},
-	trackerStyles = {},
-	windows = {}
-}
-local DB_DEFAULT_WINDOWSTYLE
-local DB_DEFAULT_TRACKERSTYLE
-local DB_DEFAULT_WINDOW
-local DB_DEFAULT_TRACKER
+-- classes
 
-
---[[ INIT ]]--
-
--- ConfigMode
-
-CONFIGMODE_CALLBACKS = CONFIGMODE_CALLBACKS or {}
-function CONFIGMODE_CALLBACKS.Auracle(action)
-	if (Auracle:IsOnline()) then
-		if (action == 'ON') then
-			Auracle:UnlockWindows()
-		elseif (action == 'OFF') then
-			Auracle:LockWindows()
-		end
-	end
-end
-
--- class registration
-
-local WindowStyle
-function Auracle:__windowstyle(class, db_default)
-	self.__windowstyle = nil
-	WindowStyle = class
-	DB_DEFAULT_WINDOWSTYLE = db_default
-end
-
-local TrackerStyle
-function Auracle:__trackerstyle(class, db_default)
-	self.__trackerstyle = nil
-	TrackerStyle = class
-	DB_DEFAULT_TRACKERSTYLE = db_default
-end
-
-local Window
-function Auracle:__window(class, db_default)
-	self.__window = nil
-	Window = class
-	DB_DEFAULT_WINDOW = db_default
-end
-
-local Tracker
-function Auracle:__tracker(class, db_default)
-	self.__tracker = nil
-	Tracker = class
-	DB_DEFAULT_TRACKER = db_default
-	Window:__tracker(class, db_default)
-end
-
--- library references
-
-local LIB_AceDB
-local LIB_AceDBOptions
-local LIB_AceConfig
-local LIB_AceConfigDialog
-local LIB_AceConfigCmd
-local LIB_AceConfigRegistry
-local LIB_LibDataBroker
-local LIB_LibDualSpec
---local LIB_LibUnitID
---local LIB_LibUnitAura
---local LIB_LibButtonFacade
+local WindowStyle,  DB_DEFAULT_WINDOWSTYLE,  DB_VALID_WINDOWSTYLE
+local TrackerStyle, DB_DEFAULT_TRACKERSTYLE, DB_VALID_TRACKERSTYLE
+local Window,       DB_DEFAULT_WINDOW,       DB_VALID_WINDOW
+local Tracker,      DB_DEFAULT_TRACKER,      DB_VALID_TRACKER
 
 -- API function upvalues
 
@@ -99,6 +34,20 @@ local API_UnitIsEnemy = UnitIsEnemy
 local API_UnitIsFriend = UnitIsFriend
 local API_UnitPlayerControlled = UnitPlayerControlled
 
+-- library references
+
+local LIB_AceDB
+local LIB_AceDBOptions
+local LIB_AceConfig
+local LIB_AceConfigDialog
+local LIB_AceConfigCmd
+local LIB_AceConfigRegistry
+local LIB_LibDataBroker
+local LIB_LibDualSpec
+--local LIB_LibUnitID
+--local LIB_LibUnitAura
+--local LIB_LibButtonFacade
+
 -- options tables
 
 local commandTable = { type="group", handler=Auracle, args={} }
@@ -109,25 +58,52 @@ local blizOptionsFrame
 
 --[[ UTILITY FUNCTIONS ]]--
 
-local cloneTable = false
 do
 	local flag = {}
-	cloneTable = function(tbl, cloneV, cloneK)
-		assert(not flag[tbl], "cannot deep-clone table that contains reference to itself")
+	
+	function Auracle:__cloneTable(tbl, cloneV, cloneK)
+		assert(not flag[tbl], "Auracle:__cloneTable(): cannot deep-clone a table that contains a reference to itself")
 		flag[tbl] = 1
 		local newtbl = {}
 		for k,v in pairs(tbl) do
-			if (cloneK and type(k)=="table") then k = cloneTable(k, cloneV, cloneK) end
-			if (cloneV and type(v)=="table") then v = cloneTable(v, cloneV, cloneK) end
+			if (cloneK and type(k)=="table") then k = self:__cloneTable(k, cloneV, cloneK) end
+			if (cloneV and type(v)=="table") then v = self:__cloneTable(v, cloneV, cloneK) end
 			newtbl[k] = v
 		end
 		flag[tbl] = nil
 		return newtbl
-	end -- cloneTable()
+	end -- __cloneTable()
+	
 end
-local __auracle_debug_table = __auracle_debug_table or function() return "" end
-local __auracle_debug_array = __auracle_debug_array or function() return "" end
-local __auracle_debug_call = __auracle_debug_call or function() end
+
+function Auracle:__windowstyle(class, db_default, db_valid)
+	self.__windowstyle = function() error("Auracle: redeclaration of WindowStyle class") end
+	WindowStyle = class
+	DB_DEFAULT_WINDOWSTYLE = db_default
+	DB_VALID_WINDOWSTYLE = db_valid
+end -- __windowstyle()
+
+function Auracle:__trackerstyle(class, db_default, db_valid)
+	self.__trackerstyle = function() error("Auracle: redeclaration of TrackerStyle class") end
+	TrackerStyle = class
+	DB_DEFAULT_TRACKERSTYLE = db_default
+	DB_VALID_TRACKERSTYLE = db_valid
+end -- __trackerstyle()
+
+function Auracle:__window(class, db_default, db_valid)
+	self.__window = function() error("Auracle: redeclaration of Window class") end
+	Window = class
+	DB_DEFAULT_WINDOW = db_default
+	DB_VALID_WINDOW = db_valid
+end -- __window()
+
+function Auracle:__tracker(class, db_default, db_valid)
+	self.__tracker = function() error("Auracle: redeclaration of Tracker class") end
+	Tracker = class
+	DB_DEFAULT_TRACKER = db_default
+	DB_VALID_TRACKER = db_valid
+	Window:__tracker(class, db_default, db_valid)
+end -- __tracker()
 
 
 --[[ Ace3 EVENT HANDLERS ]]--
@@ -150,7 +126,7 @@ function Auracle:OnInitialize()
 	LIB_LibDataBroker = LibStub("LibDataBroker-1.1", true) -- optional
 	LIB_LibDualSpec = LibStub("LibDualSpec-1.0", true) -- optional
 	-- initialize stored data
-	self.db = LIB_AceDB:New("Auracle_DB", { profile = DB_DEFAULT })
+	self.db = LIB_AceDB:New("Auracle_DB", { profile = {} })
 	if (LIB_LibDualSpec) then
 		LIB_LibDualSpec:EnhanceDatabase(self.db, "Auracle")
 	end
@@ -283,17 +259,25 @@ function Auracle:UNIT_TARGET(event, unit)
 end -- UNIT_TARGET()
 
 function Auracle:UPDATE_SHAPESHIFT_FORM()
-	local f API_GetShapeshiftForm()
+	local f = API_GetShapeshiftForm()
 	local maxform = API_GetNumShapeshiftForms()
 	if (not f or f < 1 or f > maxform) then
 		self.plrForm = L.HUMANOID
 	else
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
+--@debug@
+print("Auracle:UPDATE_SHAPESHIFT_FORM(): "..tostring(f).." => "..tostring(self.plrForm))
+--@end-debug@
 	self:DispatchPlayerStatus()
 end -- UPDATE_SHAPESHIFT_FORM()
 
 function Auracle:UPDATE_SHAPESHIFT_FORMS()
+--@debug@
+print("Auracle:UPDATE_SHAPESHIFT_FORMS()")
+--@end-debug@
+	self:UpdatePlayerStatus()
+	self:UpdateEventListeners()
 	Window:UpdateFormOptions()
 	self:UpdateConfig()
 end -- UPDATE_SHAPESHIFT_FORMS()
@@ -417,7 +401,10 @@ function Auracle:UpdatePlayerStatus(window)
 	else
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
-	-- update windows
+--@debug@
+print("Auracle:UpdatePlayerStatus(): "..tostring(f).." => "..tostring(self.plrForm))
+--@end-debug@
+	-- update window(s)
 	self:DispatchPlayerStatus(window)
 end -- UpdatePlayerStatus()
 
@@ -460,30 +447,20 @@ function Auracle:Startup()
 	self.plrGroup = "solo"
 	self.plrCombat = false
 	self.plrForm = L.HUMANOID
-	-- make sure the Default styles exist
-	if (not self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
-		self.db.profile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
-	end
-	if (not self.db.profile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name]) then
-		self.db.profile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name] = cloneTable(DB_DEFAULT_TRACKERSTYLE, true)
-	end
-	-- make sure at least one window exists
-	if (not next(self.db.profile.windows)) then
-		self.db.profile.windows[1] = cloneTable(DB_DEFAULT_WINDOW, true)
-	end
 	-- update old database versions
-	self:ConvertDataStore(self.db.profile)
+	--self:ConvertDataStore(self.db.profile)
+	self:UpdateSavedVars(self.db.profile)
 	-- initialize objects
-	for name,db in pairs(self.db.profile.windowStyles) do
-		self.windowStyles[name] = WindowStyle(db)
+	for name,wsdb in pairs(self.db.profile.windowStyles) do
+		self.windowStyles[name] = WindowStyle(wsdb)
 		self.windowStyleOptions[name] = name
 	end
-	for name,db in pairs(self.db.profile.trackerStyles) do
-		self.trackerStyles[name] = TrackerStyle(db)
+	for name,tsdb in pairs(self.db.profile.trackerStyles) do
+		self.trackerStyles[name] = TrackerStyle(tsdb)
 		self.trackerStyleOptions[name] = name
 	end
-	for n,db in ipairs(self.db.profile.windows) do
-		self.windows[n] = Window(db)
+	for n,wdb in ipairs(self.db.profile.windows) do
+		self.windows[n] = Window(wdb)
 	end
 	-- initialize state
 	self:UpdatePlayerStatus()
@@ -530,6 +507,112 @@ function Auracle:Shutdown()
 	self.plrForm = nil
 end -- Shutdown()
 
+function Auracle:UpdateSavedVars(dbProfile)
+	local version = dbProfile.version
+	local newVersion = 09080201
+	
+	-- update windowStyles
+	if (type(dbProfile.windowStyles) == "table") then
+		for name,wsdb in pairs(dbProfile.windowStyles) do
+			if (type(wsdb) == "table") then
+				newVersion = max(WindowStyle:UpdateSavedVars(version, wsdb), newVersion)
+			else
+				dbProfile.windowStyles[name] = nil
+			end
+		end
+	else
+		dbProfile.windowStyles = {}
+	end
+	
+	-- update trackerStyles
+	if (type(dbProfile.trackerStyles) == "table") then
+		for name,tsdb in pairs(dbProfile.trackerStyles) do
+			if (type(tsdb) == "table") then
+				newVersion = max(TrackerStyle:UpdateSavedVars(version, tsdb), newVersion)
+			else
+				dbProfile.trackerStyles[name] = nil
+			end
+		end
+	else
+		dbProfile.trackerStyles = {}
+	end
+	
+	-- update windows
+	local newWindows = {}
+	if (type(dbProfile.windows) == "table") then
+		for n,wdb in ipairs(dbProfile.windows) do
+			if (type(wdb) == "table") then
+				newVersion = max(Window:UpdateSavedVars(version, wdb), newVersion)
+				newWindows[#newWindows] = wdb
+			end
+		end
+	end
+	dbProfile.windows = newWindows
+	
+	-- validate windowStyles
+	for name,wsdb in pairs(dbProfile.windowStyles) do
+		self:ValidateSavedVars(wsdb, DB_DEFAULT_WINDOWSTYLE, DB_VALID_WINDOWSTYLE)
+		if (name ~= wsdb.name) then
+			dbProfile.windowStyles[name] = nil
+		end
+	end
+	if (not dbProfile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
+		dbProfile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = self:__cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
+	end
+	
+	-- validate trackerStyles
+	for name,tsdb in pairs(dbProfile.trackerStyles) do
+		self:ValidateSavedVars(tsdb, DB_DEFAULT_TRACKERSTYLE, DB_VALID_TRACKERSTYLE)
+		if (name ~= tsdb.name) then
+			dbProfile.trackerStyles[name] = nil
+		end
+	end
+	if (not dbProfile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name]) then
+		dbProfile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name] = self:__cloneTable(DB_DEFAULT_TRACKERSTYLE, true)
+	end
+	
+	-- validate windows
+	for n,wdb in ipairs(dbProfile.windows) do
+		self:ValidateSavedVars(wdb, DB_DEFAULT_WINDOW, DB_VALID_WINDOW)
+	end
+	if (not dbProfile.windows[1]) then
+		dbProfile.windows[1] = self:__cloneTable(DB_DEFAULT_WINDOW, true)
+	end
+	
+	-- store version tag
+	dbProfile.version = newVersion
+end -- UpdateSavedVars()
+
+function Auracle:ValidateSavedVars(db, default, valid)
+	if (type(db) == "table" and type(default) == "table" and type(valid) == "table") then
+		local ok
+		for k,v in pairs(valid) do
+			ok = true
+			if (db[k] == nil) then
+				ok = false
+			elseif (type(valid[k]) == "table") then
+				if (type(db[k]) == "table") then
+					self:ValidateSavedVars(db[k], default[k], valid[k])
+				else
+					ok = false
+				end
+			elseif (type(valid[k]) == "function") then
+				ok = (valid[k])(db[k])
+			elseif (type(valid[k]) == "string") then
+				ok = (type(db[k]) == valid[k])
+			end
+			if (not ok) then
+				if (type(default[k]) == "table") then
+					db[k] = self:__cloneTable(default[k], true)
+				else
+					db[k] = default[k]
+				end
+			end
+		end
+	end
+end -- ValidateSavedVars()
+
+--[[
 function Auracle:ConvertDataStore(dbProfile)
 	if (dbProfile.version < 4) then
 --@debug@
@@ -543,7 +626,7 @@ function Auracle:ConvertDataStore(dbProfile)
 		for _,wdb in pairs(dbProfile.windows) do
 			-- visibility.plrInstance{}
 			if (wdb.visibility and type(wdb.visibility.plrInstance) ~= "table") then
-				wdb.visibility.plrInstance = cloneTable(DB_DEFAULT_WINDOW.visibility.plrInstance, true)
+				wdb.visibility.plrInstance = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrInstance, true)
 			end
 			for _,tdb in pairs(wdb.trackers) do
 				-- trackOthers => showOthers
@@ -631,7 +714,7 @@ function Auracle:ConvertDataStore(dbProfile)
 					if (type(db[key]) == "table") then
 						fix(db[key], val)
 					else
-						db[key] = cloneTable(val, true)
+						db[key] = self:__cloneTable(val, true)
 					end
 				elseif (db[key] == nil) then
 					db[key] = val
@@ -653,10 +736,10 @@ function Auracle:ConvertDataStore(dbProfile)
 		for _,wdb in pairs(dbProfile.windows) do
 			if (wdb.visibility) then
 				if (type(wdb.visibility.plrSpec) ~= "table") then
-					wdb.visibility.plrSpec = cloneTable(DB_DEFAULT_WINDOW.visibility.plrSpec, true)
+					wdb.visibility.plrSpec = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrSpec, true)
 				end
 				if (type(DB_DEFAULT_WINDOW.visibility.plrStance) == "table" and type(wdb.visibility.plrStance) ~= "table") then
-					wdb.visibility.plrStance = cloneTable(DB_DEFAULT_WINDOW.visibility.plrStance, true)
+					wdb.visibility.plrStance = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrStance, true)
 				end
 			end
 		end
@@ -682,19 +765,20 @@ function Auracle:ConvertDataStore(dbProfile)
 --@end-debug@
 		for _,wdb in pairs(dbProfile.windows) do
 			if (type(wdb.visibility.plrForm) ~= "table") then
-				wdb.visibility.plrForm = cloneTable(DB_DEFAULT_WINDOW.visibility.plrForm, true)
+				wdb.visibility.plrForm = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrForm, true)
 			end
 		end
 		dbProfile.version = 9
 	end
 end -- ConvertDataStore()
+--]]
 
 function Auracle:UpdateEventListeners()
 	-- clear them all and set the ones we always need
 	self:UnregisterAllEvents()
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 	-- determine which listeners we need according to current settings
-	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eAuras,eForm
+	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eForm,eAuras
 	local form,unit,vis
 	local maxform = API_GetNumShapeshiftForms()
 	for _,window in ipairs(self.windows) do
@@ -735,8 +819,11 @@ function Auracle:UpdateEventListeners()
 		if (not eForm) then
 			vis = window.db.visibility.plrForm
 			for f = 1,maxform do
-				form = select(2, API_GetShapeshiftFormInfo(f))
-				if (vis[form] ~= vis.Humanoid) then
+				form = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
+				if ((not vis[form]) ~= (not vis[L.HUMANOID])) then
+--@debug@
+print("Auracle:UpdateEventListeners(): plrForm["..tostring(form).."] ~= plrForm["..tostring(L.HUMANOID]).."]")
+--@end-debug@
 					eForm = true
 					break
 				end
@@ -760,13 +847,18 @@ function Auracle:UpdateEventListeners()
 		self:RegisterEvent("PLAYER_REGEN_DISABLED")
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	end
-	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM") end
+	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+--@debug@
+else
+print("Auracle:UpdateEventListeners(): plrForm[*] = "..tostring(self.plrForm[L.HUMANOID]))
+--@end-debug@
+	end
 	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end
 end -- UpdateEventListeners()
 
 function Auracle:AddWindow()
 	local n = #self.windows + 1
-	local wdb = cloneTable(DB_DEFAULT_WINDOW, true)
+	local wdb = self:__cloneTable(DB_DEFAULT_WINDOW, true)
 	self.db.profile.windows[n] = wdb
 	local window = Window(wdb)
 	self.windows[n] = window
@@ -852,7 +944,7 @@ function Auracle:CopyWindowStyle(ws)
 		c = c + 1
 		name = format(L["FMT_COPY_%d_OF"], c) .. " " .. ws.db.name
 	end
-	local wdb = cloneTable(ws.db, true)
+	local wdb = self:__cloneTable(ws.db, true)
 	wdb.name = name
 	self.db.profile.windowStyles[name] = wdb
 	local obj = WindowStyle(wdb)
@@ -913,7 +1005,7 @@ function Auracle:CopyTrackerStyle(ts)
 		c = c + 1
 		name = format(L["FMT_COPY_%d_OF"], c) .. " " .. ts.db.name
 	end
-	local tdb = cloneTable(ts.db, true)
+	local tdb = self:__cloneTable(ts.db, true)
 	tdb.name = name
 	self.db.profile.trackerStyles[name] = tdb
 	local obj = TrackerStyle(tdb)
@@ -1140,4 +1232,18 @@ function Auracle:UpdateBlizOptions()
 		LIB_AceConfigRegistry:NotifyChange("Auracle Blizzard Setup")
 	end
 end -- UpdateBlizOptions()
+
+
+--[[ INIT ]]--
+
+CONFIGMODE_CALLBACKS = CONFIGMODE_CALLBACKS or {}
+function CONFIGMODE_CALLBACKS.Auracle(action)
+	if (Auracle:IsOnline()) then
+		if (action == 'ON') then
+			Auracle:UnlockWindows()
+		elseif (action == 'OFF') then
+			Auracle:LockWindows()
+		end
+	end
+end
 
