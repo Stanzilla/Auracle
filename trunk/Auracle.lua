@@ -261,7 +261,7 @@ end -- UNIT_TARGET()
 function Auracle:UPDATE_SHAPESHIFT_FORM()
 	local f = API_GetShapeshiftForm()
 	local maxform = API_GetNumShapeshiftForms()
-	if (not f or f < 1 or f > maxform) then
+	if (type(f) ~= "number" or f < 1 or f > maxform) then
 		self.plrForm = L.HUMANOID
 	else
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
@@ -396,7 +396,7 @@ function Auracle:UpdatePlayerStatus(window)
 	self.plrCombat = ((API_InCombatLockdown()) and true) or false
 	local f = API_GetShapeshiftForm()
 	local maxform = API_GetNumShapeshiftForms()
-	if (not f or f < 1 or f > maxform) then
+	if (type(f) ~= "number" or f < 1 or f > maxform) then
 		self.plrForm = L.HUMANOID
 	else
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
@@ -436,6 +436,7 @@ function Auracle:Startup()
 	-- make sure everything was cleaned up from before..
 	self:Shutdown()
 	-- initialize addon
+	self.online = true
 	self.windowStyles = {}
 	self.windowStyleOptions = {}
 	self.trackerStyles = {}
@@ -471,16 +472,14 @@ function Auracle:Startup()
 	-- initialize configuration options
 	Window:UpdateFormOptions()
 	self:UpdateConfig()
-	-- ready
-	self.online = true
 end -- Startup()
 
 function Auracle:Shutdown()
 	self.online = nil
 	-- recycle objects
 	if (type(self.windows) == "table") then
-		for n,window in ipairs(self.windows) do
-			window:Destroy()
+		for n,w in ipairs(self.windows) do
+			w:Destroy()
 		end
 	end
 	if (type(self.trackerStyles) == "table") then
@@ -822,7 +821,7 @@ function Auracle:UpdateEventListeners()
 				form = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 				if ((not vis[form]) ~= (not vis[L.HUMANOID])) then
 --@debug@
-print("Auracle:UpdateEventListeners(): plrForm["..tostring(form).."] ~= plrForm["..tostring(L.HUMANOID]).."]")
+print("Auracle:UpdateEventListeners(): plrForm["..tostring(form).."] ~= plrForm["..tostring(L.HUMANOID).."]")
 --@end-debug@
 					eForm = true
 					break
