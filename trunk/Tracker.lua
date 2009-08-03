@@ -59,7 +59,12 @@ local DB_VALID_TRACKER = {
 	style = "string",
 	auratype = "string",
 	auras = function(v)
-		if (type(v) ~= "table") then return false end
+		if (type(v) ~= "table") then
+--@debug@
+			print("Auracle: type(db.windows[?].trackers[?].auras) = "..type(v))
+--@end-debug@
+			return false
+		end
 		for _,aura in pairs(v) do
 			if (type(aura) ~= "string") then return false end
 		end
