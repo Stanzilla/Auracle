@@ -99,9 +99,19 @@ local DB_VALID_WINDOW = {
 			[true] = "boolean"
 		},
 		plrForm = function(v)
-			if (type(v) ~= "table") then return false end
+			if (type(v) ~= "table") then
+--@debug@
+				print("Auracle: type(db.windows[?].visibility.plrForm) = "..type(v))
+--@end-debug@
+				return false
+			end
 			for form,vis in pairs(v) do
-				if (type(form) ~= "string" or type(vis) ~= "boolean") then return false end
+				if (type(form) ~= "string" or type(vis) ~= "boolean") then
+--@debug@
+					print("Auracle: db.windows[?].visibility.plrForm["..tostring(form).."] = "..tostring(vis))
+--@end-debug@
+					return false
+				end
 			end
 			return true
 		end,
@@ -129,7 +139,12 @@ local DB_VALID_WINDOW = {
 		y = "number"
 	},
 	trackers = function(v)
-		if (type(v) ~= "table") then return false end
+		if (type(v) ~= "table") then
+--@debug@
+			print("Auracle: type(db.windows[?].trackers) = "..type(v))
+--@end-debug@
+			return false
+		end
 		for _,tdb in ipairs(v) do
 			Auracle:ValidateSavedVars(tdb, DB_DEFAULT_TRACKER, DB_VALID_TRACKER)
 		end
@@ -167,12 +182,20 @@ function Window:UpdateSavedVars(version, db)
 	local newVersion = 8
 	local newTrackers = {}
 	if (type(db.trackers) == "table") then
-		for _,tdb in ipairs(db.trackers) do
+		for n,tdb in ipairs(db.trackers) do
 			if (type(tdb) == "table") then
 				newVersion = max(Tracker:UpdateSavedVars(version, tdb), newVersion)
-				newTrackers[#newTrackers] = tdb
+				newTrackers[#newTrackers+1] = tdb
+--@debug@
+			else
+				print("Auracle: type(db.windows[?].trackers["..tostring(n).."]) = "..type(tdb))
+--@end-debug@
 			end
 		end
+--@debug@
+	else
+		print("Auracle: type(db.windows[?].trackers) = "..type(db.trackers))
+--@end-debug@
 	end
 	db.trackers = newTrackers
 	return newVersion

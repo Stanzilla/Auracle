@@ -507,7 +507,7 @@ function Auracle:Shutdown()
 end -- Shutdown()
 
 function Auracle:UpdateSavedVars(dbProfile)
-	local version = dbProfile.version
+	local version = dbProfile.version or 0
 	local newVersion = 09080201
 	
 	-- update windowStyles
@@ -542,9 +542,17 @@ function Auracle:UpdateSavedVars(dbProfile)
 		for n,wdb in ipairs(dbProfile.windows) do
 			if (type(wdb) == "table") then
 				newVersion = max(Window:UpdateSavedVars(version, wdb), newVersion)
-				newWindows[#newWindows] = wdb
+				newWindows[#newWindows+1] = wdb
+--@debug@
+			else
+				print("Auracle: type(db.windows["..tostring(n).."]) = "..type(wdb))
+--@end-debug@
 			end
 		end
+--@debug@
+	else
+		print("Auracle: type(db.windows) = "..type(dbProfile.windows))
+--@end-debug@
 	end
 	dbProfile.windows = newWindows
 	
