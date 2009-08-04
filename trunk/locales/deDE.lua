@@ -25,5 +25,5 @@ L["PET"] = PET -- i.e. the "pet" unitid
 L["PLAYER"] = PLAYER -- i.e. the "player" unitid
 L["TARGET"] = TARGET -- i.e. the "target" unitid
 
---@localization(locale="deDE", format="lua_additive_table", handle-unlocalized="comment")@ 
+--@localization(locale="deDE", format="lua_additive_table", handle-unlocalized="english")@ 
 
