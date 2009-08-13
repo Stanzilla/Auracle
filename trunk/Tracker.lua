@@ -61,7 +61,7 @@ local DB_VALID_TRACKER = {
 	auras = function(v)
 		if (type(v) ~= "table") then
 --@debug@
-			print("Auracle: type(db.windows[?].trackers[?].auras) = "..type(v))
+--			print("Auracle: type(db.windows[?].trackers[?].auras) = "..type(v))
 --@end-debug@
 			return false
 		end
