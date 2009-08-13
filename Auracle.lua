@@ -267,14 +267,14 @@ function Auracle:UPDATE_SHAPESHIFT_FORM()
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
 --@debug@
-print("Auracle:UPDATE_SHAPESHIFT_FORM(): "..tostring(f).." => "..tostring(self.plrForm))
+--	print("Auracle:UPDATE_SHAPESHIFT_FORM(): "..tostring(f).." => "..tostring(self.plrForm))
 --@end-debug@
 	self:DispatchPlayerStatus()
 end -- UPDATE_SHAPESHIFT_FORM()
 
 function Auracle:UPDATE_SHAPESHIFT_FORMS()
 --@debug@
-print("Auracle:UPDATE_SHAPESHIFT_FORMS()")
+--	print("Auracle:UPDATE_SHAPESHIFT_FORMS()")
 --@end-debug@
 	self:UpdatePlayerStatus()
 	self:UpdateEventListeners()
@@ -402,7 +402,7 @@ function Auracle:UpdatePlayerStatus(window)
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
 --@debug@
-print("Auracle:UpdatePlayerStatus(): "..tostring(f).." => "..tostring(self.plrForm))
+--	print("Auracle:UpdatePlayerStatus(): "..tostring(f).." => "..tostring(self.plrForm))
 --@end-debug@
 	-- update window(s)
 	self:DispatchPlayerStatus(window)
@@ -544,14 +544,14 @@ function Auracle:UpdateSavedVars(dbProfile)
 				newVersion = max(Window:UpdateSavedVars(version, wdb), newVersion)
 				newWindows[#newWindows+1] = wdb
 --@debug@
-			else
-				print("Auracle: type(db.windows["..tostring(n).."]) = "..type(wdb))
+--			else
+--				print("Auracle: type(db.windows["..tostring(n).."]) = "..type(wdb))
 --@end-debug@
 			end
 		end
 --@debug@
-	else
-		print("Auracle: type(db.windows) = "..type(dbProfile.windows))
+--	else
+--		print("Auracle: type(db.windows) = "..type(dbProfile.windows))
 --@end-debug@
 	end
 	dbProfile.windows = newWindows
@@ -623,7 +623,7 @@ end -- ValidateSavedVars()
 function Auracle:ConvertDataStore(dbProfile)
 	if (dbProfile.version < 4) then
 --@debug@
-		self:Print("Updating saved vars to version 4")
+--		self:Print("Updating saved vars to version 4")
 --@end-debug@
 		for _,wsdb in pairs(dbProfile.windowStyles) do
 			if (wsdb.background and wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
@@ -712,7 +712,7 @@ function Auracle:ConvertDataStore(dbProfile)
 	-- version 6: abandoned AceDB's "intelligent" storage, so now we have to copy over anything which is missing as a result
 	if (dbProfile.version < 6) then
 --@debug@
-		self:Print("Updating saved vars to version 6")
+--		self:Print("Updating saved vars to version 6")
 --@end-debug@
 		local fix
 		fix = function(db, def)
@@ -738,7 +738,7 @@ function Auracle:ConvertDataStore(dbProfile)
 	-- version 7: added window vis plrSpec,plrStance
 	if (dbProfile.version < 7) then
 --@debug@
-		self:Print("Updating saved vars to version 7")
+--		self:Print("Updating saved vars to version 7")
 --@end-debug@
 		for _,wdb in pairs(dbProfile.windows) do
 			if (wdb.visibility) then
@@ -755,7 +755,7 @@ function Auracle:ConvertDataStore(dbProfile)
 	-- version 8: renamed plrStance to plrForm to match event names
 	if (dbProfile.version < 8) then
 --@debug@
-		self:Print("Updating saved vars to version 8")
+--		self:Print("Updating saved vars to version 8")
 --@end-debug@
 		for _,wdb in pairs(dbProfile.windows) do
 			if (wdb.visibility and type(wdb.visibility.plrStance) == "table") then
@@ -768,7 +768,7 @@ function Auracle:ConvertDataStore(dbProfile)
 	-- version 9: double-check plrForm
 	if (dbProfile.version < 9) then
 --@debug@
-		self:Print("Updating saved vars to version 9")
+--		self:Print("Updating saved vars to version 9")
 --@end-debug@
 		for _,wdb in pairs(dbProfile.windows) do
 			if (type(wdb.visibility.plrForm) ~= "table") then
@@ -829,7 +829,7 @@ function Auracle:UpdateEventListeners()
 				form = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 				if ((not vis[form]) ~= (not vis[L.HUMANOID])) then
 --@debug@
-print("Auracle:UpdateEventListeners(): plrForm["..tostring(form).."] ~= plrForm["..tostring(L.HUMANOID).."]")
+--					print("Auracle:UpdateEventListeners(): plrForm["..tostring(form).."] ~= plrForm["..tostring(L.HUMANOID).."]")
 --@end-debug@
 					eForm = true
 					break
@@ -856,8 +856,8 @@ print("Auracle:UpdateEventListeners(): plrForm["..tostring(form).."] ~= plrForm[
 	end
 	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 --@debug@
-else
-print("Auracle:UpdateEventListeners(): plrForm[*] = "..tostring(self.plrForm[L.HUMANOID]))
+--	else
+--		print("Auracle:UpdateEventListeners(): plrForm[*] = "..tostring(self.plrForm[L.HUMANOID]))
 --@end-debug@
 	end
 	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end

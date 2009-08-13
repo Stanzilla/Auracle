@@ -101,14 +101,14 @@ local DB_VALID_WINDOW = {
 		plrForm = function(v)
 			if (type(v) ~= "table") then
 --@debug@
-				print("Auracle: type(db.windows[?].visibility.plrForm) = "..type(v))
+--				print("Auracle: type(db.windows[?].visibility.plrForm) = "..type(v))
 --@end-debug@
 				return false
 			end
 			for form,vis in pairs(v) do
 				if (type(form) ~= "string" or type(vis) ~= "boolean") then
 --@debug@
-					print("Auracle: db.windows[?].visibility.plrForm["..tostring(form).."] = "..tostring(vis))
+--					print("Auracle: db.windows[?].visibility.plrForm["..tostring(form).."] = "..tostring(vis))
 --@end-debug@
 					return false
 				end
@@ -141,7 +141,7 @@ local DB_VALID_WINDOW = {
 	trackers = function(v)
 		if (type(v) ~= "table") then
 --@debug@
-			print("Auracle: type(db.windows[?].trackers) = "..type(v))
+--			print("Auracle: type(db.windows[?].trackers) = "..type(v))
 --@end-debug@
 			return false
 		end
@@ -187,14 +187,14 @@ function Window:UpdateSavedVars(version, db)
 				newVersion = max(Tracker:UpdateSavedVars(version, tdb), newVersion)
 				newTrackers[#newTrackers+1] = tdb
 --@debug@
-			else
-				print("Auracle: type(db.windows[?].trackers["..tostring(n).."]) = "..type(tdb))
+--			else
+--				print("Auracle: type(db.windows[?].trackers["..tostring(n).."]) = "..type(tdb))
 --@end-debug@
 			end
 		end
 --@debug@
-	else
-		print("Auracle: type(db.windows[?].trackers) = "..type(db.trackers))
+--	else
+--		print("Auracle: type(db.windows[?].trackers) = "..type(db.trackers))
 --@end-debug@
 	end
 	db.trackers = newTrackers
@@ -427,7 +427,7 @@ end -- EndAuraUpdate()
 
 function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCombat, plrForm)
 --@debug@
-print("Auracle.Window["..tostring(self.db.label).."]:SetPlayerStatus(..., "..tostring(plrForm)..")")
+--	print("Auracle.Window["..tostring(self.db.label).."]:SetPlayerStatus(..., "..tostring(plrForm)..")")
 --@end-debug@
 	self.plrSpec = plrSpec
 	self.plrInstance = plrInstance
@@ -471,7 +471,7 @@ function Window.prototype:UpdateVisibility()
 		)
 	)
 --@debug@
-print("Auracle.Window["..tostring(self.db.label).."]:UpdateVisibility(): plrForm["..tostring(self.plrForm).."] = "..tostring(not dbvis.plrForm[self.plrForm]))
+--	print("Auracle.Window["..tostring(self.db.label).."]:UpdateVisibility(): plrForm["..tostring(self.plrForm).."] = "..tostring(not dbvis.plrForm[self.plrForm]))
 --@end-debug@
 	if (nowVis) then
 		self.uiFrame:Show()
@@ -1140,7 +1140,7 @@ end
 local sharedOptions_plrForm_set = function(i,v)
 	i.handler.db.visibility.plrForm[i.option.name] = not v -- backwards logic, so new forms default to visible
 --@debug@
-print("Auracle.Window["..tostring(i.handler.db.label).."] plrForm["..tostring(i.option.name).."] = "..tostring(not v))
+--	print("Auracle.Window["..tostring(i.handler.db.label).."] plrForm["..tostring(i.option.name).."] = "..tostring(not v))
 --@end-debug@
 	Auracle:UpdateEventListeners()
 	Auracle:UpdatePlayerStatus(i.handler)
@@ -1148,7 +1148,7 @@ end
 
 function Window:UpdateFormOptions()
 --@debug@
-print("Auracle.Window:UpdateFormOptions()")
+--	print("Auracle.Window:UpdateFormOptions()")
 --@end-debug@
 	-- get list of available forms
 	local forms = { [0] = L.HUMANOID }
