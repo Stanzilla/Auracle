@@ -1,0 +1,27 @@
+## Interface: 30200
+## Title: Auracle
+## Version: 1.0.0
+## Notes: Compact, customizable filtering and monitoring of buffs and debuffs
+## Author: taleden
+## SavedVariables: Auracle_DB
+## OptionalDeps: Ace3, LibDualSpec-1.0, LibOOP, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets
+## X-Category: Buffs
+
+#@no-lib-strip@
+embeds.xml
+#@end-no-lib-strip@
+
+#@debug@
+locales\base.lua
+debug.lua
+#@end-debug@
+
+locales.xml
+
+Auracle.lua
+
+WindowStyle.lua
+TrackerStyle.lua
+Window.lua
+Tracker.lua
+
