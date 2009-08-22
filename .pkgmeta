@@ -19,3 +19,6 @@ externals:
   libs/LibSharedMedia-3.0: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/tags/2/LibSharedMedia-3.0
   libs/AceGUI-3.0-SharedMediaWidgets: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/tags/v3.2.1/AceGUI-3.0-SharedMediaWidgets
 
+ignore:
+  - locales/base.lua
+

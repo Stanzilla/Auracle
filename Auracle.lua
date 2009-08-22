@@ -1,3 +1,4 @@
+assert(LibStub, "Auracle requires LibStub.")
 local LIB_AceAddon = LibStub("AceAddon-3.0") or error("Auracle: Required library AceAddon-3.0 not found")
 Auracle = LIB_AceAddon:NewAddon("Auracle",
 	"AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0")
@@ -863,6 +864,15 @@ function Auracle:UpdateEventListeners()
 	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end
 end -- UpdateEventListeners()
 
+function Auracle:GetWindowPosition(window)
+	for n,w in ipairs(self.windows) do
+		if (w == window) then
+			return n
+		end
+	end
+	return nil
+end -- GetWindowPosition()
+
 function Auracle:AddWindow()
 	local n = #self.windows + 1
 	local wdb = self:__cloneTable(DB_DEFAULT_WINDOW, true)
@@ -879,10 +889,7 @@ function Auracle:AddWindow()
 end -- AddWindow()
 
 function Auracle:RemoveWindow(window)
-	local wpos,t
-	repeat
-		wpos,w = next(self.windows, wpos)
-	until (not w or w == window)
+	local wpos = self:GetWindowPosition(window)
 	if (wpos and self.db.profile.windows[wpos] == window.db) then
 		if (wpos == 1 and #self.windows == 1) then
 			self:Print(L.ERR_REMOVE_LAST_WINDOW)
@@ -1214,6 +1221,20 @@ function Auracle:OpenOptionsWindow()
 		LIB_AceConfigDialog:Open("Auracle Setup")
 	end
 end -- OpenOptionsWindow()
+
+function Auracle:SelectOptionsGroup(w, t)
+	if (LIB_AceConfigDialog) then
+		if (type(w) == "number") then
+			if (type(t) == "number") then
+				LIB_AceConfigDialog:SelectGroup("Auracle Setup", "windows", "window"..w, "tracker"..t)
+			else
+				LIB_AceConfigDialog:SelectGroup("Auracle Setup", "windows", "window"..w)
+			end
+		else
+			LIB_AceConfigDialog:SelectGroup("Auracle Setup")
+		end
+	end
+end -- SelectOptionsGroup()
 
 function Auracle:UpdateBlizOptions()
 	local args = blizOptionsTable.args
