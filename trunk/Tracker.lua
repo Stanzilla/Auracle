@@ -381,6 +381,20 @@ end -- Remove()
 
 --[[ INTERFACE METHODS ]]--
 
+function Tracker.prototype:MoveUp()
+	local wpos = Auracle:GetWindowPosition(self.window)
+	local tpos = self.window:MoveTracker(self, -1)
+	Auracle:UpdateConfig()
+	Auracle:SelectOptionsGroup(wpos, tpos)
+end -- MoveUp()
+
+function Tracker.prototype:MoveDown()
+	local wpos = Auracle:GetWindowPosition(self.window)
+	local tpos = self.window:MoveTracker(self, 1)
+	Auracle:UpdateConfig()
+	Auracle:SelectOptionsGroup(wpos, tpos)
+end -- MoveDown()
+
 function Tracker.prototype:StartMoving()
 	if (not self.locked and not self.moving) then
 		self.moving = true
@@ -763,13 +777,27 @@ local sharedOptions = {
 					i.handler.db.label = v
 					Auracle:UpdateConfig()
 				end,
-				order = 10
+				order = 1
 			},
 			removeTracker = {
 				type = "execute",
 				name = L.REMOVE_TRACKER,
 				func = "Remove",
-				order = 11
+				order = 2
+			},
+			moveTrackerUp = {
+				type = "execute",
+				name = L.MOVE_TRACKER_UP,
+				disabled = function(i) return (i.handler.window:GetTrackerPosition(i.handler) or 0) <= 1 end,
+				func = "MoveUp",
+				order = 3
+			},
+			moveTrackerDown = {
+				type = "execute",
+				name = L.MOVE_TRACKER_DOWN,
+				disabled = function(i) return (i.handler.window:GetTrackerPosition(i.handler) or 999999) >= i.handler.window:GetNumTrackers() end,
+				func = "MoveDown",
+				order = 4
 			},
 			auratype = {
 				type = "select",
@@ -783,7 +811,7 @@ local sharedOptions = {
 					i.handler.db.auratype = v
 					i.handler:UpdateUnitAuras()
 				end,
-				order = 12
+				order = 5
 			},
 			style = {
 				type = "select",
@@ -798,7 +826,7 @@ local sharedOptions = {
 						style:Apply(i.handler)
 					end
 				end,
-				order = 13
+				order = 6
 			},
 			auras = {
 				type = "input",
@@ -826,7 +854,7 @@ local sharedOptions = {
 					if (not i.handler.db.label) then Auracle:UpdateConfig() end
 					i.handler:UpdateUnitAuras()
 				end,
-				order = 14
+				order = 7
 			},
 			showOthers = {
 				type = "toggle",
@@ -836,7 +864,7 @@ local sharedOptions = {
 					i.handler.db.showOthers = v
 					i.handler:UpdateUnitAuras()
 				end,
-				order = 15
+				order = 8
 			},
 			showMine = {
 				type = "toggle",
@@ -846,7 +874,7 @@ local sharedOptions = {
 					i.handler.db.showMine = v
 					i.handler:UpdateUnitAuras()
 				end,
-				order = 16
+				order = 9
 			}
 		}
 	},
