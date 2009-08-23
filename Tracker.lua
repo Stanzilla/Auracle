@@ -847,8 +847,12 @@ local sharedOptions = {
 				set = function(i,v)
 					local auras = i.handler.db.auras
 					wipe(auras)
-					for aura in string.gmatch(v, "[^\n\r]+") do
-						auras[#auras+1] = aura
+					for aura in v:gmatch("[^\n\r]+") do
+						if (tonumber(aura)) then
+							auras[#auras+1] = (GetSpellInfo(tonumber(aura)))
+						else
+							auras[#auras+1] = aura
+						end
 					end
 					i.handler.auralist = false
 					if (not i.handler.db.label) then Auracle:UpdateConfig() end
