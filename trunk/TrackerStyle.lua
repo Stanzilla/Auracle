@@ -258,767 +258,774 @@ end -- Apply()
 
 --[[ SHARED OPTIONS TABLE ]]--
 
-local sharedOptions = {
-	style = {
-		type = "group",
-		name = L.STYLE,
-		order = 1,
-		args = {
-			delete = {
-				type = "execute",
-				name = L.DELETE,
-				disabled = function(i) return i.handler.db.name == L.DEFAULT end,
-				func = function(i) Auracle:RemoveTrackerStyle(i.handler) end,
-				order = 10
-			},
-			copy = {
-				type = "execute",
-				name = L.COPY,
-				func = function(i) Auracle:CopyTrackerStyle(i.handler) end,
-				order = 11
-			},
-			name = {
-				type = "input",
-				name = L.NAME,
-				width = "double",
-				disabled = function(i) return i.handler.db.name == L.DEFAULT end,
-				get = function(i) return i.handler.db.name end,
-				set = function(i,v) Auracle:RenameTrackerStyle(i.handler, v) end,
-				validate = function(i,v)
-					if (i.handler.db.name == L.DEFAULT) then
-						return L.ERR_RENAME_DEFAULT_STYLE
-					end
-					v = strtrim(v)
-					if (v == "") then
-						return L.ERR_NO_STYLE_NAME
-					elseif (Auracle.trackerStyles[v] and Auracle.trackerStyles[v] ~= i.handler) then
-						return L.ERR_DUP_STYLE_NAME
-					end
-					return true
-				end,
-				order = 12
-			}
-		}
-	},
-	border = {
-		type = "group",
-		name = L.BORDER,
-		order = 2,
-		args = {
-			noScale = {
-				type = "toggle",
-				name = L.BORDER_NOSCALE,
-				desc = L.DESC_OPT_BORDER_NOSCALE,
-				width = "double",
-				get = function(i) return i.handler.db.border.noScale end,
-				set = function(i,v)
-					i.handler.db.border.noScale = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 20
-			},
-			showMissing = {
-				type = "toggle",
-				name = L.OPT_MISSING_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.border.showMissing end,
-				set = function(i,v)
-					i.handler.db.border.showMissing = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 21
-			},
-			sizeMissing = {
-				type = "range",
-				name = L.OPT_MISSING_SIZE,
-				min = 1,
-				max = 8,
-				step = 1,
-				disabled = function(i) return not i.handler.db.border.showMissing end,
-				get = function(i) return i.handler.db.border.sizeMissing end,
-				set = function(i,v)
-					i.handler.db.border.sizeMissing = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 22
-			},
-			colorMissing = {
-				type = "color",
-				name = L.OPT_MISSING_COLOR,
-				hasAlpha = true,
-				disabled = function(i) return not i.handler.db.border.showMissing end,
-				get = function(i) return unpack(i.handler.db.border.colorMissing) end,
-				set = function(i,v1,v2,v3,v4)
-					local c = i.handler.db.border.colorMissing
-					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 23
-			},
-			showOthers = {
-				type = "toggle",
-				name = L.OPT_OTHERS_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.border.showOthers end,
-				set = function(i,v)
-					i.handler.db.border.showOthers = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 24
-			},
-			sizeOthers = {
-				type = "range",
-				name = L.OPT_OTHERS_SIZE,
-				min = 1,
-				max = 8,
-				step = 1,
-				disabled = function(i) return not i.handler.db.border.showOthers end,
-				get = function(i) return i.handler.db.border.sizeOthers end,
-				set = function(i,v)
-					i.handler.db.border.sizeOthers = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 25
-			},
-			colorOthers = {
-				type = "color",
-				name = L.OPT_OTHERS_COLOR,
-				hasAlpha = true,
-				disabled = function(i) return not i.handler.db.border.showOthers end,
-				get = function(i) return unpack(i.handler.db.border.colorOthers) end,
-				set = function(i,v1,v2,v3,v4)
-					local c = i.handler.db.border.colorOthers
-					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 26
-			},
-			showMine = {
-				type = "toggle",
-				name = L.OPT_MINE_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.border.showMine end,
-				set = function(i,v)
-					i.handler.db.border.showMine = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 27
-			},
-			sizeMine = {
-				type = "range",
-				name = L.OPT_MINE_SIZE,
-				min = 1,
-				max = 8,
-				step = 1,
-				disabled = function(i) return not i.handler.db.border.showMine end,
-				get = function(i) return i.handler.db.border.sizeMine end,
-				set = function(i,v)
-					i.handler.db.border.sizeMine = v
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 28
-			},
-			colorMine = {
-				type = "color",
-				name = L.OPT_MINE_COLOR,
-				hasAlpha = true,
-				disabled = function(i) return not i.handler.db.border.showMine end,
-				get = function(i) return unpack(i.handler.db.border.colorMine) end,
-				set = function(i,v1,v2,v3,v4)
-					local c = i.handler.db.border.colorMine
-					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Backdrop")
-				end,
-				order = 29
-			}
-		}
-	},
-	icon = {
-		type = "group",
-		name = L.ICON,
-		order = 3,
-		args = {
-			zoom = {
-				type = "toggle",
-				name = L.ZOOM_ICON,
-				width = "full",
-				get = function(i) return i.handler.db.icon.zoom end,
-				set = function(i,v)
-					i.handler.db.icon.zoom = v
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 30
-			},
-			showMissing = {
-				type = "toggle",
-				name = L.OPT_MISSING_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.icon.showMissing end,
-				set = function(i,v)
-					i.handler.db.icon.showMissing = v
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 31
-			},
-			grayMissing = {
-				type = "toggle",
-				name = L.OPT_MISSING_GRAY,
-				disabled = function(i) return not i.handler.db.icon.showMissing end,
-				get = function(i) return i.handler.db.icon.grayMissing end,
-				set = function(i,v)
-					i.handler.db.icon.grayMissing = v
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 32
-			},
-			colorMissing = {
-				type = "color",
-				name = L.OPT_MISSING_TINT,
-				hasAlpha = true,
-				disabled = function(i) return not i.handler.db.icon.showMissing end,
-				get = function(i) return unpack(i.handler.db.icon.colorMissing) end,
-				set = function(i,v1,v2,v3,v4)
-					local c = i.handler.db.icon.colorMissing
-					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 33
-			},
-			showOthers = {
-				type = "toggle",
-				name = L.OPT_OTHERS_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.icon.showOthers end,
-				set = function(i,v)
-					i.handler.db.icon.showOthers = v
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 34
-			},
-			grayOthers = {
-				type = "toggle",
-				name = L.OPT_OTHERS_GRAY,
-				disabled = function(i) return not i.handler.db.icon.showOthers end,
-				get = function(i) return i.handler.db.icon.grayOthers end,
-				set = function(i,v)
-					i.handler.db.icon.grayOthers = v
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 35
-			},
-			colorOthers = {
-				type = "color",
-				name = L.OPT_OTHERS_TINT,
-				hasAlpha = true,
-				disabled = function(i) return not i.handler.db.icon.showOthers end,
-				get = function(i) return unpack(i.handler.db.icon.colorOthers) end,
-				set = function(i,v1,v2,v3,v4)
-					local c = i.handler.db.icon.colorOthers
-					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 36
-			},
-			showMine = {
-				type = "toggle",
-				name = L.OPT_MINE_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.icon.showMine end,
-				set = function(i,v)
-					i.handler.db.icon.showMine = v
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 37
-			},
-			grayMine = {
-				type = "toggle",
-				name = L.OPT_MINE_GRAY,
-				disabled = function(i) return not i.handler.db.icon.showMine end,
-				get = function(i) return i.handler.db.icon.grayMine end,
-				set = function(i,v)
-					i.handler.db.icon.grayMine = v
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 38
-			},
-			colorMine = {
-				type = "color",
-				name = L.OPT_MINE_TINT,
-				hasAlpha = true,
-				disabled = function(i) return not i.handler.db.icon.showMine end,
-				get = function(i) return unpack(i.handler.db.icon.colorMine) end,
-				set = function(i,v1,v2,v3,v4)
-					local c = i.handler.db.icon.colorMine
-					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Icon")
-				end,
-				order = 39
-			}
-		}
-	},
-	spiral = {
-		type = "group",
-		name = L.SPIRAL,
-		order = 4,
-		args = {
-			showOthers = {
-				type = "toggle",
-				name = L.OPT_OTHERS_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.spiral.showOthers end,
-				set = function(i,v)
-					i.handler.db.spiral.showOthers = v
-					i.handler:Apply(nil, "Spiral")
-				end,
-				order = 40
-			},
-			showMine = {
-				type = "toggle",
-				name = L.OPT_MINE_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.spiral.showMine end,
-				set = function(i,v)
-					i.handler.db.spiral.showMine = v
-					i.handler:Apply(nil, "Spiral")
-				end,
-				order = 41
-			},
-			noCC = {
-				type = "toggle",
-				name = L.OPT_NOCC,
-				desc = L.DESC_OPT_NOCC,
-				width = "full",
-				get = function(i) return i.handler.db.spiral.noCC end,
-				set = function(i,v)
-					i.handler.db.spiral.noCC = v
-					i.handler:Apply(nil, "Spiral")
-				end,
-				order = 42
-			}
-		}
-	},
-	text = {
-		type = "group",
-		name = L.TEXT,
-		order = 5,
-		args = {
-			font = {
-				type = (LIB_LibSharedMedia and "select") or "input",
-				dialogControl = (LIB_LibSharedMedia and "LSM30_Font") or nil,
-				name = L.FONT,
-				values = (LIB_LibSharedMedia and AceGUIWidgetLSMlists.font) or nil,
-				get = (LIB_LibSharedMedia and function(i)
-					for key,data in pairs(AceGUIWidgetLSMlists.font) do
-						if (data == i.handler.db.text.font) then return key end
-					end
-					return L.NONE
-				end) or (function(i)
-					return i.handler.db.text.font
-				end),
-				set = (LIB_LibSharedMedia and function(i,v)
-					i.handler.db.text.font = LibSharedMedia:Fetch("font", v)
-					i.handler:Apply(nil, "Font")
-				end) or (function(i,v)
-					i.handler.db.text.font = v
-					i.handler:Apply(nil, "Font")
-				end),
-				order = 50
-			},
-			outline = {
-				type = "select",
-				name = L.OUTLINE,
-				values = {
-					[""] = L.NONE,
-					OUTLINE = L.THIN,
-					THICKOUTLINE = L.THICK
-				},
-				get = function(i) return i.handler.db.text.outline end,
-				set = function(i,v)
-					i.handler.db.text.outline = v
-					i.handler:Apply(nil, "Font")
-				end,
-				order = 51
-			},
-			sizeMult = {
-				type = "range",
-				name = L.RELATIVE_SIZE,
-				desc = L.DESC_OPT_RELATIVE_STATIC_SIZE,
-				min = 0,
-				max = 2,
-				step = 0.05,
-				get = function(i) return i.handler.db.text.sizeMult end,
-				set = function(i,v)
-					i.handler.db.text.sizeMult = v
-					i.handler:Apply(nil, "Font")
-				end,
-				order = 52
-			},
-			size = {
-				type = "range",
-				name = L.STATIC_SIZE,
-				desc = L.DESC_OPT_RELATIVE_STATIC_SIZE,
-				min = 4,
-				max = 32,
-				step = 1,
-				get = function(i) return i.handler.db.text.size end,
-				set = function(i,v)
-					i.handler.db.text.size = v
-					i.handler:Apply(nil, "Font")
-				end,
-				order = 53
-			},
-			smooth = {
-				type = "toggle",
-				name = L.OPT_SMOOTH_COLORS,
-				desc = L.DESC_OPT_SMOOTH_COLORS,
-				width = "full",
-				get = function(i) return i.handler.db.text.smooth end,
-				set = function(i,v)
-					i.handler.db.text.smooth = v
-					i.handler:Apply(nil, "Text")
-				end,
-				order = 54
-			},
---[[ TODO
-			smoothRate = {
-				type = "range",
-				name = L.OPT_SMOOTH_RATE,
-				desc = L.DESC_OPT_SMOOTH_RATE,
-				disabled = function(i) return not i.handler.db.text.smooth end,
-				min = 0.1,
-				max = 1,
-				step = 0.1,
-				get = function(i) return i.handler.db.text.smoothRate end,
-				set = function(i,v)
-					i.handler.db.text.smoothRate = v
-					i.handler:Apply(nil, "Text")
-				end,
-				order = 55
-			},
---]]
-			showMissing = {
-				type = "toggle",
-				name = L.OPT_MISSING_SHOW,
-				width = "full",
-				get = function(i) return i.handler.db.text.showMissing end,
-				set = function(i,v)
-					i.handler.db.text.showMissing = v
-					i.handler:Apply(nil, "Text")
-				end,
-				order = 56
-			},
-			colorMissing = {
-				type = "color",
-				name = L.OPT_MISSING_COLOR,
-				hasAlpha = true,
-				disabled = function(i) return not i.handler.db.text.showMissing end,
-				get = function(i) return unpack(i.handler.db.text.colorMissing) end,
-				set = function(i,v1,v2,v3,v4)
-					local c = i.handler.db.text.colorMissing
-					c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-					i.handler:Apply(nil, "Text")
-				end,
-				order = 57
-			},
-			showOthers = {
-				type = "toggle",
-				name = L.OPT_OTHERS_SHOW,
-				get = function(i) return i.handler.db.text.showOthers end,
-				set = function(i,v)
-					i.handler.db.text.showOthers = v
-					i.handler:Apply(nil, "Text")
-				end,
-				order = 58
-			},
-			showMine = {
-				type = "toggle",
-				name = L.OPT_MINE_SHOW,
-				get = function(i) return i.handler.db.text.showMine end,
-				set = function(i,v)
-					i.handler.db.text.showMine = v
-					i.handler:Apply(nil, "Text")
-				end,
-				order = 59
-			},
-			colorRel = {
+local sharedOptions
+
+local function get_shared_options()
+	if (not sharedOptions) then
+		sharedOptions = {
+			style = {
 				type = "group",
-				name = L.RELATIVE_COLORS,
-				inline = true,
-				order = 510,
+				name = L.STYLE,
+				order = 1,
 				args = {
-					others20 = {
-						type = "color",
-						name = L["OPT_OTHERS_20%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.others20) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.others20
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5100
+					delete = {
+						type = "execute",
+						name = L.DELETE,
+						disabled = function(i) return i.handler.db.name == L.DEFAULT end,
+						func = function(i) Auracle:RemoveTrackerStyle(i.handler) end,
+						order = 10
 					},
-					mine20 = {
-						type = "color",
-						name = L["OPT_MINE_20%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.mine20) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.mine20
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5101
+					copy = {
+						type = "execute",
+						name = L.COPY,
+						func = function(i) Auracle:CopyTrackerStyle(i.handler) end,
+						order = 11
 					},
-					others40 = {
-						type = "color",
-						name = L["OPT_OTHERS_40%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.others40) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.others40
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					name = {
+						type = "input",
+						name = L.NAME,
+						width = "double",
+						disabled = function(i) return i.handler.db.name == L.DEFAULT end,
+						get = function(i) return i.handler.db.name end,
+						set = function(i,v) Auracle:RenameTrackerStyle(i.handler, v) end,
+						validate = function(i,v)
+							if (i.handler.db.name == L.DEFAULT) then
+								return L.ERR_RENAME_DEFAULT_STYLE
+							end
+							v = strtrim(v)
+							if (v == "") then
+								return L.ERR_NO_STYLE_NAME
+							elseif (Auracle.trackerStyles[v] and Auracle.trackerStyles[v] ~= i.handler) then
+								return L.ERR_DUP_STYLE_NAME
+							end
+							return true
 						end,
-						order = 5102
-					},
-					mine40 = {
-						type = "color",
-						name = L["OPT_MINE_40%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.mine40) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.mine40
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5103
-					},
-					others60 = {
-						type = "color",
-						name = L["OPT_OTHERS_60%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.others60) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.others60
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5104
-					},
-					mine60 = {
-						type = "color",
-						name = L["OPT_MINE_60%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.mine60) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.mine60
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5105
-					},
-					others80 = {
-						type = "color",
-						name = L["OPT_OTHERS_80%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.others80) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.others80
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5106
-					},
-					mine80 = {
-						type = "color",
-						name = L["OPT_MINE_80%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.mine80) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.mine80
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5107
-					},
-					others100 = {
-						type = "color",
-						name = L["OPT_OTHERS_100%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.others100) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.others100
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5108
-					},
-					mine100 = {
-						type = "color",
-						name = L["OPT_MINE_100%"],
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorRel.mine100) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorRel.mine100
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
-						end,
-						order = 5109
+						order = 12
 					}
 				}
 			},
-			colorTime = {
+			border = {
 				type = "group",
-				name = L.COLORS_BY_TIME,
-				inline = true,
-				order = 511,
+				name = L.BORDER,
+				order = 2,
 				args = {
-					others5 = {
-						type = "color",
-						name = L.OPT_OTHERS_5S,
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.others5) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.others5
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					noScale = {
+						type = "toggle",
+						name = L.BORDER_NOSCALE,
+						desc = L.DESC_OPT_BORDER_NOSCALE,
+						width = "double",
+						get = function(i) return i.handler.db.border.noScale end,
+						set = function(i,v)
+							i.handler.db.border.noScale = v
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5110
+						order = 20
 					},
-					mine5 = {
-						type = "color",
-						name = L.OPT_MINE_5S,
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.mine5) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.mine5
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					showMissing = {
+						type = "toggle",
+						name = L.OPT_MISSING_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.border.showMissing end,
+						set = function(i,v)
+							i.handler.db.border.showMissing = v
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5111
+						order = 21
 					},
-					others10 = {
-						type = "color",
-						name = L.OPT_OTHERS_10S,
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.others10) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.others10
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					sizeMissing = {
+						type = "range",
+						name = L.OPT_MISSING_SIZE,
+						min = 1,
+						max = 8,
+						step = 1,
+						disabled = function(i) return not i.handler.db.border.showMissing end,
+						get = function(i) return i.handler.db.border.sizeMissing end,
+						set = function(i,v)
+							i.handler.db.border.sizeMissing = v
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5112
+						order = 22
 					},
-					mine10 = {
+					colorMissing = {
 						type = "color",
-						name = L.OPT_MINE_10S,
+						name = L.OPT_MISSING_COLOR,
 						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.mine10) end,
+						disabled = function(i) return not i.handler.db.border.showMissing end,
+						get = function(i) return unpack(i.handler.db.border.colorMissing) end,
 						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.mine10
+							local c = i.handler.db.border.colorMissing
 							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5113
+						order = 23
 					},
-					others20 = {
-						type = "color",
-						name = L.OPT_OTHERS_20S,
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.others20) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.others20
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					showOthers = {
+						type = "toggle",
+						name = L.OPT_OTHERS_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.border.showOthers end,
+						set = function(i,v)
+							i.handler.db.border.showOthers = v
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5114
+						order = 24
 					},
-					mine20 = {
-						type = "color",
-						name = L.OPT_MINE_20S,
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.mine20) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.mine20
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					sizeOthers = {
+						type = "range",
+						name = L.OPT_OTHERS_SIZE,
+						min = 1,
+						max = 8,
+						step = 1,
+						disabled = function(i) return not i.handler.db.border.showOthers end,
+						get = function(i) return i.handler.db.border.sizeOthers end,
+						set = function(i,v)
+							i.handler.db.border.sizeOthers = v
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5115
+						order = 25
 					},
-					others30 = {
+					colorOthers = {
 						type = "color",
-						name = L.OPT_OTHERS_30S,
+						name = L.OPT_OTHERS_COLOR,
 						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.others30) end,
+						disabled = function(i) return not i.handler.db.border.showOthers end,
+						get = function(i) return unpack(i.handler.db.border.colorOthers) end,
 						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.others30
+							local c = i.handler.db.border.colorOthers
 							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5116
+						order = 26
 					},
-					mine30 = {
-						type = "color",
-						name = L.OPT_MINE_30S,
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.mine30) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.mine30
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					showMine = {
+						type = "toggle",
+						name = L.OPT_MINE_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.border.showMine end,
+						set = function(i,v)
+							i.handler.db.border.showMine = v
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5117
+						order = 27
 					},
-					othersLong = {
-						type = "color",
-						name = L.OPT_OTHERS_XS,
-						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showOthers end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.othersLong) end,
-						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.othersLong
-							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
-							i.handler:Apply(nil, "Text")
+					sizeMine = {
+						type = "range",
+						name = L.OPT_MINE_SIZE,
+						min = 1,
+						max = 8,
+						step = 1,
+						disabled = function(i) return not i.handler.db.border.showMine end,
+						get = function(i) return i.handler.db.border.sizeMine end,
+						set = function(i,v)
+							i.handler.db.border.sizeMine = v
+							i.handler:Apply(nil, "Backdrop")
 						end,
-						order = 5118
+						order = 28
 					},
-					mineLong = {
+					colorMine = {
 						type = "color",
-						name = L.OPT_MINE_XS,
+						name = L.OPT_MINE_COLOR,
 						hasAlpha = true,
-						disabled = function(i) return not i.handler.db.text.showMine end,
-						get = function(i) return unpack(i.handler.db.text.colorTime.mineLong) end,
+						disabled = function(i) return not i.handler.db.border.showMine end,
+						get = function(i) return unpack(i.handler.db.border.colorMine) end,
 						set = function(i,v1,v2,v3,v4)
-							local c = i.handler.db.text.colorTime.mineLong
+							local c = i.handler.db.border.colorMine
+							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+							i.handler:Apply(nil, "Backdrop")
+						end,
+						order = 29
+					}
+				}
+			},
+			icon = {
+				type = "group",
+				name = L.ICON,
+				order = 3,
+				args = {
+					zoom = {
+						type = "toggle",
+						name = L.ZOOM_ICON,
+						width = "full",
+						get = function(i) return i.handler.db.icon.zoom end,
+						set = function(i,v)
+							i.handler.db.icon.zoom = v
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 30
+					},
+					showMissing = {
+						type = "toggle",
+						name = L.OPT_MISSING_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.icon.showMissing end,
+						set = function(i,v)
+							i.handler.db.icon.showMissing = v
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 31
+					},
+					grayMissing = {
+						type = "toggle",
+						name = L.OPT_MISSING_GRAY,
+						disabled = function(i) return not i.handler.db.icon.showMissing end,
+						get = function(i) return i.handler.db.icon.grayMissing end,
+						set = function(i,v)
+							i.handler.db.icon.grayMissing = v
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 32
+					},
+					colorMissing = {
+						type = "color",
+						name = L.OPT_MISSING_TINT,
+						hasAlpha = true,
+						disabled = function(i) return not i.handler.db.icon.showMissing end,
+						get = function(i) return unpack(i.handler.db.icon.colorMissing) end,
+						set = function(i,v1,v2,v3,v4)
+							local c = i.handler.db.icon.colorMissing
+							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 33
+					},
+					showOthers = {
+						type = "toggle",
+						name = L.OPT_OTHERS_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.icon.showOthers end,
+						set = function(i,v)
+							i.handler.db.icon.showOthers = v
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 34
+					},
+					grayOthers = {
+						type = "toggle",
+						name = L.OPT_OTHERS_GRAY,
+						disabled = function(i) return not i.handler.db.icon.showOthers end,
+						get = function(i) return i.handler.db.icon.grayOthers end,
+						set = function(i,v)
+							i.handler.db.icon.grayOthers = v
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 35
+					},
+					colorOthers = {
+						type = "color",
+						name = L.OPT_OTHERS_TINT,
+						hasAlpha = true,
+						disabled = function(i) return not i.handler.db.icon.showOthers end,
+						get = function(i) return unpack(i.handler.db.icon.colorOthers) end,
+						set = function(i,v1,v2,v3,v4)
+							local c = i.handler.db.icon.colorOthers
+							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 36
+					},
+					showMine = {
+						type = "toggle",
+						name = L.OPT_MINE_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.icon.showMine end,
+						set = function(i,v)
+							i.handler.db.icon.showMine = v
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 37
+					},
+					grayMine = {
+						type = "toggle",
+						name = L.OPT_MINE_GRAY,
+						disabled = function(i) return not i.handler.db.icon.showMine end,
+						get = function(i) return i.handler.db.icon.grayMine end,
+						set = function(i,v)
+							i.handler.db.icon.grayMine = v
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 38
+					},
+					colorMine = {
+						type = "color",
+						name = L.OPT_MINE_TINT,
+						hasAlpha = true,
+						disabled = function(i) return not i.handler.db.icon.showMine end,
+						get = function(i) return unpack(i.handler.db.icon.colorMine) end,
+						set = function(i,v1,v2,v3,v4)
+							local c = i.handler.db.icon.colorMine
+							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+							i.handler:Apply(nil, "Icon")
+						end,
+						order = 39
+					}
+				}
+			},
+			spiral = {
+				type = "group",
+				name = L.SPIRAL,
+				order = 4,
+				args = {
+					showOthers = {
+						type = "toggle",
+						name = L.OPT_OTHERS_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.spiral.showOthers end,
+						set = function(i,v)
+							i.handler.db.spiral.showOthers = v
+							i.handler:Apply(nil, "Spiral")
+						end,
+						order = 40
+					},
+					showMine = {
+						type = "toggle",
+						name = L.OPT_MINE_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.spiral.showMine end,
+						set = function(i,v)
+							i.handler.db.spiral.showMine = v
+							i.handler:Apply(nil, "Spiral")
+						end,
+						order = 41
+					},
+					noCC = {
+						type = "toggle",
+						name = L.OPT_NOCC,
+						desc = L.DESC_OPT_NOCC,
+						width = "full",
+						get = function(i) return i.handler.db.spiral.noCC end,
+						set = function(i,v)
+							i.handler.db.spiral.noCC = v
+							i.handler:Apply(nil, "Spiral")
+						end,
+						order = 42
+					}
+				}
+			},
+			text = {
+				type = "group",
+				name = L.TEXT,
+				order = 5,
+				args = {
+					font = {
+						type = (LIB_LibSharedMedia and "select") or "input",
+						dialogControl = (LIB_LibSharedMedia and "LSM30_Font") or nil,
+						name = L.FONT,
+						values = (LIB_LibSharedMedia and AceGUIWidgetLSMlists.font) or nil,
+						get = (LIB_LibSharedMedia and function(i)
+							for key,data in pairs(AceGUIWidgetLSMlists.font) do
+								if (data == i.handler.db.text.font) then return key end
+							end
+							return L.NONE
+						end) or (function(i)
+							return i.handler.db.text.font
+						end),
+						set = (LIB_LibSharedMedia and function(i,v)
+							i.handler.db.text.font = LibSharedMedia:Fetch("font", v)
+							i.handler:Apply(nil, "Font")
+						end) or (function(i,v)
+							i.handler.db.text.font = v
+							i.handler:Apply(nil, "Font")
+						end),
+						order = 50
+					},
+					outline = {
+						type = "select",
+						name = L.OUTLINE,
+						values = {
+							[""] = L.NONE,
+							OUTLINE = L.THIN,
+							THICKOUTLINE = L.THICK
+						},
+						get = function(i) return i.handler.db.text.outline end,
+						set = function(i,v)
+							i.handler.db.text.outline = v
+							i.handler:Apply(nil, "Font")
+						end,
+						order = 51
+					},
+					sizeMult = {
+						type = "range",
+						name = L.RELATIVE_SIZE,
+						desc = L.DESC_OPT_RELATIVE_STATIC_SIZE,
+						min = 0,
+						max = 2,
+						step = 0.05,
+						get = function(i) return i.handler.db.text.sizeMult end,
+						set = function(i,v)
+							i.handler.db.text.sizeMult = v
+							i.handler:Apply(nil, "Font")
+						end,
+						order = 52
+					},
+					size = {
+						type = "range",
+						name = L.STATIC_SIZE,
+						desc = L.DESC_OPT_RELATIVE_STATIC_SIZE,
+						min = 4,
+						max = 32,
+						step = 1,
+						get = function(i) return i.handler.db.text.size end,
+						set = function(i,v)
+							i.handler.db.text.size = v
+							i.handler:Apply(nil, "Font")
+						end,
+						order = 53
+					},
+					smooth = {
+						type = "toggle",
+						name = L.OPT_SMOOTH_COLORS,
+						desc = L.DESC_OPT_SMOOTH_COLORS,
+						width = "full",
+						get = function(i) return i.handler.db.text.smooth end,
+						set = function(i,v)
+							i.handler.db.text.smooth = v
+							i.handler:Apply(nil, "Text")
+						end,
+						order = 54
+					},
+		--[[ TODO
+					smoothRate = {
+						type = "range",
+						name = L.OPT_SMOOTH_RATE,
+						desc = L.DESC_OPT_SMOOTH_RATE,
+						disabled = function(i) return not i.handler.db.text.smooth end,
+						min = 0.1,
+						max = 1,
+						step = 0.1,
+						get = function(i) return i.handler.db.text.smoothRate end,
+						set = function(i,v)
+							i.handler.db.text.smoothRate = v
+							i.handler:Apply(nil, "Text")
+						end,
+						order = 55
+					},
+		--]]
+					showMissing = {
+						type = "toggle",
+						name = L.OPT_MISSING_SHOW,
+						width = "full",
+						get = function(i) return i.handler.db.text.showMissing end,
+						set = function(i,v)
+							i.handler.db.text.showMissing = v
+							i.handler:Apply(nil, "Text")
+						end,
+						order = 56
+					},
+					colorMissing = {
+						type = "color",
+						name = L.OPT_MISSING_COLOR,
+						hasAlpha = true,
+						disabled = function(i) return not i.handler.db.text.showMissing end,
+						get = function(i) return unpack(i.handler.db.text.colorMissing) end,
+						set = function(i,v1,v2,v3,v4)
+							local c = i.handler.db.text.colorMissing
 							c[1],c[2],c[3],c[4] = v1,v2,v3,v4
 							i.handler:Apply(nil, "Text")
 						end,
-						order = 5119
+						order = 57
+					},
+					showOthers = {
+						type = "toggle",
+						name = L.OPT_OTHERS_SHOW,
+						get = function(i) return i.handler.db.text.showOthers end,
+						set = function(i,v)
+							i.handler.db.text.showOthers = v
+							i.handler:Apply(nil, "Text")
+						end,
+						order = 58
+					},
+					showMine = {
+						type = "toggle",
+						name = L.OPT_MINE_SHOW,
+						get = function(i) return i.handler.db.text.showMine end,
+						set = function(i,v)
+							i.handler.db.text.showMine = v
+							i.handler:Apply(nil, "Text")
+						end,
+						order = 59
+					},
+					colorRel = {
+						type = "group",
+						name = L.RELATIVE_COLORS,
+						inline = true,
+						order = 510,
+						args = {
+							others20 = {
+								type = "color",
+								name = L["OPT_OTHERS_20%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.others20) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.others20
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5100
+							},
+							mine20 = {
+								type = "color",
+								name = L["OPT_MINE_20%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.mine20) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.mine20
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5101
+							},
+							others40 = {
+								type = "color",
+								name = L["OPT_OTHERS_40%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.others40) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.others40
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5102
+							},
+							mine40 = {
+								type = "color",
+								name = L["OPT_MINE_40%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.mine40) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.mine40
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5103
+							},
+							others60 = {
+								type = "color",
+								name = L["OPT_OTHERS_60%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.others60) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.others60
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5104
+							},
+							mine60 = {
+								type = "color",
+								name = L["OPT_MINE_60%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.mine60) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.mine60
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5105
+							},
+							others80 = {
+								type = "color",
+								name = L["OPT_OTHERS_80%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.others80) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.others80
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5106
+							},
+							mine80 = {
+								type = "color",
+								name = L["OPT_MINE_80%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.mine80) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.mine80
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5107
+							},
+							others100 = {
+								type = "color",
+								name = L["OPT_OTHERS_100%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.others100) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.others100
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5108
+							},
+							mine100 = {
+								type = "color",
+								name = L["OPT_MINE_100%"],
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorRel.mine100) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorRel.mine100
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5109
+							}
+						}
+					},
+					colorTime = {
+						type = "group",
+						name = L.COLORS_BY_TIME,
+						inline = true,
+						order = 511,
+						args = {
+							others5 = {
+								type = "color",
+								name = L.OPT_OTHERS_5S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.others5) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.others5
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5110
+							},
+							mine5 = {
+								type = "color",
+								name = L.OPT_MINE_5S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.mine5) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.mine5
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5111
+							},
+							others10 = {
+								type = "color",
+								name = L.OPT_OTHERS_10S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.others10) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.others10
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5112
+							},
+							mine10 = {
+								type = "color",
+								name = L.OPT_MINE_10S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.mine10) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.mine10
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5113
+							},
+							others20 = {
+								type = "color",
+								name = L.OPT_OTHERS_20S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.others20) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.others20
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5114
+							},
+							mine20 = {
+								type = "color",
+								name = L.OPT_MINE_20S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.mine20) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.mine20
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5115
+							},
+							others30 = {
+								type = "color",
+								name = L.OPT_OTHERS_30S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.others30) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.others30
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5116
+							},
+							mine30 = {
+								type = "color",
+								name = L.OPT_MINE_30S,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.mine30) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.mine30
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5117
+							},
+							othersLong = {
+								type = "color",
+								name = L.OPT_OTHERS_XS,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showOthers end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.othersLong) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.othersLong
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5118
+							},
+							mineLong = {
+								type = "color",
+								name = L.OPT_MINE_XS,
+								hasAlpha = true,
+								disabled = function(i) return not i.handler.db.text.showMine end,
+								get = function(i) return unpack(i.handler.db.text.colorTime.mineLong) end,
+								set = function(i,v1,v2,v3,v4)
+									local c = i.handler.db.text.colorTime.mineLong
+									c[1],c[2],c[3],c[4] = v1,v2,v3,v4
+									i.handler:Apply(nil, "Text")
+								end,
+								order = 5119
+							}
+						}
 					}
 				}
 			}
 		}
-	}
-}
+	end
+	return sharedOptions
+end -- get_shared_options()
 
 
 --[[ MENU METHODS ]]--
@@ -1029,7 +1036,7 @@ function TrackerStyle.prototype:GetOptionsTable()
 			type = "group",
 			handler = self,
 			childGroups = "tab",
-			args = sharedOptions
+			args = get_shared_options()
 		}
 	end
 	self.optionsTable.name = self.db.name
