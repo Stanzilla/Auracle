@@ -620,7 +620,7 @@ local function get_shared_options()
 							return i.handler.db.text.font
 						end),
 						set = (LIB_LibSharedMedia and function(i,v)
-							i.handler.db.text.font = LibSharedMedia:Fetch("font", v)
+							i.handler.db.text.font = LIB_LibSharedMedia:Fetch("font", v)
 							i.handler:Apply(nil, "Font")
 						end) or (function(i,v)
 							i.handler.db.text.font = v
