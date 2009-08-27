@@ -237,6 +237,15 @@ function TrackerStyle.prototype:GetTextColor(status, relative, value)
 	return unpack(self.db.text.colorTime[S_5[status]]);
 end -- GetTextColor()
 
+function TrackerStyle.prototype:ResetMissingFont()
+	print(
+		"Auracle: TrackerStyle [",self.db.name,
+		"] font [",self.db.text.font,
+		"] not found; reset to [",DB_DEFAULT_TRACKERSTYLE.text.font,"]"
+	)
+	self.db.text.font = DB_DEFAULT_TRACKERSTYLE.text.font
+end -- ResetMissingFont()
+
 
 --[[ UPDATE METHODS ]]--
 
