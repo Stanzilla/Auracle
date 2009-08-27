@@ -667,7 +667,12 @@ end -- UpdateSpiral()
 function Tracker.prototype:UpdateFont()
 	local sdb = self.style.db.text
 	local fontsize = max(1, sdb.size + (sdb.sizeMult * self.size))
-	self.uiText:SetFont(sdb.font, fontsize, sdb.outline)
+	if (not self.uiText:SetFont(sdb.font, fontsize, sdb.outline)) then
+		self.style:ResetMissingFont()
+		if (not self.uiText:SetFont(sdb.font, fontsize, sdb.outline)) then
+			error("Auracle: failed to :SetFont(",sdb.font,",",fontsize,",",sdb.outline,")")
+		end
+	end
 end -- UpdateFont()
 
 function Tracker.prototype:UpdateText()
