@@ -179,12 +179,21 @@ function Auracle:OnInitialize()
 	end
 end -- OnInitialize()
 
+local firstrun = true
+
 function Auracle:OnEnable()
-	self:Startup()
+	if (firstrun and self.db.profile.disabled) then
+		self:Disable()
+	else
+		self.db.profile.disabled = false
+		self:Startup()
+	end
+	firstrun = nil
 end -- OnEnable()
 
 function Auracle:OnDisable()
 	-- AceEvent handles unregistering events (the equivalent of self:UnregisterAllEvents())
+	self.db.profile.disabled = true
 	self:Shutdown()
 	self:UpdateConfig()
 end -- OnDisable()
@@ -267,16 +276,10 @@ function Auracle:UPDATE_SHAPESHIFT_FORM()
 	else
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
---@debug@
---	print("Auracle:UPDATE_SHAPESHIFT_FORM(): "..tostring(f).." => "..tostring(self.plrForm))
---@end-debug@
 	self:DispatchPlayerStatus()
 end -- UPDATE_SHAPESHIFT_FORM()
 
 function Auracle:UPDATE_SHAPESHIFT_FORMS()
---@debug@
---	print("Auracle:UPDATE_SHAPESHIFT_FORMS()")
---@end-debug@
 	self:UpdatePlayerStatus()
 	self:UpdateEventListeners()
 	Window:UpdateFormOptions()
@@ -402,9 +405,6 @@ function Auracle:UpdatePlayerStatus(window)
 	else
 		self.plrForm = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 	end
---@debug@
---	print("Auracle:UpdatePlayerStatus(): "..tostring(f).." => "..tostring(self.plrForm))
---@end-debug@
 	-- update window(s)
 	self:DispatchPlayerStatus(window)
 end -- UpdatePlayerStatus()
@@ -544,16 +544,8 @@ function Auracle:UpdateSavedVars(dbProfile)
 			if (type(wdb) == "table") then
 				newVersion = max(Window:UpdateSavedVars(version, wdb), newVersion)
 				newWindows[#newWindows+1] = wdb
---@debug@
---			else
---				print("Auracle: type(db.windows["..tostring(n).."]) = "..type(wdb))
---@end-debug@
 			end
 		end
---@debug@
---	else
---		print("Auracle: type(db.windows) = "..type(dbProfile.windows))
---@end-debug@
 	end
 	dbProfile.windows = newWindows
 	
@@ -829,9 +821,6 @@ function Auracle:UpdateEventListeners()
 			for f = 1,maxform do
 				form = select(2, API_GetShapeshiftFormInfo(f)) or L.UNKNOWN_FORM
 				if ((not vis[form]) ~= (not vis[L.HUMANOID])) then
---@debug@
---					print("Auracle:UpdateEventListeners(): plrForm["..tostring(form).."] ~= plrForm["..tostring(L.HUMANOID).."]")
---@end-debug@
 					eForm = true
 					break
 				end
@@ -855,12 +844,7 @@ function Auracle:UpdateEventListeners()
 		self:RegisterEvent("PLAYER_REGEN_DISABLED")
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	end
-	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
---@debug@
---	else
---		print("Auracle:UpdateEventListeners(): plrForm[*] = "..tostring(self.plrForm[L.HUMANOID]))
---@end-debug@
-	end
+	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM") end
 	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end
 end -- UpdateEventListeners()
 
@@ -1244,7 +1228,13 @@ function Auracle:UpdateBlizOptions()
 				type = "toggle",
 				name = L.ADDON_ENABLED,
 				get = "IsOnline",
-				set = function(i,v) if (v) then Auracle:Enable() else Auracle:Disable() end end,
+				set = function(i,v)
+					if (v) then
+						Auracle:Enable()
+					else
+						Auracle:Disable()
+					end
+				end,
 				order = 1
 			},
 			configure = {
