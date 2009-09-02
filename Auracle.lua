@@ -468,7 +468,7 @@ end
 
 
 --[[ CONFIG METHODS ]]--
-s
+
 function Auracle:Startup()
 	-- make sure everything was cleaned up from before..
 	self:Shutdown()
