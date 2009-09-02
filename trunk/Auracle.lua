@@ -20,9 +20,11 @@ local Tracker,      DB_DEFAULT_TRACKER,      DB_VALID_TRACKER
 -- API function upvalues
 
 local API_GetActiveTalentGroup = GetActiveTalentGroup
+local API_GetCurrentResolution = GetCurrentResolution
 local API_GetNumPartyMembers = GetNumPartyMembers
 local API_GetNumRaidMembers = GetNumRaidMembers
 local API_GetNumShapeshiftForms = GetNumShapeshiftForms
+local API_GetScreenResolutions = GetScreenResolutions
 local API_GetShapeshiftForm = GetShapeshiftForm
 local API_GetShapeshiftFormInfo = GetShapeshiftFormInfo
 local API_GetTime = GetTime
@@ -248,12 +250,23 @@ function Auracle:PLAYER_TARGET_CHANGED()
 	self:UpdateUnitIdentity("targettarget")
 end -- PLAYER_TARGET_CHANGED()
 
+function Auracle:UNIT_AURA(event, unit)
+	self:UpdateUnitAuras(unit)
+end -- UNIT_AURA()
+
 function Auracle:UNIT_PET(event, unit)
 	if (unit == "player") then
 		self:UpdateUnitIdentity("pet")
 		self:UpdateUnitIdentity("pettarget")
 	end
 end -- UNIT_PET()
+
+function Auracle:UNIT_PORTRAIT_UPDATE(event, unit)
+	-- this an UPDATE_FLOATING_CHAT_WINDOWS seem to be the only events that fire when the user changes screen resolutiosn :X
+	if (unit == "player") then
+		self:UpdateScreenResolution()
+	end
+end -- UNIT_PORTRAIT_UPDATE()
 
 function Auracle:UNIT_TARGET(event, unit)
 	if (unit == "player") then
@@ -290,9 +303,10 @@ end -- UPDATE_SHAPESHIFT_FORMS()
 --[[ AceBucket EVENT HANDLERS ]]--
 
 function Auracle:Bucket_UNIT_AURA(units)
-	local pairs = pairs
 	for unit,count in pairs(units) do
-		self:UpdateUnitAuras(unit)
+		if (count > 0) then
+			self:UpdateUnitAuras(unit)
+		end
 	end
 end -- Bucket_UNIT_AURA()
 
@@ -300,7 +314,6 @@ end -- Bucket_UNIT_AURA()
 --[[ UNIT & AURA UPDATE METHODS ]]--
 
 function Auracle:UpdateUnitIdentity(unit)
-	local ipairs = ipairs
 	if (API_UnitExists(unit)) then
 		-- check unit type and reaction
 		local tgtType,tgtReact = "pc","neutral"
@@ -386,6 +399,27 @@ end -- UpdateUnitAuras()
 
 --[[ SITUATION UPDATE METHODS ]]--
 
+function Auracle:UpdateScreenResolution()
+	local w,h = strsplit("x", (select(API_GetCurrentResolution(), API_GetScreenResolutions())))
+	w = tonumber(w)
+	h = tonumber(h)
+	if (h ~= self.screenHeight or w ~= self.screenWidth) then
+		self.screenWidth = w
+		self.screenHeight = h
+		if (type(self.windowStyles) == "table") then
+			for name,ws in pairs(self.windowStyles) do
+				ws:Apply(nil, "Backdrop")
+				ws:Apply(nil, "Layout")
+			end
+		end
+		if (type(self.trackerStyles) == "table") then
+			for name,ts in pairs(self.trackerStyles) do
+				ts:Apply(nil, "Backdrop")
+			end
+		end
+	end
+end -- UpdateScreenResolution()
+
 function Auracle:UpdatePlayerStatus(window)
 	-- determine player's spec, instance, group, combat and form status
 	self.plrSpec = API_GetActiveTalentGroup()
@@ -409,35 +443,39 @@ function Auracle:UpdatePlayerStatus(window)
 	self:DispatchPlayerStatus(window)
 end -- UpdatePlayerStatus()
 
-function Auracle:DispatchPlayerStatus(window)
-	local ipairs,pairs = ipairs,pairs
-	-- update windows and flag units of windows that appear
+do
 	local units = {}
-	if (window) then
-		if (window:SetPlayerStatus(self.plrSpec, self.plrInstance, self.plrGroup, self.plrCombat, self.plrForm)) then
-			units[window.db.unit] = true
-		end
-	else
-		for _,window in ipairs(self.windows) do
+	function Auracle:DispatchPlayerStatus(window)
+		-- update windows and flag units of windows that appear
+		if (window) then
 			if (window:SetPlayerStatus(self.plrSpec, self.plrInstance, self.plrGroup, self.plrCombat, self.plrForm)) then
 				units[window.db.unit] = true
 			end
+		else
+			for _,window in ipairs(self.windows) do
+				if (window:SetPlayerStatus(self.plrSpec, self.plrInstance, self.plrGroup, self.plrCombat, self.plrForm)) then
+					units[window.db.unit] = true
+				end
+			end
 		end
-	end
-	-- update auras as necessary
-	for unit,_ in pairs(units) do
-		self:UpdateUnitAuras(unit)
-	end
-end -- DispatchPlayerStatus()
+		-- update auras as necessary
+		for unit,_ in pairs(units) do
+			self:UpdateUnitAuras(unit)
+		end
+		wipe(units)
+	end -- DispatchPlayerStatus()
+end
 
 
 --[[ CONFIG METHODS ]]--
-
+s
 function Auracle:Startup()
 	-- make sure everything was cleaned up from before..
 	self:Shutdown()
 	-- initialize addon
 	self.online = true
+	self.screenWidth = 1024
+	self.screenHeight = 768
 	self.windowStyles = {}
 	self.windowStyleOptions = {}
 	self.trackerStyles = {}
@@ -465,6 +503,7 @@ function Auracle:Startup()
 		self.windows[n] = Window(wdb)
 	end
 	-- initialize state
+	self:UpdateScreenResolution()
 	self:UpdatePlayerStatus()
 	self:UpdateEventListeners()
 	for n,window in ipairs(self.windows) do
@@ -494,6 +533,8 @@ function Auracle:Shutdown()
 		end
 	end
 	-- clean up addon
+	self.screenWidth = nil
+	self.screenHeight = nil
 	self.windowStyles = nil
 	self.windowStyleOptions = nil
 	self.trackerStyles = nil
@@ -776,6 +817,7 @@ end -- ConvertDataStore()
 function Auracle:UpdateEventListeners()
 	-- clear them all and set the ones we always need
 	self:UnregisterAllEvents()
+	self:RegisterEvent("UNIT_PORTRAIT_UPDATE")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 	-- determine which listeners we need according to current settings
 	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eForm,eAuras
@@ -845,7 +887,8 @@ function Auracle:UpdateEventListeners()
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	end
 	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM") end
-	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end
+--	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end
+	if (eAuras) then self:RegisterEvent("UNIT_AURA") end
 end -- UpdateEventListeners()
 
 function Auracle:GetWindowPosition(window)
