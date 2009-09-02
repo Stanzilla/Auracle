@@ -100,16 +100,10 @@ local DB_VALID_WINDOW = {
 		},
 		plrForm = function(v)
 			if (type(v) ~= "table") then
---@debug@
---				print("Auracle: type(db.windows[?].visibility.plrForm) = "..type(v))
---@end-debug@
 				return false
 			end
 			for form,vis in pairs(v) do
 				if (type(form) ~= "string" or type(vis) ~= "boolean") then
---@debug@
---					print("Auracle: db.windows[?].visibility.plrForm["..tostring(form).."] = "..tostring(vis))
---@end-debug@
 					return false
 				end
 			end
@@ -140,9 +134,6 @@ local DB_VALID_WINDOW = {
 	},
 	trackers = function(v)
 		if (type(v) ~= "table") then
---@debug@
---			print("Auracle: type(db.windows[?].trackers) = "..type(v))
---@end-debug@
 			return false
 		end
 		for _,tdb in ipairs(v) do
@@ -738,9 +729,7 @@ local TRACKER_PRESET = {
 
 -- API function upvalues
 
-local API_GetCurrentResolution = GetCurrentResolution
 local API_GetNumShapeshiftForms = GetNumShapeshiftForms
-local API_GetScreenResolutions = GetScreenResolutions
 local API_GetShapeshiftFormInfo = GetShapeshiftFormInfo
 
 
@@ -770,16 +759,8 @@ function Window:UpdateSavedVars(version, db)
 			if (type(tdb) == "table") then
 				newVersion = max(Tracker:UpdateSavedVars(version, tdb), newVersion)
 				newTrackers[#newTrackers+1] = tdb
---@debug@
---			else
---				print("Auracle: type(db.windows[?].trackers["..tostring(n).."]) = "..type(tdb))
---@end-debug@
 			end
 		end
---@debug@
---	else
---		print("Auracle: type(db.windows[?].trackers) = "..type(db.trackers))
---@end-debug@
 	end
 	db.trackers = newTrackers
 	return newVersion
@@ -1010,9 +991,6 @@ end -- EndAuraUpdate()
 --[[ SITUATION UPDATE METHODS ]]--
 
 function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCombat, plrForm)
---@debug@
---	print("Auracle.Window["..tostring(self.db.label).."]:SetPlayerStatus(..., "..tostring(plrForm)..")")
---@end-debug@
 	self.plrSpec = plrSpec
 	self.plrInstance = plrInstance
 	self.plrGroup = plrGroup
@@ -1054,9 +1032,6 @@ function Window.prototype:UpdateVisibility()
 			)
 		)
 	)
---@debug@
---	print("Auracle.Window["..tostring(self.db.label).."]:UpdateVisibility(): plrForm["..tostring(self.plrForm).."] = "..tostring(not dbvis.plrForm[self.plrForm]))
---@end-debug@
 	if (nowVis) then
 		self.uiFrame:Show()
 	else
@@ -1079,11 +1054,7 @@ function Window.prototype:UpdateBackdrop()
 		if (next(backdrop)) then
 			local sdb = self.style.db
 			if (backdrop.insets and sdb.background.noScale) then
-				local m = {}
-				for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
-					m[#m+1] = size
-				end
-				local inset = backdrop.insets.left * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+				local inset = backdrop.insets.left * ((768 / self.uiFrame:GetEffectiveScale()) / Auracle.screenHeight)
 				backdrop.insets.left = inset
 				backdrop.insets.right = inset
 				backdrop.insets.top = inset
@@ -1116,11 +1087,7 @@ function Window.prototype:UpdateLayout()
 	local padding = sdb.padding
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
-		local m = {}
-		for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
-			m[#m+1] = size
-		end
-		local factor = ((768 / self.effectiveScale) / m[2])
+		local factor = ((768 / self.effectiveScale) / Auracle.screenHeight)
 		padding = padding * factor
 		spacing = spacing * factor
 	end
@@ -1142,11 +1109,7 @@ function Window.prototype:UpdateTrackerLayout(tn)
 	local padding = sdb.padding
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
-		local m = {}
-		for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
-			m[#m+1] = size
-		end
-		local factor = ((768 / self.effectiveScale) / m[2])
+		local factor = ((768 / self.effectiveScale) / Auracle.screenHeight)
 		padding = padding * factor
 		spacing = spacing * factor
 	end
@@ -1212,11 +1175,7 @@ function Window.prototype:SetTrackerPosition(tracker, x, y)
 	local padding = sdb.padding
 	local spacing = sdb.spacing
 	if (sdb.noScale) then
-		local m = {}
-		for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
-			m[#m+1] = size
-		end
-		local factor = ((768 / self.effectiveScale) / m[2])
+		local factor = ((768 / self.effectiveScale) / Auracle.screenHeight)
 		padding = padding * factor
 		spacing = spacing * factor
 	end

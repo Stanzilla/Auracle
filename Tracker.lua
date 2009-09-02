@@ -47,6 +47,21 @@ local DB_DEFAULT_TRACKER = {
 		maxStacks = false,
 		maxStacksMode = "auto"
 	},
+--[[
+	labelText = {
+		show = false,
+	},
+	timeText = {
+		show = true,
+		max = false,
+		maxMode = "auto",
+	},
+	stackText = {
+		show = false,
+		max = false,
+		maxMode = "auto",
+	},
+--]]
 	tooltip = {
 		showMissing = "off", -- off|summary
 		showOthers = "off", -- off|summary|aura
@@ -60,9 +75,6 @@ local DB_VALID_TRACKER = {
 	auratype = "string",
 	auras = function(v)
 		if (type(v) ~= "table") then
---@debug@
---			print("Auracle: type(db.windows[?].trackers[?].auras) = "..type(v))
---@end-debug@
 			return false
 		end
 		for _,aura in pairs(v) do
@@ -78,11 +90,11 @@ local DB_VALID_TRACKER = {
 		maxTime = function(v) return (type(v) == "number" or v == false) end,
 		maxTimeMode = "string",
 		maxStacks = function(v) return (type(v) == "number" or v == false) end,
-		maxStacksMode = "string"
+		maxStacksMode = "string",
 	},
 	icon = {
 		texture = "string",
-		autoIcon = "boolean"
+		autoIcon = "boolean",
 	},
 	text = {
 		mode = "string",
@@ -90,21 +102,57 @@ local DB_VALID_TRACKER = {
 		maxTime = function(v) return (type(v) == "number" or v == false) end,
 		maxTimeMode = "string",
 		maxStacks = function(v) return (type(v) == "number" or v == false) end,
-		maxStacksMode = "string"
+		maxStacksMode = "string",
 	},
+--[[
+	labelText = {
+		show = "boolean",
+	},
+	timeText = {
+		show = "boolean",
+		max = function(v) return (type(v) == "number" or v == false) end,
+		maxMode = "string",
+	},
+	stackText = {
+		show = "boolean",
+		max = function(v) return (type(v) == "number" or v == false) end,
+		maxMode = "string",
+	},
+--]]
 	tooltip = {
 		showMissing = "string",
 		showOthers = "string",
-		showMine = "string"
-	}
+		showMine = "string",
+	},
 } -- {DB_VALID_TRACKER}
 
 -- API function upvalues
 
 local ceil,max,min,select,tostring = ceil,max,min,select,tostring
-local API_GetCurrentResolution = GetCurrentResolution
-local API_GetScreenResolutions = GetScreenResolutions
 local API_GetTime = GetTime
+
+-- string caches
+
+local stringsHours = setmetatable({}, {
+	__index = function(t,k)
+		t[k] = tostring(k) .. L["_HOURS_ABBREV_"]
+		return t[k]
+    end
+})
+
+local stringsMinutes = setmetatable({}, {
+	__index = function(t,k)
+		t[k] = tostring(k) .. L["_MINUTES_ABBREV_"]
+		return t[k]
+    end
+})
+
+local stringsSeconds = setmetatable({}, {
+	__index = function(t,k)
+		t[k] = tostring(k) .. L["_SECONDS_ABBREV_"]
+		return t[k]
+    end
+})
 
 
 --[[ CLASS METHODS ]]--
@@ -159,6 +207,21 @@ function Tracker:UpdateSavedVars(version, db)
 		db.icon = icon
 	end
 	db.autoIcon = nil
+--[[
+	if (type(db.text) == "table") then
+		db.timeText = {
+			show = (db.text.mode == "time"),
+			max = db.text.maxTime,
+			maxMode = db.text.maxTimeMode,
+		}
+		db.stackText = {
+			show = (db.text.mode == "stacks"),
+			max = db.text.maxStacks,
+			maxMode = db.text.maxStacksMode,
+		}
+		db.text = nil
+	end
+--]]
 	return 4
 end -- UpdateSavedVars()
 
@@ -209,11 +272,11 @@ local function Frame_OnEnter(self)
 				elseif (tracker.summary[aura]) then
 					timeleft = tracker.summary[aura] - now
 					if (timeleft >= 3600) then
-						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 3600))..L["_HOURS_ABBREV_"], 0, 1, 0, 0, 1, 0)
+						tt:AddDoubleLine(aura, stringsHours[ceil(timeleft / 3600)], 0, 1, 0, 0, 1, 0)
 					elseif (timeleft >= 60) then
-						tt:AddDoubleLine(aura, tostring(ceil(timeleft / 60))..L["_MINUTES_ABBREV_"], 0, 1, 0, 0, 1, 0)
+						tt:AddDoubleLine(aura, stringsMinutes[ceil(timeleft / 60)], 0, 1, 0, 0, 1, 0)
 					else
-						tt:AddDoubleLine(aura, tostring(ceil(timeleft))..L["_SECONDS_ABBREV_"], 0, 1, 0, 0, 1, 0)
+						tt:AddDoubleLine(aura, stringsSeconds[ceil(timeleft)], 0, 1, 0, 0, 1, 0)
 					end
 				else
 					tt:AddLine(aura, 1, 0, 0)
@@ -246,12 +309,12 @@ local function TrackerOverlay_OnUpdate(self, elapsed)
 	end
 	-- update text
 	if (dbtext.mode == "time") then
-		local text
+		local text = ""
 		if (auraTimeleft >= 3600) then
-			text = tostring(ceil(auraTimeleft / 3600))..L["_HOURS_ABBREV_"]
+			text = stringsHours[ceil(auraTimeleft / 3600)]
 		elseif (auraTimeleft >= 60) then
-			text = tostring(ceil(auraTimeleft / 60))..L["_MINUTES_ABBREV_"]
-		else
+			text = stringsMinutes[ceil(auraTimeleft / 60)]
+		elseif (auraTimeleft > 0) then
 			text = tostring(ceil(auraTimeleft))
 		end
 		if (text ~= tracker.text) then
@@ -606,11 +669,7 @@ function Tracker.prototype:UpdateBackdrop()
 		if (sdb[S_SHOW[self.auraOrigin]]) then
 			local borderSize = sdb[S_SIZE[self.auraOrigin]]
 			if (sdb.noScale) then
-				local m = {}
-				for size in string.gmatch(select((API_GetCurrentResolution()), API_GetScreenResolutions()), "[0-9]+") do
-					m[#m+1] = size
-				end
-				borderSize = borderSize * ((768 / self.uiFrame:GetEffectiveScale()) / m[2])
+				borderSize = borderSize * ((768 / self.uiFrame:GetEffectiveScale()) / Auracle.screenHeight)
 			end
 			self.backdrop.edgeSize = borderSize
 			self.uiFrame:SetBackdrop(self.backdrop)
@@ -688,9 +747,9 @@ function Tracker.prototype:UpdateText()
 			if (self.auraTimeleft) then
 				self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
 				if (self.auraTimeleft >= 3600) then
-					text = tostring(ceil(self.auraTimeleft / 3600))..L["_HOURS_ABBREV_"]
+					text = stringsHours[ceil(self.auraTimeleft / 3600)]
 				elseif (self.auraTimeleft >= 60) then
-					text = tostring(ceil(self.auraTimeleft / 60))..L["_MINUTES_ABBREV_"]
+					text = stringsMinutes[ceil(self.auraTimeleft / 60)]
 				else
 					text = tostring(ceil(self.auraTimeleft or 0))
 				end
