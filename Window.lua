@@ -1775,7 +1775,8 @@ do
 	local tconcat = table.concat
 	
 	local typeopt,groupopt
-	local normal,talented,tbl
+	local normal,talented,tbl,spellname
+	local invalid = {}
 	
 	for t,typetable in ipairs(TRACKER_PRESET) do
 		-- create AceOptions entry
@@ -1811,7 +1812,12 @@ do
 				-- convert SpellIDs to aura names
 				tbl = settable[1]
 				for n,spellid in ipairs(tbl) do
-					tbl[n] = (GetSpellInfo(spellid))
+					spellname = (GetSpellInfo(spellid))
+					if (not spellname) then
+						spellname = "!!UNKNOWN:" .. spellid
+						invalid[#invalid+1] = spellid
+					end
+					tbl[n] = spellname
 				end
 				tsort(tbl)
 				normal = tconcat(tbl, "\n")
@@ -1830,6 +1836,11 @@ do
 				settable[2] = talented
 			end
 		end
+	end
+	
+	-- warn about invalid SpellIDs
+	if (#invalid > 0) then
+		Auracle:Print("Warning: These preset SpellIDs are no longer valid.\n", tconcat(invalid, ", "))
 	end
 end
 
