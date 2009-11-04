@@ -605,7 +605,7 @@ local TRACKER_PRESET = {
 					853, -- Hammer of Justice
 					2812, -- Holy Wrath
 					12355, -- Impact
-					51880, -- Improved Fire Nova Totem
+				--	51880, -- Improved Fire Nova Totem -- totem replaced by Fire Nova spell in WoW 3.3, talent no longer stuns
 					20253, -- Intercept
 					24394, -- Intimidation
 					408, -- Kidney Shot
