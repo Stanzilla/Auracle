@@ -14,7 +14,10 @@ local L = LIB_AceLocale:GetLocale("Auracle")
 -- constants
 
 local ICON_QM = "Interface\\Icons\\INV_Misc_QuestionMark"
-local S_SHOW  = { [false]="showMissing",  others="showOthers",   mine="showMine"  }
+local S_SHOW  = { [false]="showMissing",  others="showOthers",   mine="showMine",
+		[GetInventorySlotInfo("MainHandSlot")]="showMainhand",
+		[GetInventorySlotInfo("SecondaryHandSlot")]="showOffhand"
+}
 local S_SIZE  = { [false]="sizeMissing",  others="sizeOthers",   mine="sizeMine"  }
 local S_GRAY  = { [false]="grayMissing",  others="grayOthers",   mine="grayMine"  }
 local S_COLOR = { [false]="colorMissing", others="colorOthers",  mine="colorMine" }
@@ -23,10 +26,12 @@ local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, i
 local DB_DEFAULT_TRACKER = {
 	label = false,
 	style = L.DEFAULT,
-	auratype = "debuff", -- buff|debuff
+	auratype = "debuff", -- buff|debuff|tempenchant
 	auras = {},
 	showOthers = true,
 	showMine = true,
+	showMainhand = true,
+	showOffhand = true,
 	spiral = {
 		mode = "time", -- off|time|stacks
 		reverse = true,
@@ -84,6 +89,8 @@ local DB_VALID_TRACKER = {
 	end,
 	showOthers = "boolean",
 	showMine = "boolean",
+	showMainhand = "boolean",
+	showOffhand = "boolean",
 	spiral = {
 		mode = "string",
 		reverse = "boolean",
@@ -222,7 +229,14 @@ function Tracker:UpdateSavedVars(version, db)
 		db.text = nil
 	end
 --]]
-	return 4
+	-- v5: added showMainhand,showOffhand
+	if (type(db.showMainhand) ~= "boolean") then
+		db.showMainhand = true
+	end
+	if (type(db.showOffhand) ~= "boolean") then
+		db.showOffhand = true
+	end
+	return 5
 end -- UpdateSavedVars()
 
 
@@ -259,7 +273,16 @@ local function Frame_OnEnter(self)
 		local mode = tracker.db.tooltip[S_SHOW[tracker.auraOrigin]]
 		if (mode == "aura" and tracker.auraApplied) then
 			tt:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
-			tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, ((tracker.db.auratype == "buff") and "HELPFUL") or "HARMFUL")
+			local auratype = tracker.db.auratype
+			if auratype == "buff" then
+				tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, "HELPFUL")
+			elseif auratype == "debuff" then
+				tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, "HARMFUL")
+			elseif auratype == "tempenchant" then
+				tt:SetInventoryItem(tracker.window.db.unit, tracker.auraIndex)
+			else
+				-- should never happen
+			end
 		elseif (mode == "summary") then
 			local now = API_GetTime()
 			local timeleft
@@ -506,18 +529,22 @@ function Tracker.prototype:StopMoving()
 end -- StopMoving()
 
 
---[[ AURA UPDATE METHODS ]]--
+--[[ TRACKER UPDATE METHODS ]]--
 
-function Tracker.prototype:UpdateUnitAuras()
-	self.window:UpdateUnitAuras()
-end -- UpdateUnitAuras()
+function Tracker.prototype:ReScanTrackedUnit()
+	if (self.db.auratype == "tempenchant") then
+		self.window:UpdateUnitEnchants()
+	else
+		self.window:UpdateUnitAuras()
+	end
+end -- ReScanTrackedUnit()
 
-function Tracker.prototype:ResetAuraState()
-	self:BeginAuraUpdate()
-	self:EndAuraUpdate()
-end -- ResetAuraState()
+function Tracker.prototype:ResetTrackerState()
+	self:BeginTrackerUpdate()
+	self:EndTrackerUpdate()
+end -- ResetTrackerState()
 
-function Tracker.prototype:BeginAuraUpdate(now)
+function Tracker.prototype:BeginTrackerUpdate(now)
 	self.update_index = false
 	self.update_icon = false
 	self.update_origin = false
@@ -525,15 +552,15 @@ function Tracker.prototype:BeginAuraUpdate(now)
 	self.update_expires = false
 	self.update_stacks = false
 	wipe(self.summary)
-end -- BeginAuraUpdate()
+end -- BeginTrackerUpdate()
 
-function Tracker.prototype:UpdateAura(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+function Tracker.prototype:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
 	-- if we already have a qualifying, non-expiring aura, we don't care about anything else
 	if (self.update_applied and not self.update_expires) then
 		return
 	end
 	-- if we don't track this origin, we also don't care
-	if (not self.db[S_SHOW[origin]]) then
+	if (not self.db[S_SHOW[((self.db.auratype=="tempenchant") and index) or origin]]) then
 		return
 	end
 	local ipairs = ipairs
@@ -555,9 +582,9 @@ function Tracker.prototype:UpdateAura(now,index,name,rank,icon,count,atype,durat
 			end
 		end
 	end
-end -- UpdateAura()
+end -- UpdateTracker()
 
-function Tracker.prototype:EndAuraUpdate(now,total)
+function Tracker.prototype:EndTrackerUpdate(now,total)
 	local dbicon = self.db.icon
 	local dbspiral = self.db.spiral
 	local dbtext = self.db.text
@@ -650,7 +677,7 @@ function Tracker.prototype:EndAuraUpdate(now,total)
 			self:UpdateText()
 		end
 	end
-end -- EndAuraUpdate()
+end -- EndTrackerUpdate()
 
 
 --[[ VISUAL UPDATE METHODS ]]--
@@ -868,12 +895,13 @@ local sharedOptions = {
 				name = L.AURA_TYPE,
 				values = {
 					buff = L.BUFFS,
-					debuff = L.DEBUFFS
+					debuff = L.DEBUFFS,
+					tempenchant = L.WEAPON_ENCHANTS
 				},
 				get = function(i) return i.handler.db.auratype end,
 				set = function(i,v)
 					i.handler.db.auratype = v
-					i.handler:UpdateUnitAuras()
+					i.handler:ReScanTrackedUnit()
 				end,
 				order = 5
 			},
@@ -920,7 +948,7 @@ local sharedOptions = {
 					end
 					i.handler.auralist = false
 					if (not i.handler.db.label) then Auracle:UpdateConfig() end
-					i.handler:UpdateUnitAuras()
+					i.handler:ReScanTrackedUnit()
 				end,
 				order = 7
 			},
@@ -930,7 +958,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.showOthers end,
 				set = function(i,v)
 					i.handler.db.showOthers = v
-					i.handler:UpdateUnitAuras()
+					i.handler:ReScanTrackedUnit()
 				end,
 				order = 8
 			},
@@ -940,9 +968,29 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.showMine end,
 				set = function(i,v)
 					i.handler.db.showMine = v
-					i.handler:UpdateUnitAuras()
+					i.handler:ReScanTrackedUnit()
 				end,
 				order = 9
+			},
+			showMainhand = {
+				type = "toggle",
+				name = L.OPT_MAINHAND_TRACK,
+				get = function(i) return i.handler.db.showMainhand end,
+				set = function(i,v)
+					i.handler.db.showMainhand = v
+					i.handler:ReScanTrackedUnit()
+				end,
+				order = 10
+			},
+			showOffhand = {
+				type = "toggle",
+				name = L.OPT_OFFHAND_TRACK,
+				get = function(i) return i.handler.db.showOffhand end,
+				set = function(i,v)
+					i.handler.db.showOffhand = v
+					i.handler:ReScanTrackedUnit()
+				end,
+				order = 11
 			}
 		}
 	},
@@ -958,7 +1006,7 @@ local sharedOptions = {
 				get = function(i) return i.handler.db.icon.autoIcon end,
 				set = function(i,v)
 					i.handler.db.icon.autoIcon = v
-					if (v) then i.handler:UpdateUnitAuras() end
+					if (v) then i.handler:ReScanTrackedUnit() end
 				end,
 				order = 20
 			},
@@ -1025,7 +1073,7 @@ local sharedOptions = {
 						get = function(i) return i.handler.db.spiral.maxTimeMode end,
 						set = function(i,v)
 							i.handler.db.spiral.maxTimeMode = v
-							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+							if (v ~= "static") then i.handler:ReScanTrackedUnit() end
 						end,
 						order = 320
 					},
@@ -1060,7 +1108,7 @@ local sharedOptions = {
 						get = function(i) return i.handler.db.spiral.maxStacksMode end,
 						set = function(i,v)
 							i.handler.db.spiral.maxStacksMode = v
-							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+							if (v ~= "static") then i.handler:ReScanTrackedUnit() end
 						end,
 						order = 330
 					},
@@ -1132,7 +1180,7 @@ local sharedOptions = {
 						get = function(i) return i.handler.db.text.maxTimeMode end,
 						set = function(i,v)
 							i.handler.db.text.maxTimeMode = v
-							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+							if (v ~= "static") then i.handler:ReScanTrackedUnit() end
 						end,
 						order = 420
 					},
@@ -1167,7 +1215,7 @@ local sharedOptions = {
 						get = function(i) return i.handler.db.text.maxStacksMode end,
 						set = function(i,v)
 							i.handler.db.text.maxStacksMode = v
-							if (v ~= "static") then i.handler:UpdateUnitAuras() end
+							if (v ~= "static") then i.handler:ReScanTrackedUnit() end
 						end,
 						order = 430
 					},

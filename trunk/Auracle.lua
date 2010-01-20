@@ -10,24 +10,32 @@ local L = LIB_AceLocale:GetLocale("Auracle")
 
 --[[ DECLARATIONS ]]--
 
+-- constants
+
+local MAINHAND = GetInventorySlotInfo("MainHandSlot")
+local OFFHAND = GetInventorySlotInfo("SecondaryHandSlot")
+
 -- classes
 
 local WindowStyle,  DB_DEFAULT_WINDOWSTYLE,  DB_VALID_WINDOWSTYLE
 local TrackerStyle, DB_DEFAULT_TRACKERSTYLE, DB_VALID_TRACKERSTYLE
 local Window,       DB_DEFAULT_WINDOW,       DB_VALID_WINDOW
-local Tracker,      DB_DEFAULT_TRACKER,      DB_VALID_TRACKER
+local Tracker --,   DB_DEFAULT_TRACKER,      DB_VALID_TRACKER
 
 -- API function upvalues
 
 local API_GetActiveTalentGroup = GetActiveTalentGroup
 local API_GetCurrentResolution = GetCurrentResolution
+local API_GetItemInfo = GetItemInfo
 local API_GetNumPartyMembers = GetNumPartyMembers
 local API_GetNumRaidMembers = GetNumRaidMembers
 local API_GetNumShapeshiftForms = GetNumShapeshiftForms
 local API_GetScreenResolutions = GetScreenResolutions
 local API_GetShapeshiftForm = GetShapeshiftForm
 local API_GetShapeshiftFormInfo = GetShapeshiftFormInfo
+local API_GetSpellInfo = GetSpellInfo
 local API_GetTime = GetTime
+local API_GetWeaponEnchantInfo = GetWeaponEnchantInfo
 local API_InCombatLockdown = InCombatLockdown
 local API_IsInInstance = IsInInstance
 local API_UnitAura = UnitAura
@@ -103,8 +111,8 @@ end -- __window()
 function Auracle:__tracker(class, db_default, db_valid)
 	self.__tracker = function() error("Auracle: redeclaration of Tracker class") end
 	Tracker = class
-	DB_DEFAULT_TRACKER = db_default
-	DB_VALID_TRACKER = db_valid
+--	DB_DEFAULT_TRACKER = db_default
+--	DB_VALID_TRACKER = db_valid
 	Window:__tracker(class, db_default, db_valid)
 end -- __tracker()
 
@@ -254,6 +262,12 @@ function Auracle:UNIT_AURA(event, unit)
 	self:UpdateUnitAuras(unit)
 end -- UNIT_AURA()
 
+function Auracle:UNIT_INVENTORY_CHANGED(event, unit)
+	if (unit == "player") then
+		self:UpdateUnitEnchants("player")
+	end
+end -- UNIT_INVENTORY_CHANGED()
+
 function Auracle:UNIT_PET(event, unit)
 	if (unit == "player") then
 		self:UpdateUnitIdentity("pet")
@@ -310,8 +324,14 @@ function Auracle:Bucket_UNIT_AURA(units)
 	end
 end -- Bucket_UNIT_AURA()
 
+function Auracle:Bucket_UNIT_INVENTORY_CHANGED(units)
+	if (units.player) then
+		self:UpdateUnitEnchants("player")
+	end
+end -- Bucket_UNIT_INVENTORY_CHANGED()
 
---[[ UNIT & AURA UPDATE METHODS ]]--
+
+--[[ UNIT, AURA & ENCHANT UPDATE METHODS ]]--
 
 function Auracle:UpdateUnitIdentity(unit)
 	if (API_UnitExists(unit)) then
@@ -332,16 +352,17 @@ function Auracle:UpdateUnitIdentity(unit)
 				vis = window:SetUnitStatus(true, tgtType, tgtReact) or vis
 			end
 		end
-		-- if at least one window that tracks this unit is visible, update auras
+		-- if at least one window that tracks this unit is visible, update auras and enchants
 		if (vis) then
 			self:UpdateUnitAuras(unit)
+			self:UpdateUnitEnchants(unit)
 		end
 	else
 		-- update window visibility and reset trackers
 		for _,window in ipairs(self.windows) do
 			if (window.db.unit == unit) then
 				window:SetUnitStatus(false)
-				window:ResetAuraState()
+				window:ResetTrackerState()
 			end
 		end
 	end
@@ -395,6 +416,215 @@ function Auracle:UpdateUnitAuras(unit)
 		end
 	end
 end -- UpdateUnitAuras()
+
+do
+	local tooltip_left = {}
+	local tooltip_right = {}
+	local tooltip_rev = {}
+	
+	local function tooltip_left__index(t,k)
+		t[k] = _G["Auracle_Tooltip"..tooltip_rev[t].."TextLeft"..k]
+--@debug@
+assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textleft "..k)
+--@end-debug@
+		return t[k]
+	end -- tooltip_left__index()
+	
+	local function tooltip_right__index(t,k)
+		t[k] = _G["Auracle_Tooltip"..tooltip_rev[t].."TextRight"..k]
+--@debug@
+assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
+--@end-debug@
+		return t[k]
+	end -- tooltip_right__index()
+	
+	local function tooltip_cache__index(t,k)
+		-- create the tooltip
+		t[k] = CreateFrame("GameTooltip", "Auracle_Tooltip"..k)
+		t[k]:SetOwner(UIParent, "ANCHOR_NONE")
+		-- create the left/right text line caches for this tooltip
+		tooltip_left[k] = setmetatable({}, { __index = tooltip_left__index })
+		tooltip_rev[tooltip_left[k]] = k
+		tooltip_right[k] = setmetatable({}, { __index = tooltip_right__index })
+		tooltip_rev[tooltip_right[k]] = k
+		-- pre-generate all the text lines (on both sides)
+		for i = 1,30 do
+			tooltip_left[k][i] = t[k]:CreateFontString("Auracle_Tooltip"..k.."TextLeft"..i, nil, "GameTooltipText")
+			tooltip_left[k][i]:SetFontObject(GameFontNormal)
+			tooltip_right[k][i] = t[k]:CreateFontString("Auracle_Tooltip"..k.."TextRight"..i, nil, "GameTooltipText")
+			tooltip_right[k][i]:SetFontObject(GameFontNormal)
+			t[k]:AddFontStrings(tooltip_left[k][i], tooltip_right[k][i])
+		end
+		return t[k]
+	end -- tooltip_cache__index()
+	
+	local tooltip_cache = setmetatable({}, { __index = tooltip_cache__index })
+	
+	--[[
+	this method for guessing temp enchant icons is based on Shefki's version in Pitbull4, which offers no copy license (All Rights Reserved)
+	on 2010-01-19 ckknight granted an MIT license for this routine only
+	my version only adds an initial lookup in case there's a spell with the same exact name
+	--]]
+	
+	local function tempenchant_icon_cache__index(t,k)
+		if (not k) then return end
+		-- try the search key itself as a spell name first, maybe we get lucky
+		local name,_,icon = API_GetSpellInfo(k)
+		if (not icon) then
+			for spellID = 1 , 65535 do
+				name,_,icon = API_GetSpellInfo(spellID)
+				if (name and name:find(k)) then
+					break
+				end
+			end
+		end
+		-- if we still came up with nil, store false so we don't search again later
+		t[k] = icon or false
+		return t[k]
+	end -- tempenchant_icon_cache__index()
+	
+	local tempenchant_icon_cache = setmetatable({}, { __index = tempenchant_icon_cache__index })
+	
+	--[[ END Pitbull4-inspired code ]]
+	
+	local duration_unit_seconds = setmetatable({
+		sec = 1,
+		min = 60,
+		hour = 3600
+	}, { __index = 1 })
+	
+	--[[
+	this method for getting temp enchant names is based on Kitjan's version in NeedToKnow, which is licensed under GPLv3
+	my version has been restructured and optimized somewhat, but uses the same basic algorithm (2010-01-19)
+	--]]
+	
+	function Auracle:GetWeaponEnchantDetails(slot) -- return name,rank,icon,duration
+		if (slot ~= MAINHAND and slot ~= OFFHAND) then
+			return
+		end
+		-- we can't query temporary weapon enchants directly, because there's no such API call (lazy lazy, Blizzard!)
+		-- we also don't want to search for specific text in the current tooltip, because then we'd have to hardcode (and localize) every possible name
+		-- instead, we compare the current tooltip to the item's base tooltip, looking for any new green lines, which must be temp enchants
+		local ttCur,ttBase = tooltip_cache[0],tooltip_cache[1]
+--@debug@
+assert(ttCur, "failed to generate utility tooltip 0")
+assert(ttBase, "failed to generate utility tooltip 1")
+--@end-debug@
+		ttCur:ClearLines()
+		ttCur:SetInventoryItem("player", slot)
+		local itemName,itemLink = ttCur:GetItem()
+		if (not itemLink) then
+			return
+		end
+		ttBase:ClearLines()
+		ttBase:SetHyperlink(itemLink)
+		-- look for green lines on the current tooltip that aren't in the base item tooltip
+		local ttCurL,ttBaseL = tooltip_left[0],tooltip_left[1]
+		local iCur,iBase = 1,1
+		local xCur,xBase = ttCur:NumLines(),ttBase:NumLines()
+		local _,r,g,b,name,rank,duration,durationUnit,icon
+		-- find each green line in the current tooltip
+		while (iCur <= xCur) do
+			r,g,b = ttCurL[iCur]:GetTextColor()
+			if (r == 0 and g ~= 0 and b == 0) then
+				name = ttCurL[iCur]:GetText()
+				-- find the next green line in the base tooltip
+				while (iBase <= xBase) do
+					r,g,b = ttBaseL[iBase]:GetTextColor()
+					if (r == 0 and g ~= 0 and b == 0) then
+						break
+					end
+					iBase = iBase + 1
+				end
+				-- if there are no more green lines, or the next green line was different, it's a hit
+				if (iBase > xBase or name ~= ttBaseL[iBase]:GetText()) then
+					-- if there is a rank or duration at the end of the string, extract them
+					_,duration,durationUnit = name:match("^(.+) %((%d+) ([^)]+)%)$")
+					if (duration) then
+						name = _
+						duration = duration * duration_unit_seconds[durationUnit]
+					end
+					_,rank = name:match("^(.+) ([%dIVX]+)$") -- include roman numerals, just in case
+					if (rank) then
+						name = _
+					end
+					-- if we can't find an appropriate spell icon, just use the item
+					icon = tempenchant_icon_cache[name]
+					if (not icon) then
+						_,_,_,_,_,_,_,_,_,icon,_ = API_GetItemInfo(itemLink)
+					end
+					return name,rank,icon,duration
+				end
+				iCur = iCur + 1
+				iBase = iBase + 1
+			else
+				iCur = iCur + 1
+			end
+		end
+	end -- GetWeaponEnchantDetails()
+	
+	--[[ END NeedToKnow-inspired code ]]
+end
+
+function Auracle:UpdateUnitEnchants(unit)
+	-- temp weapon enchants are only available for player
+	if (unit ~= "player") then
+		return
+	end
+	local now = API_GetTime()
+	local totalEnchants = 0
+	local _, name, rank, icon, count, duration, expires
+	local name2, rank2, icon2, count2, duration2, expires2
+	-- reset window states
+	for _,window in ipairs(self.windows) do
+		if (window.db.unit == unit) then
+			window:BeginEnchantUpdate(now)
+		end
+	end
+	-- parse weapon enchants
+	-- GetWeaponEnchantInfo() doesn't actually give us the name or rank (lazy lazy, blizzard), just the existance (nil or 1), duration and stacks
+	name,duration,count,name2,duration2,count2 = API_GetWeaponEnchantInfo()
+	-- mainhand
+	if (name) then
+		name,rank,icon,_ = self:GetWeaponEnchantDetails(MAINHAND)
+		if (duration) then
+			duration = duration / 1000
+			expires = now + duration
+		elseif (_) then
+			duration = _
+			expires = now + duration
+		end
+		for _,window in ipairs(self.windows) do
+			if (window.db.unit == "player") then
+				window:UpdateEnchant(now,MAINHAND,name,rank,icon,count,nil,duration,expires,"mine",nil)
+			end
+		end
+		totalEnchants = totalEnchants + 1
+	end
+	-- offhand
+	if (name2) then
+		name2,rank2,icon2,_ = self:GetWeaponEnchantDetails(OFFHAND)
+		if (duration2) then
+			duration2 = duration2 / 1000
+			expires2 = now + duration2
+		elseif (_) then
+			duration2 = _
+			expires2 = now + duration2
+		end
+		for _,window in ipairs(self.windows) do
+			if (window.db.unit == "player") then
+				window:UpdateEnchant(now,OFFHAND,name2,rank2,icon2,count2,nil,duration2,expires2,"mine",nil)
+			end
+		end
+		totalEnchants = totalEnchants + 1
+	end
+	-- update windows
+	for _,window in ipairs(self.windows) do
+		if (window.db.unit == unit) then
+			window:EndEnchantUpdate(now, totalEnchants)
+		end
+	end
+end -- UpdateUnitEnchants()
 
 
 --[[ SITUATION UPDATE METHODS ]]--
@@ -820,7 +1050,7 @@ function Auracle:UpdateEventListeners()
 	self:RegisterEvent("UNIT_PORTRAIT_UPDATE")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 	-- determine which listeners we need according to current settings
-	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eForm,eAuras
+	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eForm,eAuras,eEnchants
 	local form,unit,vis
 	local maxform = API_GetNumShapeshiftForms()
 	for _,window in ipairs(self.windows) do
@@ -869,8 +1099,15 @@ function Auracle:UpdateEventListeners()
 			end
 		end
 		-- based on window.trackers
-		if (#window.trackers > 0) then
-			eAuras = true
+		for _,tracker in ipairs(window.trackers) do
+			if (eAuras and eEnchants) then
+				break
+			end
+			if (tracker.db.auratype == "tempenchant") then
+				eEnchants = true
+			else
+				eAuras = true
+			end
 		end
 	end
 	ePTarget = (ePTarget and not eUTarget)
@@ -889,6 +1126,8 @@ function Auracle:UpdateEventListeners()
 	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM") end
 --	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end
 	if (eAuras) then self:RegisterEvent("UNIT_AURA") end
+--	if (eEnchants) then self:RegisterEvent("UNIT_INVENTORY_CHANGED") end
+	if (eEnchants) then self:RegisterBucketEvent("UNIT_INVENTORY_CHANGED", 0.25, "Bucket_UNIT_INVENTORY_CHANGED") end
 end -- UpdateEventListeners()
 
 function Auracle:GetWindowPosition(window)
