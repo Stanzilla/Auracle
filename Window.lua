@@ -938,23 +938,28 @@ function Window.prototype:StopMoving()
 end -- StopMoving()
 
 
+--[[ TRACKER UPDATE METHODS ]]--
+
+function Window.prototype:ResetTrackerState()
+	local ipairs = ipairs
+	for n,tracker in ipairs(self.trackers) do
+		tracker:ResetTrackerState()
+	end
+end -- ResetTrackerState()
+
+
 --[[ AURA UPDATE METHODS ]]--
 
 function Window.prototype:UpdateUnitAuras()
 	Auracle:UpdateUnitAuras(self.db.unit)
 end -- UpdateUnitAuras()
 
-function Window.prototype:ResetAuraState()
-	local ipairs = ipairs
-	for n,tracker in ipairs(self.trackers) do
-		tracker:ResetAuraState()
-	end
-end -- ResetAuraState()
-
 function Window.prototype:BeginAuraUpdate(now)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
-		tracker:BeginAuraUpdate(now)
+		if (tracker.db.auratype == "buff" or tracker.db.auratype == "debuff") then
+			tracker:BeginTrackerUpdate(now)
+		end
 	end
 end -- BeginAuraUpdate()
 
@@ -962,7 +967,7 @@ function Window.prototype:UpdateBuff(now,index,name,rank,icon,count,atype,durati
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
 		if (tracker.db.auratype == "buff") then
-			tracker:UpdateAura(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+			tracker:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
 		end
 	end
 end -- UpdateBuff()
@@ -971,21 +976,55 @@ function Window.prototype:UpdateDebuff(now,index,name,rank,icon,count,atype,dura
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
 		if (tracker.db.auratype == "debuff") then
-			tracker:UpdateAura(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+			tracker:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
 		end
 	end
 end -- UpdateDebuff()
 
-function Window.prototype:EndAuraUpdate(now,totalBuffs, totalDebuffs)
+function Window.prototype:EndAuraUpdate(now, totalBuffs, totalDebuffs)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
 		if (tracker.db.auratype == "buff") then
-			tracker:EndAuraUpdate(now, totalBuffs)
+			tracker:EndTrackerUpdate(now, totalBuffs)
 		elseif (tracker.db.auratype == "debuff") then
-			tracker:EndAuraUpdate(now, totalDebuffs)
+			tracker:EndTrackerUpdate(now, totalDebuffs)
 		end
 	end
 end -- EndAuraUpdate()
+
+
+--[[ ENCHANT UPDATE METHODS ]]--
+
+function Window.prototype:UpdateUnitEnchants()
+	Auracle:UpdateUnitEnchants(self.db.unit)
+end -- UpdateUnitEnchants()
+
+function Window.prototype:BeginEnchantUpdate(now)
+	local ipairs = ipairs
+	for n,tracker in ipairs(self.trackers) do
+		if (tracker.db.auratype == "tempenchant") then
+			tracker:BeginTrackerUpdate(now)
+		end
+	end
+end -- BeginEnchantUpdate()
+
+function Window.prototype:UpdateEnchant(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+	local ipairs = ipairs
+	for n,tracker in ipairs(self.trackers) do
+		if (tracker.db.auratype == "tempenchant") then
+			tracker:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+		end
+	end
+end -- UpdateEnchant()
+
+function Window.prototype:EndEnchantUpdate(now, totalEnchants)
+	local ipairs = ipairs
+	for n,tracker in ipairs(self.trackers) do
+		if (tracker.db.auratype == "tempenchant") then
+			tracker:EndTrackerUpdate(now, totalEnchants)
+		end
+	end
+end -- EndEnchantUpdate()
 
 
 --[[ SITUATION UPDATE METHODS ]]--
@@ -1238,6 +1277,7 @@ function Window.prototype:AddTracker()
 	Auracle:UpdateEventListeners()
 	self:UpdateLayout()
 	self:UpdateUnitAuras()
+	-- don't need enchants yet, new trackers track auras
 end -- AddTracker()
 
 function Window.prototype:AddPresetTracker(label, auratype, auras)
@@ -1262,6 +1302,7 @@ function Window.prototype:AddPresetTracker(label, auratype, auras)
 	Auracle:UpdateEventListeners()
 	self:UpdateLayout()
 	self:UpdateUnitAuras()
+	-- don't need enchants yet, presets only track auras
 end -- AddPresetTracker()
 
 function Window.prototype:RemoveTracker(tracker)
