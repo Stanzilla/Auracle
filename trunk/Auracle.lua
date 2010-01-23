@@ -14,6 +14,7 @@ local L = LIB_AceLocale:GetLocale("Auracle")
 
 local MAINHAND = GetInventorySlotInfo("MainHandSlot")
 local OFFHAND = GetInventorySlotInfo("SecondaryHandSlot")
+local MAX_SPELLID = 75000 -- 73190 were defined as of 2010-01-23
 
 -- classes
 
@@ -53,6 +54,7 @@ local LIB_AceConfig
 local LIB_AceConfigDialog
 local LIB_AceConfigCmd
 local LIB_AceConfigRegistry
+local LIB_AceTimer
 local LIB_LibDataBroker
 local LIB_LibDualSpec
 --local LIB_LibUnitID
@@ -134,6 +136,7 @@ function Auracle:OnInitialize()
 		LIB_AceConfigDialog = LibStub("AceConfigDialog-3.0", true) -- optional
 		LIB_AceConfigRegistry = LibStub("AceConfigRegistry-3.0", true) -- optional
 	end
+	LIB_AceTimer = LibStub("AceTimer-3.0", true) -- optional
 	LIB_LibDataBroker = LibStub("LibDataBroker-1.1", true) -- optional
 	LIB_LibDualSpec = LibStub("LibDualSpec-1.0", true) -- optional
 	-- initialize stored data
@@ -461,9 +464,9 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 	local tooltip_cache = setmetatable({}, { __index = tooltip_cache__index })
 	
 	--[[
-	this method for guessing temp enchant icons is based on Shefki's version in Pitbull4, which offers no copy license (All Rights Reserved)
-	on 2010-01-19 ckknight granted an MIT license for this routine only
-	my version only adds an initial lookup in case there's a spell with the same exact name
+	this method for guessing temp enchant icons is based on Shefki's version in Pitbull4 (no general license to copy; All Rights Reserved)
+	on 2010-01-19 ckknight (Pitbull4 project manager) granted an MIT license for this routine only
+	my version adds an initial lookup in case there's a spell with the same exact name, and a more easily configurable maximum spellID
 	--]]
 	
 	local function tempenchant_icon_cache__index(t,k)
@@ -471,7 +474,7 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 		-- try the search key itself as a spell name first, maybe we get lucky
 		local name,_,icon = API_GetSpellInfo(k)
 		if (not icon) then
-			for spellID = 1 , 65535 do
+			for spellID = 1 , MAX_SPELLID do
 				name,_,icon = API_GetSpellInfo(spellID)
 				if (name and name:find(k)) then
 					break
@@ -494,7 +497,7 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 	}, { __index = 1 })
 	
 	--[[
-	this method for getting temp enchant names is based on Kitjan's version in NeedToKnow, which is licensed under GPLv3
+	this method for getting temp enchant names is inspired by Kitjan's NeedToKnow.DetermineTempEnchantFromTooltip in NeedToKnow 2.8.6 (licensed under GPLv3)
 	my version has been restructured and optimized somewhat, but uses the same basic algorithm (2010-01-19)
 	--]]
 	
@@ -626,6 +629,12 @@ function Auracle:UpdateUnitEnchants(unit)
 	end
 end -- UpdateUnitEnchants()
 
+local function timer_update_enchants()
+	-- because AceTimer only allows one arg to the callback, and I don't like embedding libraries,
+	-- and technically this function needs two args (Auracle,"player")
+	return Auracle:UpdateUnitEnchants("player")
+end -- timer_update_enchants()
+
 
 --[[ SITUATION UPDATE METHODS ]]--
 
@@ -742,6 +751,8 @@ function Auracle:Startup()
 	-- initialize configuration options
 	Window:UpdateFormOptions()
 	self:UpdateConfig()
+	-- schedule timer to re-scan enchants, since durations aren't available at first login
+	LIB_AceTimer:ScheduleTimer(timer_update_enchants, 1)
 end -- Startup()
 
 function Auracle:Shutdown()
