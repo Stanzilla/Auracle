@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: Auracle
-## Version: 1.1.2
+## Version: 1.2.0-beta-1
 ## Notes: Compact & customizable filtering, monitoring and grouping of buffs and debuffs
 ## Author: taleden
 ## SavedVariables: Auracle_DB
