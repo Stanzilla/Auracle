@@ -26,7 +26,7 @@ local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, i
 local DB_DEFAULT_TRACKER = {
 	label = false,
 	style = L.DEFAULT,
-	auratype = "debuff", -- buff|debuff|tempenchant
+	auratype = "debuff", -- buff|debuff|weaponbuff
 	auras = {},
 	showOthers = true,
 	showMine = true,
@@ -236,7 +236,11 @@ function Tracker:UpdateSavedVars(version, db)
 	if (type(db.showOffhand) ~= "boolean") then
 		db.showOffhand = true
 	end
-	return 5
+	-- v6: renamed auratype="enchant","tempenchant" to "weaponbuff"
+	if (db.auratype == "enchant" or db.auratype == "tempenchant") then
+		db.auratype = "weaponbuff"
+	end
+	return 6
 end -- UpdateSavedVars()
 
 
@@ -278,7 +282,7 @@ local function Frame_OnEnter(self)
 				tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, "HELPFUL")
 			elseif auratype == "debuff" then
 				tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, "HARMFUL")
-			elseif auratype == "tempenchant" then
+			elseif auratype == "weaponbuff" then
 				tt:SetInventoryItem(tracker.window.db.unit, tracker.auraIndex)
 			else
 				-- should never happen
@@ -532,8 +536,8 @@ end -- StopMoving()
 --[[ TRACKER UPDATE METHODS ]]--
 
 function Tracker.prototype:ReScanTrackedUnit()
-	if (self.db.auratype == "tempenchant") then
-		self.window:UpdateUnitEnchants()
+	if (self.db.auratype == "weaponbuff") then
+		self.window:UpdateUnitWeaponBuffs()
 	else
 		self.window:UpdateUnitAuras()
 	end
@@ -560,7 +564,7 @@ function Tracker.prototype:UpdateTracker(now,index,name,rank,icon,count,atype,du
 		return
 	end
 	-- if we don't track this origin, we also don't care
-	if (not self.db[S_SHOW[((self.db.auratype=="tempenchant") and index) or origin]]) then
+	if (not self.db[S_SHOW[((self.db.auratype=="weaponbuff") and index) or origin]]) then
 		return
 	end
 	local ipairs = ipairs
@@ -896,7 +900,7 @@ local sharedOptions = {
 				values = {
 					buff = L.BUFFS,
 					debuff = L.DEBUFFS,
-					tempenchant = L.WEAPON_ENCHANTS
+					weaponbuff = L.WEAPON_BUFFS
 				},
 				get = function(i) return i.handler.db.auratype end,
 				set = function(i,v)
