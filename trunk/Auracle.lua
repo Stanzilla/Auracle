@@ -267,7 +267,7 @@ end -- UNIT_AURA()
 
 function Auracle:UNIT_INVENTORY_CHANGED(event, unit)
 	if (unit == "player") then
-		self:UpdateUnitEnchants("player")
+		self:UpdateUnitWeaponBuffs("player")
 	end
 end -- UNIT_INVENTORY_CHANGED()
 
@@ -329,12 +329,12 @@ end -- Bucket_UNIT_AURA()
 
 function Auracle:Bucket_UNIT_INVENTORY_CHANGED(units)
 	if (units.player) then
-		self:UpdateUnitEnchants("player")
+		self:UpdateUnitWeaponBuffs("player")
 	end
 end -- Bucket_UNIT_INVENTORY_CHANGED()
 
 
---[[ UNIT, AURA & ENCHANT UPDATE METHODS ]]--
+--[[ UNIT, AURA & WEAPON BUFF UPDATE METHODS ]]--
 
 function Auracle:UpdateUnitIdentity(unit)
 	if (API_UnitExists(unit)) then
@@ -355,10 +355,10 @@ function Auracle:UpdateUnitIdentity(unit)
 				vis = window:SetUnitStatus(true, tgtType, tgtReact) or vis
 			end
 		end
-		-- if at least one window that tracks this unit is visible, update auras and enchants
+		-- if at least one window that tracks this unit is visible, update auras and weapon buffs
 		if (vis) then
 			self:UpdateUnitAuras(unit)
-			self:UpdateUnitEnchants(unit)
+			self:UpdateUnitWeaponBuffs(unit)
 		end
 	else
 		-- update window visibility and reset trackers
@@ -464,12 +464,12 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 	local tooltip_cache = setmetatable({}, { __index = tooltip_cache__index })
 	
 	--[[
-	this method for guessing temp enchant icons is based on Shefki's version in Pitbull4 (no general license to copy; All Rights Reserved)
+	this method for guessing weapon buff icons is based on Shefki's version in Pitbull4 (no general license to copy; All Rights Reserved)
 	on 2010-01-19 ckknight (Pitbull4 project manager) granted an MIT license for this routine only
 	my version adds an initial lookup in case there's a spell with the same exact name, and a more easily configurable maximum spellID
 	--]]
 	
-	local function tempenchant_icon_cache__index(t,k)
+	local function weaponbuff_icon_cache__index(t,k)
 		if (not k) then return end
 		-- try the search key itself as a spell name first, maybe we get lucky
 		local name,_,icon = API_GetSpellInfo(k)
@@ -484,9 +484,9 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 		-- if we still came up with nil, store false so we don't search again later
 		t[k] = icon or false
 		return t[k]
-	end -- tempenchant_icon_cache__index()
+	end -- weaponbuff_icon_cache__index()
 	
-	local tempenchant_icon_cache = setmetatable({}, { __index = tempenchant_icon_cache__index })
+	local weaponbuff_icon_cache = setmetatable({}, { __index = weaponbuff_icon_cache__index })
 	
 	--[[ END Pitbull4-inspired code ]]
 	
@@ -497,17 +497,17 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 	}, { __index = 1 })
 	
 	--[[
-	this method for getting temp enchant names is inspired by Kitjan's NeedToKnow.DetermineTempEnchantFromTooltip in NeedToKnow 2.8.6 (licensed under GPLv3)
+	this method for getting weapon buff names is inspired by Kitjan's NeedToKnow.DetermineTempEnchantFromTooltip in NeedToKnow 2.8.6 (licensed under GPLv3)
 	my version has been restructured and optimized somewhat, but uses the same basic algorithm (2010-01-19)
 	--]]
 	
-	function Auracle:GetWeaponEnchantDetails(slot) -- return name,rank,icon,duration
+	function Auracle:GetWeaponBuffDetails(slot) -- return name,rank,icon,duration
 		if (slot ~= MAINHAND and slot ~= OFFHAND) then
 			return
 		end
-		-- we can't query temporary weapon enchants directly, because there's no such API call (lazy lazy, Blizzard!)
+		-- we can't query weapon buffs directly, because there's no such API call (lazy lazy, Blizzard!)
 		-- we also don't want to search for specific text in the current tooltip, because then we'd have to hardcode (and localize) every possible name
-		-- instead, we compare the current tooltip to the item's base tooltip, looking for any new green lines, which must be temp enchants
+		-- instead, we compare the current tooltip to the item's base tooltip, looking for any new green lines, which must be weapon buffs
 		local ttCur,ttBase = tooltip_cache[0],tooltip_cache[1]
 --@debug@
 assert(ttCur, "failed to generate utility tooltip 0")
@@ -552,7 +552,7 @@ assert(ttBase, "failed to generate utility tooltip 1")
 						name = _
 					end
 					-- if we can't find an appropriate spell icon, just use the item
-					icon = tempenchant_icon_cache[name]
+					icon = weaponbuff_icon_cache[name]
 					if (not icon) then
 						_,_,_,_,_,_,_,_,_,icon,_ = API_GetItemInfo(itemLink)
 					end
@@ -564,32 +564,32 @@ assert(ttBase, "failed to generate utility tooltip 1")
 				iCur = iCur + 1
 			end
 		end
-	end -- GetWeaponEnchantDetails()
+	end -- GetWeaponBuffDetails()
 	
 	--[[ END NeedToKnow-inspired code ]]
 end
 
-function Auracle:UpdateUnitEnchants(unit)
-	-- temp weapon enchants are only available for player
+function Auracle:UpdateUnitWeaponBuffs(unit)
+	-- weapon buffs are only supported for the player
 	if (unit ~= "player") then
 		return
 	end
 	local now = API_GetTime()
-	local totalEnchants = 0
+	local totalWeaponBuffs = 0
 	local _, name, rank, icon, count, duration, expires
 	local name2, rank2, icon2, count2, duration2, expires2
 	-- reset window states
 	for _,window in ipairs(self.windows) do
 		if (window.db.unit == unit) then
-			window:BeginEnchantUpdate(now)
+			window:BeginWeaponBuffUpdate(now)
 		end
 	end
-	-- parse weapon enchants
+	-- parse weapon buffs
 	-- GetWeaponEnchantInfo() doesn't actually give us the name or rank (lazy lazy, blizzard), just the existance (nil or 1), duration and stacks
 	name,duration,count,name2,duration2,count2 = API_GetWeaponEnchantInfo()
 	-- mainhand
 	if (name) then
-		name,rank,icon,_ = self:GetWeaponEnchantDetails(MAINHAND)
+		name,rank,icon,_ = self:GetWeaponBuffDetails(MAINHAND)
 		if (duration) then
 			duration = duration / 1000
 			expires = now + duration
@@ -599,14 +599,14 @@ function Auracle:UpdateUnitEnchants(unit)
 		end
 		for _,window in ipairs(self.windows) do
 			if (window.db.unit == "player") then
-				window:UpdateEnchant(now,MAINHAND,name,rank,icon,count,nil,duration,expires,"mine",nil)
+				window:UpdateWeaponBuff(now,MAINHAND,name,rank,icon,count,nil,duration,expires,"mine",nil)
 			end
 		end
-		totalEnchants = totalEnchants + 1
+		totalWeaponBuffs = totalWeaponBuffs + 1
 	end
 	-- offhand
 	if (name2) then
-		name2,rank2,icon2,_ = self:GetWeaponEnchantDetails(OFFHAND)
+		name2,rank2,icon2,_ = self:GetWeaponBuffDetails(OFFHAND)
 		if (duration2) then
 			duration2 = duration2 / 1000
 			expires2 = now + duration2
@@ -616,24 +616,24 @@ function Auracle:UpdateUnitEnchants(unit)
 		end
 		for _,window in ipairs(self.windows) do
 			if (window.db.unit == "player") then
-				window:UpdateEnchant(now,OFFHAND,name2,rank2,icon2,count2,nil,duration2,expires2,"mine",nil)
+				window:UpdateWeaponBuff(now,OFFHAND,name2,rank2,icon2,count2,nil,duration2,expires2,"mine",nil)
 			end
 		end
-		totalEnchants = totalEnchants + 1
+		totalWeaponBuffs = totalWeaponBuffs + 1
 	end
 	-- update windows
 	for _,window in ipairs(self.windows) do
 		if (window.db.unit == unit) then
-			window:EndEnchantUpdate(now, totalEnchants)
+			window:EndWeaponBuffUpdate(now, totalWeaponBuffs)
 		end
 	end
-end -- UpdateUnitEnchants()
+end -- UpdateUnitWeaponBuffs()
 
-local function timer_update_enchants()
+local function timer_update_weaponbuffs()
 	-- because AceTimer only allows one arg to the callback, and I don't like embedding libraries,
 	-- and technically this function needs two args (Auracle,"player")
-	return Auracle:UpdateUnitEnchants("player")
-end -- timer_update_enchants()
+	return Auracle:UpdateUnitWeaponBuffs("player")
+end -- timer_update_weaponbuffs()
 
 
 --[[ SITUATION UPDATE METHODS ]]--
@@ -751,8 +751,8 @@ function Auracle:Startup()
 	-- initialize configuration options
 	Window:UpdateFormOptions()
 	self:UpdateConfig()
-	-- schedule timer to re-scan enchants, since durations aren't available at first login
-	LIB_AceTimer:ScheduleTimer(timer_update_enchants, 1)
+	-- schedule timer to re-scan weapon buffs, since durations aren't available at first login
+	LIB_AceTimer:ScheduleTimer(timer_update_weaponbuffs, 1)
 end -- Startup()
 
 function Auracle:Shutdown()
@@ -1061,7 +1061,7 @@ function Auracle:UpdateEventListeners()
 	self:RegisterEvent("UNIT_PORTRAIT_UPDATE")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 	-- determine which listeners we need according to current settings
-	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eForm,eAuras,eEnchants
+	local ePTarget,eUTarget,ePFocus,ePet,eSpec,eWorld,eParty,eCombat,eForm,eAuras,eWeaponBuffs
 	local form,unit,vis
 	local maxform = API_GetNumShapeshiftForms()
 	for _,window in ipairs(self.windows) do
@@ -1111,11 +1111,11 @@ function Auracle:UpdateEventListeners()
 		end
 		-- based on window.trackers
 		for _,tracker in ipairs(window.trackers) do
-			if (eAuras and eEnchants) then
+			if (eAuras and eWeaponBuffs) then
 				break
 			end
-			if (tracker.db.auratype == "tempenchant") then
-				eEnchants = true
+			if (tracker.db.auratype == "weaponbuff") then
+				eWeaponBuffs = true
 			else
 				eAuras = true
 			end
@@ -1137,8 +1137,8 @@ function Auracle:UpdateEventListeners()
 	if (eForm) then self:RegisterEvent("UPDATE_SHAPESHIFT_FORM") end
 --	if (eAuras) then self:RegisterBucketEvent("UNIT_AURA", 0.1, "Bucket_UNIT_AURA") end
 	if (eAuras) then self:RegisterEvent("UNIT_AURA") end
---	if (eEnchants) then self:RegisterEvent("UNIT_INVENTORY_CHANGED") end
-	if (eEnchants) then self:RegisterBucketEvent("UNIT_INVENTORY_CHANGED", 0.25, "Bucket_UNIT_INVENTORY_CHANGED") end
+--	if (eWeaponBuffs) then self:RegisterEvent("UNIT_INVENTORY_CHANGED") end
+	if (eWeaponBuffs) then self:RegisterBucketEvent("UNIT_INVENTORY_CHANGED", 0.25, "Bucket_UNIT_INVENTORY_CHANGED") end
 end -- UpdateEventListeners()
 
 function Auracle:GetWindowPosition(window)

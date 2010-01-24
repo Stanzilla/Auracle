@@ -993,38 +993,38 @@ function Window.prototype:EndAuraUpdate(now, totalBuffs, totalDebuffs)
 end -- EndAuraUpdate()
 
 
---[[ ENCHANT UPDATE METHODS ]]--
+--[[ WEAPON BUFF UPDATE METHODS ]]--
 
-function Window.prototype:UpdateUnitEnchants()
-	Auracle:UpdateUnitEnchants(self.db.unit)
-end -- UpdateUnitEnchants()
+function Window.prototype:UpdateUnitWeaponBuffs()
+	Auracle:UpdateUnitWeaponBuffs(self.db.unit)
+end -- UpdateUnitWeaponBuffs()
 
-function Window.prototype:BeginEnchantUpdate(now)
+function Window.prototype:BeginWeaponBuffUpdate(now)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
-		if (tracker.db.auratype == "tempenchant") then
+		if (tracker.db.auratype == "weaponbuff") then
 			tracker:BeginTrackerUpdate(now)
 		end
 	end
-end -- BeginEnchantUpdate()
+end -- BeginWeaponBuffUpdate()
 
-function Window.prototype:UpdateEnchant(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+function Window.prototype:UpdateWeaponBuff(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
-		if (tracker.db.auratype == "tempenchant") then
+		if (tracker.db.auratype == "weaponbuff") then
 			tracker:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
 		end
 	end
-end -- UpdateEnchant()
+end -- UpdateWeaponBuff()
 
-function Window.prototype:EndEnchantUpdate(now, totalEnchants)
+function Window.prototype:EndWeaponBuffUpdate(now, totalWeaponBuffs)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
-		if (tracker.db.auratype == "tempenchant") then
-			tracker:EndTrackerUpdate(now, totalEnchants)
+		if (tracker.db.auratype == "weaponbuff") then
+			tracker:EndTrackerUpdate(now, totalWeaponBuffs)
 		end
 	end
-end -- EndEnchantUpdate()
+end -- EndWeaponBuffUpdate()
 
 
 --[[ SITUATION UPDATE METHODS ]]--
@@ -1277,7 +1277,7 @@ function Window.prototype:AddTracker()
 	Auracle:UpdateEventListeners()
 	self:UpdateLayout()
 	self:UpdateUnitAuras()
-	-- don't need enchants yet, new trackers track auras
+	-- don't need weapon buffs yet, new trackers track auras
 end -- AddTracker()
 
 function Window.prototype:AddPresetTracker(label, auratype, auras)
@@ -1302,7 +1302,7 @@ function Window.prototype:AddPresetTracker(label, auratype, auras)
 	Auracle:UpdateEventListeners()
 	self:UpdateLayout()
 	self:UpdateUnitAuras()
-	-- don't need enchants yet, presets only track auras
+	-- don't need weapon buffs yet, presets only track auras
 end -- AddPresetTracker()
 
 function Window.prototype:RemoveTracker(tracker)
