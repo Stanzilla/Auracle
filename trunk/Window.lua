@@ -205,7 +205,7 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_PCTDMG,
 				{
-					34456, -- Ferocious Inspiration
+					75593, -- Ferocious Inspiration (was 34456)
 				},
 				{
 					8990, -- (Sanctified) Retribution Aura
@@ -245,9 +245,9 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_PCTAP,
 				{
-					53136, -- Abominable Might
+					53137, -- Abomination's Might (was 53136)
 					31519, -- Trueshot Aura
-					30803, -- Unleashed Rage
+					30802, -- Unleashed Rage (was 30803)
 				}
 			},
 			{
@@ -270,7 +270,7 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_BUFF_M_CRIT,
 				{
 					24932, -- Leader of the Pack
-					30029, -- Rampage
+					29801, -- Rampage (was 30029)
 				}
 			},
 		},
@@ -298,7 +298,7 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_S_CRIT,
 				{
-					53410, -- Elemental Oath
+					51466, -- Elemental Oath (was 53410)
 					24907, -- Moonkin Aura
 				}
 			},
