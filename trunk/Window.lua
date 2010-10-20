@@ -177,7 +177,7 @@ local TRACKER_PRESET = {
 			},
 --TODO				[0] = L.PRESET_BUFF_HEALTH,
 			{
-				[0] = L.PRESET_BUFF_MANA, -- TODO
+				[0] = L.PRESET_BUFF_MANA,
 				{
 					79057, -- Arcane Brilliance (Mage)
 					54424, -- Fel Intelligence (Warlock: Felhunter)
@@ -203,7 +203,7 @@ local TRACKER_PRESET = {
 				}
 			},
 			{
-				[0] = L.PRESET_BUFF_CRIT, -- TODO
+				[0] = L.PRESET_BUFF_CRIT,
 				{
 					51470, -- Elemental Oath (Shaman)
 					24604, -- Furious Howl (Hunter: Wolf)
@@ -238,7 +238,7 @@ local TRACKER_PRESET = {
 --TODO				[0] = L.PRESET_BUFF_AP,
 --TODO				[0] = L.PRESET_BUFF_M_HASTE,
 			{
-				[0] = L.PRESET_BUFF_P_HASTE, --TODO
+				[0] = L.PRESET_BUFF_P_HASTE,
 				{
 					53290, -- Hunting Party (Hunter)
 					55610, -- Improved Icy Talons (Death Knight)
@@ -250,14 +250,14 @@ local TRACKER_PRESET = {
 		{
 			[0] = L.CASTER,
 			{
-				[0] = L.PRESET_BUFF_PCTSP, --TODO
+				[0] = L.PRESET_BUFF_PCTSP,
 				{
 					79057, -- Arcane Brilliance (Mage)
 					52109, -- Flametongue Totem (Shaman)
 				},
 			},
 			{
-				[0] = L.PRESET_BUFF_PCTSP, --TODO
+				[0] = L.PRESET_BUFF_PCTSP,
 				{
 					47236, -- Demonic Pact (Warlock)
 					77747, -- Totemic Wrath (Shaman)
@@ -289,7 +289,7 @@ local TRACKER_PRESET = {
 				}
 			},
 			{
-				[0] = L.PRESET_BUFF_REPLEN, -- TODO
+				[0] = L.PRESET_BUFF_REPLEN,
 				{
 					57669, -- Replenishment (all spells/procs below give this same buff)
 					--Vampiric Touch (Priest)
@@ -408,7 +408,7 @@ local TRACKER_PRESET = {
 			[0] = L.PHYSICAL_TANK,
 --TODO				[0] = L.PRESET_DEBUFF_BIGARMOR,
 			{
-				[0] = L.PRESET_DEBUFF_ARMOR, --TODO
+				[0] = L.PRESET_DEBUFF_ARMOR,
 				{
 					35387, -- Corrosive Spit (Hunter: Serpent)
 					8647, -- Expose Armor (Rogue)
