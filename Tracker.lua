@@ -738,14 +738,13 @@ function Tracker.prototype:UpdateSpiral()
 		self.uiCooldown.noCooldownCount = sdb.noCC or nil
 		self.uiCooldown.noOmniCC = sdb.noCC or nil
 		self.uiCooldown:SetReverse(dbspiral.reverse)
-		if (self.auraExpires) then
+		if (dbspiral.mode == "time" and self.auraExpires) then
 			self.uiCooldown:Show()
-			if (dbspiral.mode == "time") then
-				self.uiCooldown:SetScript("OnUpdate", nil)
-				self.uiCooldown:SetCooldown(self.auraExpires - dbspiral.maxTime, dbspiral.maxTime)
-			elseif (dbspiral.mode == "stacks") then
-				self.uiCooldown:SetScript("OnUpdate", Cooldown_OnUpdate_Stacks)
-			end
+			self.uiCooldown:SetScript("OnUpdate", nil)
+			self.uiCooldown:SetCooldown(self.auraExpires - dbspiral.maxTime, dbspiral.maxTime)
+		elseif (dbspiral.mode == "stacks" and self.auraStacks ~= 0) then
+			self.uiCooldown:Show()
+			self.uiCooldown:SetScript("OnUpdate", Cooldown_OnUpdate_Stacks)
 		else
 			self.uiCooldown:Hide()
 		end
@@ -766,7 +765,7 @@ function Tracker.prototype:UpdateFont()
 end -- UpdateFont()
 
 function Tracker.prototype:UpdateText()
-	local text = "0"
+	local text = ""
 	self.uiOverlay:SetScript("OnUpdate", nil)
 	local sdb = self.style.db.text
 	if (sdb[S_SHOW[self.auraOrigin]]) then
@@ -774,33 +773,35 @@ function Tracker.prototype:UpdateText()
 		-- set text
 		if (dbtext.mode == "label") then
 			text = self.db.label
-		elseif (dbtext.mode == "time") then
-			if (self.auraTimeleft) then
-				self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
-				if (self.auraTimeleft >= 3600) then
-					text = stringsHours[ceil(self.auraTimeleft / 3600)]
-				elseif (self.auraTimeleft >= 60) then
-					text = stringsMinutes[ceil(self.auraTimeleft / 60)]
-				else
-					text = tostring(ceil(self.auraTimeleft or 0))
-				end
+		elseif (dbtext.mode == "time" and self.auraTimeleft) then
+			self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
+			if (self.auraTimeleft >= 3600) then
+				text = stringsHours[ceil(self.auraTimeleft / 3600)]
+			elseif (self.auraTimeleft >= 60) then
+				text = stringsMinutes[ceil(self.auraTimeleft / 60)]
+			else
+				text = tostring(ceil(self.auraTimeleft or 0))
 			end
-		elseif (dbtext.mode == "stacks") then
+		elseif (dbtext.mode == "stacks" and self.auraStacks ~= 0) then
 			text = tostring(self.auraStacks or 0)
 		end
-		-- set color
-		if (dbtext.color == "time") then
-			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, false, self.auraTimeleft or 0))
-			self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
-		elseif (dbtext.color == "timeRel") then
-			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraTimeleft or 0) / (dbtext.maxTime or 0.001)))
-			self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
-		elseif (dbtext.color == "stacks") then
-			self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraStacks or 0) / (dbtext.maxStacks or 0.001)))
+		-- set color and display
+		if (text ~= "") then
+			if (dbtext.color == "time") then
+				self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, false, self.auraTimeleft or 0))
+				self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
+			elseif (dbtext.color == "timeRel") then
+				self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraTimeleft or 0) / (dbtext.maxTime or 0.001)))
+				self.uiOverlay:SetScript("OnUpdate", TrackerOverlay_OnUpdate)
+			elseif (dbtext.color == "stacks") then
+				self.uiText:SetTextColor(self.style:GetTextColor(self.auraOrigin, true, (self.auraStacks or 0) / (dbtext.maxStacks or 0.001)))
+			end
+			self.text = text
+			self.uiText:SetText(text)
+			self.uiText:Show()
+		else
+			self.uiText:Hide()
 		end
-		self.text = text
-		self.uiText:SetText(text)
-		self.uiText:Show()
 	else
 		self.uiText:Hide()
 	end

@@ -151,170 +151,152 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_PCTSTATS,
 				{
-					56525, -- Blessing of Kings
-					43223, -- Greater Blessing of Kings
+					79063, -- Blessing of Kings (Paladin)
+					90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
+					79060, -- Mark of the Wild (Druid)
 				}
 			},
-			{
-				[0] = L.PRESET_BUFF_MISCSTATS,
-				{
-					16878, -- Mark of the Wild
-					21849, -- Gift of the Wild
-				}
-			},
+--TODO				[0] = L.PRESET_BUFF_MISCSTATS,
 			{
 				[0] = L.PRESET_BUFF_AGISTR,
 				{
-					57623, -- Horn of Winter
-					8076, -- Strength of Earth
+					6673, -- Battle Shout (Warrior)
+					57330, -- Horn of Winter (Death Knight)
+					93435, -- Roar of Courage (Hunter: Cat, Spirit Beast)
+					8076, -- Strength of Earth (Shaman)
 				}
 			},
 			{
 				[0] = L.PRESET_BUFF_STA,
 				{
-					13864, -- Power Word: Fortitude
-					39231, -- Prayer of Fortitude
+					6307, -- Blood Pact (Warlock: Imp)
+					469, -- Commanding Shout (Warrior)
+					21562, -- Power Word: Fortitude (Prist)
+					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				}
 			},
+--TODO				[0] = L.PRESET_BUFF_HEALTH,
 			{
-				[0] = L.PRESET_BUFF_HEALTH,
+				[0] = L.PRESET_BUFF_MANA, -- TODO
 				{
-					6307, -- Blood Pact
-					45517, -- Commanding Shout
+					79057, -- Arcane Brilliance (Mage)
+					54424, -- Fel Intelligence (Warlock: Felhunter)
 				}
 			},
-			{
-				[0] = L.PRESET_BUFF_INT,
-				{
-					23030, -- Arcane Brilliance
-					13326, -- Arcane Intellect
-					54424, -- Fel Intelligence
-				}
-			},
-			{
-				[0] = L.PRESET_BUFF_SPI,
-				{
-					16875, -- Divine Spirit
-					54424, -- Fel Intelligence
-					27681, -- Prayer of Spirit
-				}
-			},
+--TODO				[0] = L.PRESET_BUFF_INT,
+--TODO				[0] = L.PRESET_BUFF_SPI,
 		},
 		{
 		 	[0] = L.GENERAL,
 			{
 				[0] = L.PRESET_BUFF_PCTDMG,
 				{
-					75593, -- Ferocious Inspiration (was 34456)
+					75447, -- Ferocious Inspiration (Hunter)
+					82930, -- Arcane Tactics (Mage)
 				},
 				{
-					8990, -- (Sanctified) Retribution Aura
+					465, -- Devotion Aura (Paladin w/ Communion)
+					7294, -- Retribution Aura (Paladin w/ Communion)
+					19746, -- Concentration Aura (Paladin w/ Communion)
+					19891, -- Resistance Aura (Paladin w/ Communion)
+					32223, -- Crusader Aura (Paladin w/ Communion)
+				}
+			},
+			{
+				[0] = L.PRESET_BUFF_CRIT, -- TODO
+				{
+					51470, -- Elemental Oath (Shaman)
+					24604, -- Furious Howl (Hunter: Wolf)
+					51698, -- Honor Among Thieves (Rogue)
+					24932, -- Leader of the Pack (Druid)
+					29801, -- Rampage (Warrior)
+					90309, -- Terrifying Roar (Hunter: Devilsaur)
 				}
 			},
 			{
 				[0] = L.PRESET_BUFF_BIGHASTE,
 				{
-					6742, -- Bloodlust
-					65983, -- Heroism
+					90355, -- Ancient Hysteria (Hunter: Corehound)
+					2825, -- Bloodlust (Shaman)
+					32182, -- Heroism (Shaman)
+					80353, -- Time Warp (Mage)
 				}
 			},
-			{
-			 	[0] = L.PRESET_BUFF_HASTE,
-				{
-				},
-				{
-					24907, -- (Improved) Moonkin Aura
-					8990, -- (Swift) Retribution Aura
-				}
-			},
---[[
-			{ -- 57669
-				[0] = L.PRESET_BUFF_REPLEN,
-				{
-					44561, -- Enduring Winter
-					53367, -- Hunting Party
-				--	(Judgements of the Wise) Judgement of *
-					54300, -- Soul Leech Mana
-					34919, -- Vampiric Touch
-				}
-			},
---]]
+--TODO			 	[0] = L.PRESET_BUFF_HASTE,
 		},
 		{
 		 	[0] = L.PHYSICAL,
 			{
 				[0] = L.PRESET_BUFF_PCTAP,
 				{
-					53137, -- Abomination's Might (was 53136)
-					31519, -- Trueshot Aura
-					30802, -- Unleashed Rage (was 30803)
+					53137, -- Abomination's Might (Death Knight)
+					79102, -- Blessing of Might (Paladin)
+					19506, -- Trueshot Aura (Hunter)
+					30802, -- Unleashed Rage (Shaman)
 				}
 			},
+--TODO				[0] = L.PRESET_BUFF_AP,
+--TODO				[0] = L.PRESET_BUFF_M_HASTE,
 			{
-				[0] = L.PRESET_BUFF_AP,
+				[0] = L.PRESET_BUFF_P_HASTE, --TODO
 				{
-					9128, -- Battle Shout
-					56520, -- Blessing of Might
-					30636, -- Furious Howl
-					29381, -- Greater Blessing of Might
+					53290, -- Hunting Party (Hunter)
+					55610, -- Improved Icy Talons (Death Knight)
+					8515, -- Windfury Totem (Shaman)
 				}
 			},
-			{
-				[0] = L.PRESET_BUFF_M_HASTE,
-				{
-					55610, -- Improved Icy Talons
-					8515, -- Windfury Totem
-				}
-			},
-			{
-				[0] = L.PRESET_BUFF_M_CRIT,
-				{
-					24932, -- Leader of the Pack
-					29801, -- Rampage (was 30029)
-				}
-			},
+--TODO				[0] = L.PRESET_BUFF_M_CRIT,
 		},
 		{
 			[0] = L.CASTER,
 			{
-				[0] = L.PRESET_BUFF_PCTSP,
+				[0] = L.PRESET_BUFF_PCTSP, --TODO
 				{
-					48090, -- Demonic Pact
-					52109, -- Flametongue Totem
-					54646, -- Focus Magic
-					30708, -- Totem of Wrath
+					79057, -- Arcane Brilliance (Mage)
+					52109, -- Flametongue Totem (Shaman)
 				},
+			},
+			{
+				[0] = L.PRESET_BUFF_PCTSP, --TODO
 				{
-					16875, -- (Improved) Divine Spirit
-					27681, -- (Improved) Prayer of Spirit
-				}
+					47236, -- Demonic Pact (Warlock)
+					77747, -- Totemic Wrath (Shaman)
+				},
 			},
 			{
 				[0] = L.PRESET_BUFF_S_HASTE,
 				{
-					3738, -- Wrath of Air Totem
+					24907, -- Moonkin Aura (Druid)
+					15473, -- Shadowform (Priest)
+					2895, -- Wrath of Air Totem (Shaman)
 				}
 			},
-			{
-				[0] = L.PRESET_BUFF_S_CRIT,
-				{
-					51466, -- Elemental Oath (was 53410)
-					24907, -- Moonkin Aura
-				}
-			},
+--TODO				[0] = L.PRESET_BUFF_S_CRIT,
 			{
 				[0] = L.PRESET_BUFF_BIGMANAREGEN,
 				{
-					54428, -- Divine Plea
-					12051, -- Evocation
-					29166, -- Innervate
+					54428, -- Divine Plea (Paladin)
+					12051, -- Evocation (Mage)
+					29166, -- Innervate (Druid)
 				}
 			},
 			{
 				[0] = L.PRESET_BUFF_MANAREGEN,
 				{
-					56521, -- Blessing of Wisdom
-					25894, -- Greater Blessing of Wisdom
+					79102, -- Blessing of Might (Paladin)
+					54424, -- Fel Intelligence (Warlock: Felhunter)
+					5677, -- Mana Spring (Shaman)
+				}
+			},
+			{
+				[0] = L.PRESET_BUFF_REPLEN, -- TODO
+				{
+					57669, -- Replenishment (all spells/procs below give this same buff)
+					--Vampiric Touch (Priest)
+					--Enduring Winter (Mage)
+					--Communion (Paladin)
+					--Reviatalize (Druid)
+					--Soul Leech (Warlock)
 				}
 			},
 		},
@@ -323,79 +305,63 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_BIGPCTDMGTAKEN,
 				{
-					65860, -- Barkskin
-					498, -- Divine Protection
-					33206, -- Pain Suppression
+					65860, -- Barkskin (Druid)
+					498, -- Divine Protection (Paladin)
+					33206, -- Pain Suppression (Priest)
 				}
 			},
 			{
 				[0] = L.PRESET_BUFF_PCTDMGTAKEN,
 				{
-					67480, -- Blessing of Sanctuary
-					47930, -- Grace
-					25899, -- Greater Blessing of Sanctuary
+					16177, -- Ancestral Fortitude (Shaman)
+					14893, -- Inspiration (Priest)
 				}
 			},
-			{
-				[0] = L.PRESET_BUFF_PCTARMOR,
-				{
-					16177, -- Ancestral Fortitude
-					14893, -- Inspiration
-				}
-			},
-			{
-				[0] = L.PRESET_BUFF_PCTHEALTAKEN,
-				{
-					34123, -- Tree of Life
-				},
-				{
-					8258, -- (Improved) Devotion Aura
-				}
-			},
+--TODO				[0] = L.PRESET_BUFF_PCTARMOR,
+--TODO				[0] = L.PRESET_BUFF_PCTHEALTAKEN,
 		},
 		{
 			[0] = L.TACTICAL,
 			{
 				[0] = L.IMMUNE,
 				{
-					19752, -- Divine Intervention
-					642, -- Divine Shield
-					27619, -- Ice Block
+					642, -- Divine Shield (Paladin)
+					45438, -- Ice Block (Mage)
 				}
 			},
 			{
 				[0] = L.PHYSICAL_IMMUNE,
 				{
-					1022, -- Hand of Protection
-					4086, -- Evasion
+					5277, -- Evasion (Rogue)
+					1022, -- Hand of Protection (Paladin)
 				}
 			},
 			{
 				[0] = L.MAGICAL_IMMUNE,
 				{
-					39666, -- Cloak of Shadows
-					23920, -- Spell Reflection
+					31224, -- Cloak of Shadows (Rogue)
+					23920, -- Spell Reflection (Warrior)
 				}
 			},
 			{
 				[0] = L.SHIELDED,
 				{
-					11426, -- Ice Barrier
-					1463, -- Mana Shield
-					17, -- Power Word: Shield
-					58597, -- Sacred Shield
-					7812, -- Sacrifice
+					11426, -- Ice Barrier (Mage)
+					1463, -- Mana Shield (Mage)
+					17, -- Power Word: Shield (Priest)
+					7812, -- Sacrifice (Warlock)
 				}
 			},
 			{
 				[0] = L.FAST,
 				{
-					36589, -- Dash
-					13141, -- Gnomish Rocket Boots
-					8892, -- Goblin Rocket Boots
-					2379, -- Speed [Swiftness Potion]
-					14530, -- Speed [Nifty Stopwatch]
-					32720, -- Sprint
+					68992, -- Darkflight (Worgen racial)
+					1850, -- Dash (Druid)
+					13141, -- Gnomish Rocket Boots (item)
+					8892, -- Goblin Rocket Boots (item)
+					2379, -- Speed (Swiftness Potion item)
+					14530, -- Speed (Nifty Stopwatch item)
+					2983, -- Sprint (Rogue)
 				}
 			},
 		},
@@ -404,141 +370,99 @@ local TRACKER_PRESET = {
 		[0] = L.DEBUFFS_BY_TYPE,
 		{
 			[0] = L.DPS,
+--TODO				[0] = L.PRESET_DEBUFF_AP,
 			{
-				[0] = L.PRESET_DEBUFF_AP,
+				[0] = L.PRESET_DEBUFF_PCTDMG,
 				{
-					8552, -- Curse of Weakness
-					10968, -- Demoralizing Roar
-					24423, -- Demoralizing Screech
-					13730, -- Demoralizing Shout
+					99, -- Demoralizing Roar (Druid)
+					1160, -- Demoralizing Shout (Warrior)
+					81130, -- Scarlet Fever (Death Knight)
+					26017, -- Vindication (Paladin)
 				}
 			},
 			{
 				[0] = L.PRESET_DEBUFF_M_HASTE,
 				{
-					59921, -- Frost Fever
-					58179, -- Infected Wounds
-				--	(Judgements of the Just) Judgement of *
-					14251, -- Riposte
-					13532, -- Thunder Clap
-					51693, -- Waylay
+					54404, -- Dust Cloud (Hunter: Tallstrider)
+					55095, -- Frost Fever (Death Knight)
+					58180, -- Infected Wounds (Druid)
+					68055, -- Judgements of the Just (Paladin)
+					90315, -- Tailspin (Hunter: Fox)
+					6343, -- Thunder Clap (Warrior)
 				}
 			},
-			{
-				[0] = L.PRESET_DEBUFF_MR_HIT,
-				{
-					65855, -- Insect Swarm
-					52604, -- Scorpid Sting
-				}
-			},
-			{
-				[0] = L.PRESET_DEBUFF_R_HASTE,
-				{
-					31589, -- Slow
-					51693, -- Waylay
-				}
-			},
+--TODO				[0] = L.PRESET_DEBUFF_MR_HIT,
+--TODO				[0] = L.PRESET_DEBUFF_R_HASTE,
 			{
 				[0] = L.PRESET_DEBUFF_S_HASTE,
 				{
-					13338, -- Curse of Tongues
-					58605, -- Lava Breath
-					5760, -- Mind-numbing Poison
-					31589, -- Slow
+					1714, -- Curse of Tongues (Warlock)
+					58604, -- Lava Breath (Hunter: Corehound)
+					5760, -- Mind-numbing Poison (Rogue)
+					31589, -- Slow (Mage)
+					50274, -- Spore Cloud (Hunter: Sporebat)
 				}
 			},
 		},
 		{
 			[0] = L.PHYSICAL_TANK,
+--TODO				[0] = L.PRESET_DEBUFF_BIGARMOR,
 			{
-				[0] = L.PRESET_DEBUFF_BIGARMOR,
+				[0] = L.PRESET_DEBUFF_ARMOR, --TODO
 				{
-					55749, -- Acid Spit
-					8649, -- Expose Armor
-					58567, -- Sunder Armor
-				}
-			},
-			{
-				[0] = L.PRESET_DEBUFF_ARMOR,
-				{
-					16231, -- Curse of Recklessness
-					770, -- Faerie Fire
-					60089, -- Faerie Fire (Feral)
-					56626, -- Sting
+					35387, -- Corrosive Spit (Hunter: Serpent)
+					8647, -- Expose Armor (Rogue)
+					91565, -- Faerie Fire (Druid)
+					7386, -- Sunder Armor (Warrior)
+					50498, -- Tear Armor (Hunter: Raptor)
 				}
 			},
 			{
 				[0] = L.PRESET_DEBUFF_PCTPHYSDMGTAKEN,
 				{
-				--	772, -- (Blood Frenzy) Rend
-				--	12162, -- (Blood Frenzy) Deep Wounds
-					29859, -- Blood Frenzy
-					58413, -- Savage Combat
+					55749, -- Acid Spit (Hunter: Worm)
+					30069, -- Blood Frenzy (Warrior)
+					81326, -- Brittle Bones (Death Knight)
+					50518, -- Ravage (Hunter: Ravager)
+					58684, -- Savage Combat (Rogue)
 				}
 			},
 			{
 				[0] = L.PRESET_DEBUFF_PCTBLEEDDMGTAKEN,
 				{
-					33878, -- Mangle (Bear)
-					33876, -- Mangle (Cat)
-					57386, -- Stampede
-					46856, -- Trauma
+					30069, -- Blood Frenzy (Warrior)
+					35290, -- Gore (Hunter: Boar)
+					16511, -- Hemorrhage (Rogue)
+					33878, -- Mangle (Bear) (Druid)
+					33876, -- Mangle (Cat) (Druid)
+					57386, -- Stampede (Hunter: Rhino)
+					50271, -- Tendon Rip (Hyena)
 				}
 			},
-			{
-				[0] = L.PRESET_DEBUFF_CRITTAKEN,
-				{
-					21183, -- Heart of the Crusader
-					31226, -- Master Poisoner
-					30708, -- Totem of Wrath
-				}
-			},
+--TODO				[0] = L.PRESET_DEBUFF_CRITTAKEN,
 		},
 		{
 			[0] = L.CASTER_TANK,
-			{
-				[0] = L.PRESET_DEBUFF_RESISTS,
-				{
-					1490, -- Curse of the Elements
-				}
-			},
+--TODO				[0] = L.PRESET_DEBUFF_RESISTS,
 			{
 				[0] = L.PRESET_DEBUFF_PCTSPELLDMGTAKEN,
 				{
-					1490, -- Curse of the Elements
-					60431, -- Earth and Moon
-					51726, -- Ebon Plague
+					1490, -- Curse of the Elements (Warlock)
+					60433, -- Earth and Moon (Druid)
+					65142, -- Ebon Plague (Death Knight)
+					34889, -- Fire Breath (Hunter: Dragonhawk)
+					24844, -- Lightning Breath (Hunter: Wind Serpent)
+					93068, -- Master Poisoner (Rogue)
 				}
 			},
-			{
-				[0] = L.PRESET_DEBUFF_PCTDISEASEDMGTAKEN,
-				{
-					50508, -- Crypt Fever
-					51726, -- Ebon Plague
-				}
-			},
-			{
-				[0] = L.PRESET_DEBUFF_SPELLHITTAKEN,
-				{
-					33196, -- Misery
-				},
-				{
-					770, -- (Improved) Faerie Fire
-				}
-			},
-			{
-				[0] = L.PRESET_DEBUFF_CRITTAKEN,
-				{
-					21183, -- Heart of the Crusader
-					31226, -- Master Poisoner
-					30708, -- Totem of Wrath
-				}
-			},
+--TODO				[0] = L.PRESET_DEBUFF_PCTDISEASEDMGTAKEN,
+--TODO				[0] = L.PRESET_DEBUFF_SPELLHITTAKEN,
+--TODO				[0] = L.PRESET_DEBUFF_CRITTAKEN,
 			{
 				[0] = L.PRESET_DEBUFF_SPELLCRITTAKEN,
 				{
-					22959, -- Improved Scorch
-					12579, -- Winter's Chill
+					11095, -- Critical Mass (Mage)
+					30288, -- Shadow and Flame (Warlock)
 				}
 			},
 		},
@@ -547,180 +471,198 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_PCTHEALTAKEN,
 				{
-					20900, -- Aimed Shot
-					56112, -- Furious Attacks
-					21551, -- Mortal Strike
-					13218, -- Wound Poison
-					13222, -- Wound Poison II
-					13223, -- Wound Poison III
-					13224, -- Wound Poison IV
-					27189, -- Wound Poison V
-					57974, -- Wound Poison VI
-					57975, -- Wound Poison VII
+					56112, -- Furious Attacks (Warrior)
+					54680, -- Monstrous Bite (Hunter: Devilsaur)
+					12294, -- Mortal Strike (Warrior)
+					82654, -- Widow Venom (Hunter)
+					13218, -- Wound Poison (Rogue)
 				}
 			},
 			{
 				[0] = L.DISARM,
 				{
-					53359, -- Chimera Shot - Scorpid
-					676, -- Disarm
-					51722, -- Dismantle
-					64346, -- Fiery Payback
-					51514, -- Hex
-					64058, -- Psychic Horror
-					50541, -- Snatch
+					50541, -- Clench (Hunter: Scorpid)
+					676, -- Disarm (Warrior)
+					51722, -- Dismantle (Rogue)
+					64058, -- Psychic Horror (Priest)
+					91644, -- Snatch (Hunter: Bird of Prey)
 				}
 			},
 			{
 				[0] = L.SILENCE,
 				{
-					25046, -- Arcane Torrent
-					1330, -- Garrote - Silence
-					51514, -- Hex
-					15487, -- Silence
-					18498, -- Silenced - Gag Order
-					18469, -- Silenced - Improved Counterspell
-					18425, -- Silenced - Improved Kick
-					63529, -- Silenced - Shield of the Templar
-					34490, -- Silencing Shot
-					24259, -- Spell Lock
-					47476, -- Strangulate
+					25046, -- Arcane Torrent (Blood Elf racial)
+					31935, -- Avenger's Shield (Paladin)
+					1330, -- Garrote - Silence (Rogue)
+					50479, -- Nether Shock (Hunter: Nether Ray)
+					15487, -- Silence (Priest)
+					18498, -- Silenced - Gag Order (Warrior)
+					18469, -- Silenced - Improved Counterspell (Mage)
+					18425, -- Silenced - Improved Kick (Rogue)
+					34490, -- Silencing Shot (Hunter)
+					81261, -- Solar Beam (Druid)
+					24259, -- Spell Lock (Warlock: Fel Hunter)
+					47476, -- Strangulate (Death Knight)
+				}
+			},
+			{
+				[0] = L.SPELL_LOCKOUT,
+				{
+					2139, -- Counterspell (Mage)
+					1766, -- Kick (Rogue)
+					47528, -- Mind Freeze (Death Knight)
+					6552, -- Pummel (Warrior)
+					26090, -- Pummel (Hunter: Gorilla)
+					50318, -- Serenity Dust (Hunter: Moth)
+					72, -- Shield Bash (Warrior)
+					80964, -- Skull Bash (Bear) (Druid)
+					80965, -- Skull Bash (Cat) (Druid)
+					57994, -- Wind Shear (Shaman)
 				}
 			},
 			{
 				[0] = L.IMMUNE,
 				{
-					710, -- Banish
-					33786, -- Cyclone
+					710, -- Banish (Warlock)
+					33786, -- Cyclone (Druid)
 				}
 			},
 			{
 				[0] = L.STUN,
 				{
-					5211, -- Bash
-					1833, -- Cheap Shot
-					12809, -- Concussion Blow
-					44572, -- Deep Freeze
-					47481, -- Gnaw
-					853, -- Hammer of Justice
-					2812, -- Holy Wrath
-					12355, -- Impact
-				--	51880, -- Improved Fire Nova Totem -- totem replaced by Fire Nova spell in WoW 3.3, talent no longer stuns
-					20253, -- Intercept
-					24394, -- Intimidation
-					408, -- Kidney Shot
-					22570, -- Maim
-					9005, -- Pounce
-					50518, -- Ravage
-					12798, -- Revenge Stun
-					30283, -- Shadowfury
-					46968, -- Shockwave
-					50519, -- Sonic Blast
-					20170, -- Stun [Seal of Justice]
-					20549, -- War Stomp
+					85387, -- Aftermath (Warlock)
+					5211, -- Bash (Druid)
+					93433, -- Burrow Attack (Hunter: Worm)
+					7922, -- Charge Stun (Warrior)
+					1833, -- Cheap Shot (Rogue)
+					12809, -- Concussion Blow (Warrior)
+					44572, -- Deep Freeze (Mage)
+					45334, -- Feral Charge (Bear) (Druid)
+					91800, -- Gnaw (Death Knight: Ghoul)
+					853, -- Hammer of Justice (Paladin)
+					2812, -- Holy Wrath (Paladin)
+					49203, -- Hungering Cold (Death Knight)
+					12355, -- Impact (Mage)
+					20253, -- Intercept (Warrior)
+					19577, -- Intimidation (Hunter)
+					408, -- Kidney Shot (Rogue)
+					22570, -- Maim (Druid)
+					9005, -- Pounce (Druid)
+					20066, -- Repentance (Paladin)
+					82691, -- Ring of Frost (Mage)
+					30283, -- Shadowfury (Warlock)
+					46968, -- Shockwave (Warrior)
+					50519, -- Sonic Blast (Hunter: Bat)
+					56626, -- Sting (Hunter: Wasp)
+					20549, -- War Stomp (Tauren racial)
 				}
 			},
 			{
 				[0] = L.FEAR,
 				{
-					6789, -- Death Coil
-					5782, -- Fear
-					5484, -- Howl of Terror
-					20511, -- Intimidating Shout
-					65545, -- Psychic Horror
-					8122, -- Psychic Scream
-					1513, -- Scare Beast
-					10326, -- Turn Evil
+					6789, -- Death Coil (Warlock)
+					5782, -- Fear (Warlock)
+					5484, -- Howl of Terror (Warlock)
+					5246, -- Intimidating Shout (Warrior)
+					65545, -- Psychic Horror (Priest)
+					8122, -- Psychic Scream (Priest)
+					1513, -- Scare Beast (Hunter)
+					10326, -- Turn Evil (Paladin)
 					19725, -- Turn Undead
 				}
 			},
 			{
 				[0] = L.INCAPACITATE,
 				{
-					30217, -- Adamantite Grenade
-					30216, -- Fel Iron Bomb
-					3355, -- Freezing Trap Effect
-					1776, -- Gouge
-					2637, -- Hibernate
-					51209, -- Hungering Cold
-					13327, -- Reckless Charge [Goblin Rocket Helmet, Horned Viking Helmet]
-					20066, -- Repentance
-					6770, -- Sap
-					6358, -- Seduction
-					24132, -- Wyvern Sting
+					30217, -- Adamantite Grenade (item)
+					30216, -- Fel Iron Bomb (item)
+					3355, -- Freezing Trap (Hunter)
+					1776, -- Gouge (Rogue)
+					2637, -- Hibernate (Druid)
+					51209, -- Hungering Cold (Death Knight)
+					20511, -- Intimidating Shout (Warrior)
+					13327, -- Reckless Charge (Goblin Rocket Helmet, Horned Viking Helmet items)
+					20066, -- Repentance (Paladin)
+					6770, -- Sap (Rogue)
+					6358, -- Seduction (Warlock: Succubus)
+					19386, -- Wyvern Sting (Hunter)
 				}
 			},
 			{
 				[0] = L.DISORIENT,
 				{
-					2094, -- Blind
-					31661, -- Dragon's Breath
-					118, -- Polymorph
-					37506, -- Scatter Shot
+					90337, -- Bad Mannger (Hunter: Monkey)
+					2094, -- Blind (Rogue)
+					31661, -- Dragon's Breath (Mage)
+					51514, -- Hex (Shaman)
+					88625, -- Holy Word: Chastise (Priest)
+					118, -- Polymorph (Mage)
+					19503, -- Scatter Shot (Hunter)
 				}
 			},
 			{
 				[0] = L.ROOT,
 				{
-					7922, -- Charge Stun
-					19306, -- Counterattack
-					64695, -- Earthgrab
-					339, -- Entangling Roots
-					19185, -- Entrapment
-					19675, -- Feral Charge Effect
-					63685, -- Freeze [Frost Shock]
-					33395, -- Freeze [Water Elemental]
-					60210, -- Freezing Arrow Effect
-					39965, -- Frost Grenade
-					122, -- Frost Nova
-					11071, -- Frostbite
-					55536, -- Frostweave Net
-					58373, -- Glyph of Hamstring
-					23694, -- Improved Hamstring
-					13099, -- Net-o-Matic
-					50245, -- Pin
-					9484, -- Shackle Undead
-					55080, -- Shattered Barrier
-					54706, -- Venom Web Spray
-					4167, -- Web
+					19306, -- Counterattack (Hunter)
+					64695, -- Earthgrab (Shaman)
+					339, -- Entangling Roots (Druid)
+					19185, -- Entrapment (Hunter)
+					63685, -- Freeze [Frost Shock] (Shaman)
+					33395, -- Freeze [Water Elemental] (Mage)
+					39965, -- Frost Grenade (item)
+					122, -- Frost Nova (Mage)
+					55536, -- Frostweave Net (item)
+					58373, -- Glyph of Hamstring (Warrior)
+					23694, -- Improved Hamstring (Warrior)
+					90327, -- Lock Jaw (Hunter: Dog)
+					13099, -- Net-o-Matic (Gnomish Net-o-Matic Projector item)
+					94358, -- Overgrowth (Druid)
+					50245, -- Pin (Hunter: Crab)
+					9484, -- Shackle Undead (Priest)
+					55080, -- Shattered Barrier (Mage)
+					54706, -- Venom Web Spray (Hunter: Silithid)
+					4167, -- Web (Hunter: Spider)
 				}
 			},
 			{
 				[0] = L.SLOW,
 				{
-					18118, -- Aftermath
-					31125, -- Blade Twisting
-					11113, -- Blast Wave
-					45524, -- Chains of Ice
-					6136, -- Chilled [Frost Armor, Ice Armor, (Improved) Blizzard, ...]
-					35101, -- Concussive Barrage
-					5116, -- Concussive Shot
-					120, -- Cone of Cold
-					3409, -- Crippling Poison
-					18223, -- Curse of Exhaustion
-					29703, -- Dazed
-					26679, -- Deadly Throw
-					55666, -- Desecration
-					3600, -- Earthbind
-					61132, -- Feral Charge - Cat
-					8056, -- Frost Shock
-					13810, -- Frost Trap Aura
-					116, -- Frostbolt
-					8034, -- Frostbrand Attack
-					44614, -- Frostfire Bolt
-					54689, -- Froststorm Breath
-					61394, -- Glyph of Freezing Trap
-					58617, -- Glyph of Heart Strike
-					1715, -- Hamstring
-					50434, -- Icy Clutch
-					58179, -- Infected Wounds
-					15407, -- Mind Flay
-					12323, -- Piercing Howl
-					31589, -- Slow
-					50271, -- Tendon Rip
-					61390, -- Typhoon
-					51693, -- Waylay
-					2974, -- Wing Clip
+					18118, -- Aftermath (Warlock)
+					50433, -- Ankle Crack (Hunter: Crocolisk)
+					31126, -- Blade Twisting (Rogue)
+					11113, -- Blast Wave (Mage)
+					45524, -- Chains of Ice (Death Knight)
+					50434, -- Chilblains (Death Knight)
+					6136, -- Chilled (Frost Armor) (Mage)
+					7321, -- Chilled (Ice Armor) (Mage)
+					20005, -- Chilled (Icy Chill enchantment)
+					16927, -- Chilled (Frostguard item)
+					35101, -- Concussive Barrage (Hunter)
+					5116, -- Concussive Shot (Hunter)
+					120, -- Cone of Cold (Mage)
+					3409, -- Crippling Poison (Rogue)
+					18223, -- Curse of Exhaustion (Warlock)
+					1604, -- Dazed
+					50259, -- Dazed (Feral Charge Cat) (Druid)
+					26679, -- Deadly Throw (Rogue)
+					68766, -- Desecration (Death Knight)
+					3600, -- Earthbind (Shaman)
+					54644, -- Frost Breath (Hunter: Chimaera)
+					8056, -- Frost Shock (Shaman)
+					116, -- Frostbolt (Mage)
+					8034, -- Frostbrand Attack (Shaman)
+					44614, -- Frostfire Bolt (Mage)
+					61394, -- Frozen Wake (Glyph of Freezing Trap) (Hunter)
+					58617, -- Glyph of Heart Strike (Death Knight)
+					1715, -- Hamstring (Warrior)
+					13810, -- Ice Trap (Hunter)
+					58180, -- Infected Wounds (Druid)
+					15407, -- Mind Flay (Priest)
+					12323, -- Piercing Howl (Warrior)
+					31589, -- Slow (Mage)
+					35346, -- Time Warp (Hunter: Warp Stalker)
+					51693, -- Waylay (Rogue)
+					2974, -- Wing Clip (Hunter)
 				}
 			},
 		},
