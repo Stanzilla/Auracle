@@ -271,13 +271,22 @@ local TRACKER_PRESET = {
 					2895, -- Wrath of Air Totem (Shaman)
 				}
 			},
+			{
+				[0] = L.PRESET_BUFF_PUSHBACK,
+				{
+					19746, -- Concentration Aura (Paladin)
+					87717, -- Tranquil Mind (Shaman)
+				}
+			},
 --TODO				[0] = L.PRESET_BUFF_S_CRIT,
 			{
 				[0] = L.PRESET_BUFF_BIGMANAREGEN,
 				{
 					54428, -- Divine Plea (Paladin)
 					12051, -- Evocation (Mage)
+					64904, -- Hymn of Hope (Priest)
 					29166, -- Innervate (Druid)
+					16191, -- Mana Tide (Shaman)
 				}
 			},
 			{
@@ -302,6 +311,13 @@ local TRACKER_PRESET = {
 		},
 		{
 			[0] = L.DEFENSE,
+			{
+				[0] = L.PRESET_BUFF_ARMOR,
+				{
+					465, -- Devotion Aura (Paladin)
+					8072, -- Stoneskin (Shaman)
+				}
+			},
 			{
 				[0] = L.PRESET_BUFF_BIGPCTDMGTAKEN,
 				{
@@ -374,7 +390,9 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_PCTDMG,
 				{
+					702, -- Curse of Weakness (Warlock)
 					99, -- Demoralizing Roar (Druid)
+					50256, -- Demoralizing Roar (Hunter: Bear)
 					1160, -- Demoralizing Shout (Warrior)
 					81130, -- Scarlet Fever (Death Knight)
 					26017, -- Vindication (Paladin)
@@ -384,9 +402,11 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_DEBUFF_M_HASTE,
 				{
 					54404, -- Dust Cloud (Hunter: Tallstrider)
+					8042, -- Earth Shock (Shaman)
 					55095, -- Frost Fever (Death Knight)
 					58180, -- Infected Wounds (Druid)
 					68055, -- Judgements of the Just (Paladin)
+					14251, -- Riposte (Rogue)
 					90315, -- Tailspin (Hunter: Fox)
 					6343, -- Thunder Clap (Warrior)
 				}
@@ -399,6 +419,7 @@ local TRACKER_PRESET = {
 					1714, -- Curse of Tongues (Warlock)
 					58604, -- Lava Breath (Hunter: Corehound)
 					5760, -- Mind-numbing Poison (Rogue)
+					73975, -- Necrotic Strike (Death Knight)
 					31589, -- Slow (Mage)
 					50274, -- Spore Cloud (Hunter: Sporebat)
 				}
@@ -430,13 +451,13 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_PCTBLEEDDMGTAKEN,
 				{
-					30069, -- Blood Frenzy (Warrior)
 					35290, -- Gore (Hunter: Boar)
 					16511, -- Hemorrhage (Rogue)
 					33878, -- Mangle (Bear) (Druid)
 					33876, -- Mangle (Cat) (Druid)
 					57386, -- Stampede (Hunter: Rhino)
 					50271, -- Tendon Rip (Hyena)
+					46857, -- Trauma (Warrior)
 				}
 			},
 --TODO				[0] = L.PRESET_DEBUFF_CRITTAKEN,
@@ -451,6 +472,7 @@ local TRACKER_PRESET = {
 					60433, -- Earth and Moon (Druid)
 					65142, -- Ebon Plague (Death Knight)
 					34889, -- Fire Breath (Hunter: Dragonhawk)
+					85547, -- Jinx: Curse of the Elements (Warlock)
 					24844, -- Lightning Breath (Hunter: Wind Serpent)
 					93068, -- Master Poisoner (Rogue)
 				}
@@ -469,11 +491,29 @@ local TRACKER_PRESET = {
 		{
 			[0] = L.TACTICAL,
 			{
+				[0] = L.PRESET_DEBUFF_TAUNTED,
+				{
+					5209, -- Challenging Roar (Druid)
+					1161, -- Challenging Shout (Warrior)
+					56222, -- Dark Command (Death Knight)
+					57603, -- Death Grip (Death Knight)
+					20736, -- Distracting Shot (Hunter)
+					6795, -- Growl (Druid)
+					62124, -- Hand of Reckoning (Paladin)
+					31790, -- Righteous Defense (Paladin)
+					355, -- Taunt (Warrior)
+					58857, -- Twin Howl (Shaman: Spirit Wolves)
+				}
+			},
+			{
 				[0] = L.PRESET_DEBUFF_PCTHEALTAKEN,
 				{
 					56112, -- Furious Attacks (Warrior)
+					30213, -- Legion Strike (Warlock: Felguard)
+					48301, -- Mind Trauma (Priest)
 					54680, -- Monstrous Bite (Hunter: Devilsaur)
 					12294, -- Mortal Strike (Warrior)
+					68391, -- Permafrost (Mage)
 					82654, -- Widow Venom (Hunter)
 					13218, -- Wound Poison (Rogue)
 				}
