@@ -588,7 +588,6 @@ local TRACKER_PRESET = {
 					408, -- Kidney Shot (Rogue)
 					22570, -- Maim (Druid)
 					9005, -- Pounce (Druid)
-					20066, -- Repentance (Paladin)
 					82691, -- Ring of Frost (Mage)
 					30283, -- Shadowfury (Warlock)
 					46968, -- Shockwave (Warrior)
@@ -615,6 +614,7 @@ local TRACKER_PRESET = {
 				[0] = L.INCAPACITATE,
 				{
 					30217, -- Adamantite Grenade (item)
+					76780, -- Bind Elemental (Shaman)
 					30216, -- Fel Iron Bomb (item)
 					3355, -- Freezing Trap (Hunter)
 					1776, -- Gouge (Rogue)
@@ -625,6 +625,7 @@ local TRACKER_PRESET = {
 					20066, -- Repentance (Paladin)
 					6770, -- Sap (Rogue)
 					6358, -- Seduction (Warlock: Succubus)
+					9484, -- Shackle Undead (Priest)
 					19386, -- Wyvern Sting (Hunter)
 				}
 			},
@@ -658,7 +659,6 @@ local TRACKER_PRESET = {
 					13099, -- Net-o-Matic (Gnomish Net-o-Matic Projector item)
 					94358, -- Overgrowth (Druid)
 					50245, -- Pin (Hunter: Crab)
-					9484, -- Shackle Undead (Priest)
 					55080, -- Shattered Barrier (Mage)
 					54706, -- Venom Web Spray (Hunter: Silithid)
 					4167, -- Web (Hunter: Spider)
