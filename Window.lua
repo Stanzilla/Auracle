@@ -267,7 +267,7 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_BUFF_S_HASTE,
 				{
 					24907, -- Moonkin Aura (Druid)
-					15473, -- Shadowform (Priest)
+					49868, -- Mind Quickening (Priest Shadowform)
 					2895, -- Wrath of Air Totem (Shaman)
 				}
 			},
@@ -371,7 +371,7 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.FAST,
 				{
-					68992, -- Darkflight (Worgen racial)
+					(((GetSpellInfo(68992)) and 68992) or 1850), -- Darkflight (Worgen racial)
 					1850, -- Dash (Druid)
 					13141, -- Gnomish Rocket Boots (item)
 					8892, -- Goblin Rocket Boots (item)
@@ -501,7 +501,9 @@ local TRACKER_PRESET = {
 					6795, -- Growl (Druid)
 					62124, -- Hand of Reckoning (Paladin)
 					31790, -- Righteous Defense (Paladin)
+					17735, -- Suffering (Warlock: Voidwalker)
 					355, -- Taunt (Warrior)
+					53477, -- Taunt (Hunter: tenacity)
 					58857, -- Twin Howl (Shaman: Spirit Wolves)
 				}
 			},
@@ -557,6 +559,7 @@ local TRACKER_PRESET = {
 					72, -- Shield Bash (Warrior)
 					80964, -- Skull Bash (Bear) (Druid)
 					80965, -- Skull Bash (Cat) (Druid)
+					24259, -- Spell Lock (Warlock: Fel Hunter) --TODO: find SpellID for separate lockout component
 					57994, -- Wind Shear (Shaman)
 				}
 			},
@@ -571,6 +574,7 @@ local TRACKER_PRESET = {
 				[0] = L.STUN,
 				{
 					85387, -- Aftermath (Warlock)
+					89766, -- Axe Toss (Warlock: Felguard)
 					5211, -- Bash (Druid)
 					93433, -- Burrow Attack (Hunter: Worm)
 					7922, -- Charge Stun (Warrior)
@@ -580,8 +584,8 @@ local TRACKER_PRESET = {
 					45334, -- Feral Charge (Bear) (Druid)
 					91800, -- Gnaw (Death Knight: Ghoul)
 					853, -- Hammer of Justice (Paladin)
+					88625, -- Holy Word: Chastise (Priest)
 					2812, -- Holy Wrath (Paladin)
-					49203, -- Hungering Cold (Death Knight)
 					12355, -- Impact (Mage)
 					20253, -- Intercept (Warrior)
 					19577, -- Intimidation (Hunter)
@@ -593,6 +597,7 @@ local TRACKER_PRESET = {
 					46968, -- Shockwave (Warrior)
 					50519, -- Sonic Blast (Hunter: Bat)
 					56626, -- Sting (Hunter: Wasp)
+					85388, -- Throwdown (Warrior)
 					20549, -- War Stomp (Tauren racial)
 				}
 			},
@@ -620,7 +625,6 @@ local TRACKER_PRESET = {
 					1776, -- Gouge (Rogue)
 					2637, -- Hibernate (Druid)
 					51209, -- Hungering Cold (Death Knight)
-					20511, -- Intimidating Shout (Warrior)
 					13327, -- Reckless Charge (Goblin Rocket Helmet, Horned Viking Helmet items)
 					20066, -- Repentance (Paladin)
 					6770, -- Sap (Rogue)
@@ -636,7 +640,6 @@ local TRACKER_PRESET = {
 					2094, -- Blind (Rogue)
 					31661, -- Dragon's Breath (Mage)
 					51514, -- Hex (Shaman)
-					88625, -- Holy Word: Chastise (Priest)
 					118, -- Polymorph (Mage)
 					19503, -- Scatter Shot (Hunter)
 				}
