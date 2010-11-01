@@ -406,9 +406,9 @@ local TRACKER_PRESET = {
 					55095, -- Frost Fever (Death Knight)
 					58180, -- Infected Wounds (Druid)
 					68055, -- Judgements of the Just (Paladin)
-					14251, -- Riposte (Rogue)
 					90315, -- Tailspin (Hunter: Fox)
 					6343, -- Thunder Clap (Warrior)
+					51693, -- Waylay (Rogue)
 				}
 			},
 --TODO				[0] = L.PRESET_DEBUFF_MR_HIT,
