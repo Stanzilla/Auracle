@@ -490,11 +490,13 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 	
 	--[[ END Pitbull4-inspired code ]]
 	
-	local duration_unit_seconds = setmetatable({
-		sec = 1,
-		min = 60,
-		hour = 3600
-	}, { __index = 1 })
+	local duration_unit_seconds = setmetatable({}, { __index = function() return 1 end })
+	
+	for abbr in ITEM_ENCHANT_TIME_LEFT_DAYS:gmatch( "[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 86400 end
+	for abbr in ITEM_ENCHANT_TIME_LEFT_HOURS:gmatch("[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 3600 end
+	for abbr in ITEM_ENCHANT_TIME_LEFT_MIN:gmatch(  "[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 60 end
+	for abbr in ITEM_ENCHANT_TIME_LEFT_SEC:gmatch(  "[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 1 end
+	
 	
 	--[[
 	this method for getting weapon buff names is inspired by Kitjan's NeedToKnow.DetermineTempEnchantFromTooltip in NeedToKnow 2.8.6 (licensed under GPLv3)
