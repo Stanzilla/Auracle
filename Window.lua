@@ -484,7 +484,7 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_DEBUFF_SPELLCRITTAKEN,
 				{
 					11095, -- Critical Mass (Mage)
-					30288, -- Shadow and Flame (Warlock)
+					17800, -- Shadow and Flame (Warlock)
 				}
 			},
 		},
