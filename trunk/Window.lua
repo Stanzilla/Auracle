@@ -267,8 +267,8 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_BUFF_P_HASTE,
 				{
 					--53290, -- Hunting Party (Hunter)
-					55610, -- Improved Icy Talons (Death Knight)
-					8515, -- Windfury Totem (Shaman)
+					55610, -- Unholy Aura (Death Knight)
+					30809, -- Unleashed Rage (Shaman)
 					113742, -- Swiftblade's Cunning (Rogue)
 				}
 			},
@@ -431,14 +431,18 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_PCTDMG,
 				{
+					--[[
 					702, -- Curse of Weakness (Warlock)
 					99, -- Demoralizing Roar (Druid)
 					50256, -- Demoralizing Roar (Hunter: Bear)
 					1160, -- Demoralizing Shout (Warrior)
 					81130, -- Scarlet Fever (Death Knight)
 					26017, -- Vindication (Paladin)
+					]]--
+					115798, -- Weakened Blows (Blood death knight, Feral and Guardian druid, Brewmaster monk, Protection or Retribution paladin, any warrior (any tank))
 				}
 			},
+			--[[
 			{
 				[0] = L.PRESET_DEBUFF_M_HASTE,
 				{
@@ -452,14 +456,15 @@ local TRACKER_PRESET = {
 					51693, -- Waylay (Rogue)
 				}
 			},
+			]]--
 --TODO				[0] = L.PRESET_DEBUFF_MR_HIT,
 --TODO				[0] = L.PRESET_DEBUFF_R_HASTE,
 			{
 				[0] = L.PRESET_DEBUFF_S_HASTE,
 				{
-					1714, -- Curse of Tongues (Warlock)
+					109466, -- Curse of Curse of Enfeeblement (Warlock)
 					58604, -- Lava Breath (Hunter: Corehound)
-					5760, -- Mind-numbing Poison (Rogue)
+					5761, -- Mind-numbing Poison (Rogue)
 					73975, -- Necrotic Strike (Death Knight)
 					31589, -- Slow (Mage)
 					50274, -- Spore Cloud (Hunter: Sporebat)
@@ -517,12 +522,12 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_DEBUFF_PCTSPELLDMGTAKEN,
 				{
 					1490, -- Curse of the Elements (Warlock)
-					60433, -- Earth and Moon (Druid)
-					65142, -- Ebon Plague (Death Knight)
+					--60433, -- Earth and Moon (Druid)
+					--65142, -- Ebon Plague (Death Knight)
 					34889, -- Fire Breath (Hunter: Dragonhawk)
-					85547, -- Jinx: Curse of the Elements (Warlock)
+					--85547, -- Jinx: Curse of the Elements (Warlock)
 					24844, -- Lightning Breath (Hunter: Wind Serpent)
-					93068, -- Master Poisoner (Rogue)
+					58410, -- Master Poisoner (Rogue)
 				}
 			},
 --TODO				[0] = L.PRESET_DEBUFF_PCTDISEASEDMGTAKEN,
@@ -543,8 +548,8 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_TAUNTED,
 				{
-					5209, -- Challenging Roar (Druid)
-					1161, -- Challenging Shout (Warrior)
+					--5209, -- Challenging Roar (Druid)
+					--1161, -- Challenging Shout (Warrior)
 					56222, -- Dark Command (Death Knight)
 					57603, -- Death Grip (Death Knight)
 					20736, -- Distracting Shot (Hunter)
@@ -554,12 +559,13 @@ local TRACKER_PRESET = {
 					17735, -- Suffering (Warlock: Voidwalker)
 					355, -- Taunt (Warrior)
 					53477, -- Taunt (Hunter: tenacity)
-					58857, -- Twin Howl (Shaman: Spirit Wolves)
+					--58857, -- Twin Howl (Shaman: Spirit Wolves)
 				}
 			},
 			{
 				[0] = L.PRESET_DEBUFF_PCTHEALTAKEN,
 				{
+	 				--[[
 					56112, -- Furious Attacks (Warrior)
 					30213, -- Legion Strike (Warlock: Felguard)
 					48301, -- Mind Trauma (Priest)
@@ -568,6 +574,8 @@ local TRACKER_PRESET = {
 					68391, -- Permafrost (Mage)
 					82654, -- Widow Venom (Hunter)
 					13218, -- Wound Poison (Rogue)
+					]]--
+					115804, -- Mortal Wounds (Arms or Fury warrior, any rogue, any hunter)
 				}
 			},
 			{
@@ -589,8 +597,8 @@ local TRACKER_PRESET = {
 					50479, -- Nether Shock (Hunter: Nether Ray)
 					15487, -- Silence (Priest)
 					18498, -- Silenced - Gag Order (Warrior)
-					18469, -- Silenced - Improved Counterspell (Mage)
-					18425, -- Silenced - Improved Kick (Rogue)
+					--18469, -- Silenced - Improved Counterspell (Mage)
+					--18425, -- Silenced - Improved Kick (Rogue)
 					34490, -- Silencing Shot (Hunter)
 					81261, -- Solar Beam (Druid)
 					24259, -- Spell Lock (Warlock: Fel Hunter)
@@ -629,15 +637,15 @@ local TRACKER_PRESET = {
 					93433, -- Burrow Attack (Hunter: Worm)
 					7922, -- Charge Stun (Warrior)
 					1833, -- Cheap Shot (Rogue)
-					12809, -- Concussion Blow (Warrior)
+					--12809, -- Concussion Blow (Warrior)
 					44572, -- Deep Freeze (Mage)
 					45334, -- Feral Charge (Bear) (Druid)
 					91800, -- Gnaw (Death Knight: Ghoul)
 					853, -- Hammer of Justice (Paladin)
 					88625, -- Holy Word: Chastise (Priest)
 					2812, -- Holy Wrath (Paladin)
-					12355, -- Impact (Mage)
-					20253, -- Intercept (Warrior)
+					--12355, -- Impact (Mage)
+					--20253, -- Intercept (Warrior)
 					19577, -- Intimidation (Hunter)
 					408, -- Kidney Shot (Rogue)
 					22570, -- Maim (Druid)
@@ -647,7 +655,7 @@ local TRACKER_PRESET = {
 					46968, -- Shockwave (Warrior)
 					50519, -- Sonic Blast (Hunter: Bat)
 					56626, -- Sting (Hunter: Wasp)
-					85388, -- Throwdown (Warrior)
+					--85388, -- Throwdown (Warrior)
 					20549, -- War Stomp (Tauren racial)
 				}
 			},
