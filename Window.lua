@@ -153,7 +153,7 @@ local TRACKER_PRESET = {
 				{
 					115921, -- Legacy of the Emperor (Monk)
 					20217, -- Blessing of Kings (Paladin)
-					--90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
+					90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
 					1126, -- Mark of the Wild (Druid)
 				}
 			},
@@ -175,7 +175,7 @@ local TRACKER_PRESET = {
 					6307, -- Blood Pact (Warlock: Imp)
 					469, -- Commanding Shout (Warrior)
 					21562, -- Power Word: Fortitude (Prist)
-					--90364, -- Qiraji Fortitude (Hunter: Silithid)
+					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				}
 			},
 --TODO				[0] = L.PRESET_BUFF_HEALTH,
@@ -214,12 +214,12 @@ local TRACKER_PRESET = {
 				{
 					--[[
 					51470, -- Elemental Oath (Shaman)
-					24604, -- Furious Howl (Hunter: Wolf)
 					51698, -- Honor Among Thieves (Rogue)
 					24932, -- Leader of the Pack (Druid)
 					29801, -- Rampage (Warrior)
 					90309, -- Terrifying Roar (Hunter: Devilsaur)
 					]]--
+					24604, -- Furious Howl (Hunter: Wolf)
 					116781, -- Legacy of the Whit Tiger (Monk)
 					90309, -- Terrifying Roar (Hunter Pet)
 					17007, -- Leader of the Pack (Guardian/Feral Druid)
@@ -241,6 +241,7 @@ local TRACKER_PRESET = {
 					19740, -- Blessing of Might (Paladin)
 					116956, -- Grace of Air (Shaman)
 					93435, -- Roar of Courage (Hunter Pet)
+					128997, -- Spirit Beast Blessing (Hunter: Spirit Beast)
 				}
 			},
 --TODO			 	[0] = L.PRESET_BUFF_HASTE,
@@ -270,6 +271,8 @@ local TRACKER_PRESET = {
 					55610, -- Unholy Aura (Death Knight)
 					30809, -- Unleashed Rage (Shaman)
 					113742, -- Swiftblade's Cunning (Rogue)
+					128433, -- Serpent's Swiftness (Hunter: Serpent)
+					128432, -- Cackling Howl (Hunter: Hyena)
 				}
 			},
 --TODO				[0] = L.PRESET_BUFF_M_CRIT,
@@ -434,11 +437,12 @@ local TRACKER_PRESET = {
 					--[[
 					702, -- Curse of Weakness (Warlock)
 					99, -- Demoralizing Roar (Druid)
-					50256, -- Demoralizing Roar (Hunter: Bear)
 					1160, -- Demoralizing Shout (Warrior)
 					81130, -- Scarlet Fever (Death Knight)
 					26017, -- Vindication (Paladin)
 					]]--
+					24423, -- Demoralizing Screech	 (Hunter: Fire Roc)
+					50256, -- Demoralizing Roar (Hunter: Bear)
 					115798, -- Weakened Blows (Blood death knight, Feral and Guardian druid, Brewmaster monk, Protection or Retribution paladin, any warrior (any tank))
 				}
 			},
@@ -468,6 +472,7 @@ local TRACKER_PRESET = {
 					73975, -- Necrotic Strike (Death Knight)
 					31589, -- Slow (Mage)
 					50274, -- Spore Cloud (Hunter: Sporebat)
+					58604, -- Lava Breath (Hunter: Core Hound)
 				}
 			},
 		},
@@ -497,6 +502,9 @@ local TRACKER_PRESET = {
 					50518, -- Ravage (Hunter: Ravager)
 					58684, -- Savage Combat (Rogue)
 					]]-- 
+					57386, -- Stampede (Hunter: Rhino)
+					50518, -- Ravage (Hunter: Ravager)
+					35290, -- Gore (Hunter: Boar)
 					81326, -- Brittle Bones (Frost and Unholy death knights, Retribution paladins, Arms and Fury warriors)
 				}
 			},
@@ -528,6 +536,8 @@ local TRACKER_PRESET = {
 					--85547, -- Jinx: Curse of the Elements (Warlock)
 					24844, -- Lightning Breath (Hunter: Wind Serpent)
 					58410, -- Master Poisoner (Rogue)
+					34889, -- Fire Breath (Hunter: Dragonhawk)
+					24844, -- Lightning Breath (Hunter: Wind Serpent)
 				}
 			},
 --TODO				[0] = L.PRESET_DEBUFF_PCTDISEASEDMGTAKEN,
@@ -575,6 +585,7 @@ local TRACKER_PRESET = {
 					82654, -- Widow Venom (Hunter)
 					13218, -- Wound Poison (Rogue)
 					]]--
+					54680, -- Monstrous Bite (Hunter: Devilsaur)
 					115804, -- Mortal Wounds (Arms or Fury warrior, any rogue, any hunter)
 				}
 			},
@@ -619,6 +630,8 @@ local TRACKER_PRESET = {
 					80965, -- Skull Bash (Cat) (Druid)
 					24259, -- Spell Lock (Warlock: Fel Hunter) --TODO: find SpellID for separate lockout component
 					57994, -- Wind Shear (Shaman)
+					50479, -- Nether Shock (Hunter: Nether Ray)
+					50318, -- Serenity Dust (Hunter: Moth)
 				}
 			},
 			{
@@ -723,6 +736,7 @@ local TRACKER_PRESET = {
 					--55080, -- Shattered Barrier (Mage)
 					54706, -- Venom Web Spray (Hunter: Silithid)
 					4167, -- Web (Hunter: Spider)
+					50245, -- Pin (Hunter: Crab)
 				}
 			},
 			{
@@ -764,6 +778,7 @@ local TRACKER_PRESET = {
 					35346, -- Time Warp (Hunter: Warp Stalker)
 					--51693, -- Waylay (Rogue)
 					--2974, -- Wing Clip (Hunter)
+					54644, -- Frost Breath (Hunter: Chimaera)
 				}
 			},
 		},
