@@ -151,12 +151,14 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_PCTSTATS,
 				{
-					79063, -- Blessing of Kings (Paladin)
-					90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
-					79060, -- Mark of the Wild (Druid)
+					115921, -- Legacy of the Emperor (Monk)
+					20217, -- Blessing of Kings (Paladin)
+					--90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
+					1126, -- Mark of the Wild (Druid)
 				}
 			},
 --TODO				[0] = L.PRESET_BUFF_MISCSTATS,
+			--[[
 			{
 				[0] = L.PRESET_BUFF_AGISTR,
 				{
@@ -166,16 +168,18 @@ local TRACKER_PRESET = {
 					8076, -- Strength of Earth (Shaman)
 				}
 			},
+			]]--
 			{
 				[0] = L.PRESET_BUFF_STA,
 				{
 					6307, -- Blood Pact (Warlock: Imp)
 					469, -- Commanding Shout (Warrior)
 					21562, -- Power Word: Fortitude (Prist)
-					90364, -- Qiraji Fortitude (Hunter: Silithid)
+					--90364, -- Qiraji Fortitude (Hunter: Silithid)
 				}
 			},
 --TODO				[0] = L.PRESET_BUFF_HEALTH,
+			--[[
 			{
 				[0] = L.PRESET_BUFF_MANA,
 				{
@@ -183,6 +187,7 @@ local TRACKER_PRESET = {
 					54424, -- Fel Intelligence (Warlock: Felhunter)
 				}
 			},
+			]]--
 --TODO				[0] = L.PRESET_BUFF_INT,
 --TODO				[0] = L.PRESET_BUFF_SPI,
 		},
@@ -245,10 +250,15 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_PCTAP,
 				{
+					--[[
 					53137, -- Abomination's Might (Death Knight)
 					79102, -- Blessing of Might (Paladin)
 					19506, -- Trueshot Aura (Hunter)
 					30802, -- Unleashed Rage (Shaman)
+					]]--
+					57330, -- Horn of Winter (Death Knight)
+					19506, -- Trueshot Aura (Hunter)
+					6673, -- Battle Shout (Warrior)
 				}
 			},
 --TODO				[0] = L.PRESET_BUFF_AP,
@@ -256,10 +266,10 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_P_HASTE,
 				{
-					53290, -- Hunting Party (Hunter)
+					--53290, -- Hunting Party (Hunter)
 					55610, -- Improved Icy Talons (Death Knight)
 					8515, -- Windfury Totem (Shaman)
-					113742, --Swiftblade's Cunning (Rogue)
+					113742, -- Swiftblade's Cunning (Rogue)
 				}
 			},
 --TODO				[0] = L.PRESET_BUFF_M_CRIT,
@@ -288,10 +298,11 @@ local TRACKER_PRESET = {
 				{
 					24907, -- Moonkin Aura (Druid)
 					49868, -- Mind Quickening (Priest Shadowform)
-					2895, -- Wrath of Air Totem (Shaman)
+					51470, -- Elemental Oath (Shaman)
 					
 				}
 			},
+			--[[
 			{
 				[0] = L.PRESET_BUFF_PUSHBACK,
 				{
@@ -299,6 +310,7 @@ local TRACKER_PRESET = {
 					87717, -- Tranquil Mind (Shaman)
 				}
 			},
+			]]--
 --TODO				[0] = L.PRESET_BUFF_S_CRIT,
 			{
 				[0] = L.PRESET_BUFF_BIGMANAREGEN,
@@ -310,6 +322,7 @@ local TRACKER_PRESET = {
 					16191, -- Mana Tide (Shaman)
 				}
 			},
+			--[[
 			{
 				[0] = L.PRESET_BUFF_MANAREGEN,
 				{
@@ -318,6 +331,7 @@ local TRACKER_PRESET = {
 					5677, -- Mana Spring (Shaman)
 				}
 			},
+			]]--
 			--[[
 			{
 				[0] = L.PRESET_BUFF_REPLEN,
@@ -334,6 +348,7 @@ local TRACKER_PRESET = {
 		},
 		{
 			[0] = L.DEFENSE,
+			--[[
 			{
 				[0] = L.PRESET_BUFF_ARMOR,
 				{
@@ -341,6 +356,7 @@ local TRACKER_PRESET = {
 					8072, -- Stoneskin (Shaman)
 				}
 			},
+			]]--
 			{
 				[0] = L.PRESET_BUFF_BIGPCTDMGTAKEN,
 				{
@@ -349,6 +365,7 @@ local TRACKER_PRESET = {
 					33206, -- Pain Suppression (Priest)
 				}
 			},
+			--[[
 			{
 				[0] = L.PRESET_BUFF_PCTDMGTAKEN,
 				{
@@ -356,6 +373,7 @@ local TRACKER_PRESET = {
 					14893, -- Inspiration (Priest)
 				}
 			},
+			]]--
 --TODO				[0] = L.PRESET_BUFF_PCTARMOR,
 --TODO				[0] = L.PRESET_BUFF_PCTHEALTAKEN,
 		},
