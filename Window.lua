@@ -1,7 +1,7 @@
 local LibOOP
---@alpha@
+--[===[@alpha@
 LibOOP = LibStub("LibOOP-1.0-alpha", true)
---@end-alpha@
+--@end-alpha@]===]
 LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
 local Window = LibOOP:Class()
 
@@ -188,6 +188,7 @@ local TRACKER_PRESET = {
 		},
 		{
 		 	[0] = L.GENERAL,
+			--[[
 			{
 				[0] = L.PRESET_BUFF_PCTDMG,
 				{
@@ -202,15 +203,21 @@ local TRACKER_PRESET = {
 					32223, -- Crusader Aura (Paladin w/ Communion)
 				}
 			},
+			]]--
 			{
 				[0] = L.PRESET_BUFF_CRIT,
 				{
+					--[[
 					51470, -- Elemental Oath (Shaman)
 					24604, -- Furious Howl (Hunter: Wolf)
 					51698, -- Honor Among Thieves (Rogue)
 					24932, -- Leader of the Pack (Druid)
 					29801, -- Rampage (Warrior)
 					90309, -- Terrifying Roar (Hunter: Devilsaur)
+					]]--
+					90309, -- Terrifying Roar (Hunter Pet)
+					17007, -- Leader of the Pack (Guardian/Feral Druid)
+					1459, -- Arcane Brilliance (Mage)
 				}
 			},
 			{
@@ -220,6 +227,15 @@ local TRACKER_PRESET = {
 					2825, -- Bloodlust (Shaman)
 					32182, -- Heroism (Shaman)
 					80353, -- Time Warp (Mage)
+				}
+			},
+			{
+				[0] = L.PRESET_BUFF_MASTERY,
+				{
+					116781, -- Legacy of the Whit Tiger (Monk)
+					19740, -- Blessing of Might (Paladin)
+					116956, -- Grace of Air (Shaman)
+					93435, -- Roar of Courage (Hunter Pet)
 				}
 			},
 --TODO			 	[0] = L.PRESET_BUFF_HASTE,
@@ -243,6 +259,7 @@ local TRACKER_PRESET = {
 					53290, -- Hunting Party (Hunter)
 					55610, -- Improved Icy Talons (Death Knight)
 					8515, -- Windfury Totem (Shaman)
+					113742, --Swiftblade's Cunning (Rogue)
 				}
 			},
 --TODO				[0] = L.PRESET_BUFF_M_CRIT,
@@ -252,10 +269,12 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_PCTSP,
 				{
-					79057, -- Arcane Brilliance (Mage)
-					52109, -- Flametongue Totem (Shaman)
+					1459, -- Arcane Brilliance (Mage)
+					77747, -- Burning Wrath (Shaman)
+					109773, -- Dark Intent (Warlock)
 				},
 			},
+			--[[
 			{
 				[0] = L.PRESET_BUFF_PCTSP,
 				{
@@ -263,12 +282,14 @@ local TRACKER_PRESET = {
 					77747, -- Totemic Wrath (Shaman)
 				},
 			},
+			--]]
 			{
 				[0] = L.PRESET_BUFF_S_HASTE,
 				{
 					24907, -- Moonkin Aura (Druid)
 					49868, -- Mind Quickening (Priest Shadowform)
 					2895, -- Wrath of Air Totem (Shaman)
+					
 				}
 			},
 			{
@@ -297,6 +318,7 @@ local TRACKER_PRESET = {
 					5677, -- Mana Spring (Shaman)
 				}
 			},
+			--[[
 			{
 				[0] = L.PRESET_BUFF_REPLEN,
 				{
@@ -307,7 +329,8 @@ local TRACKER_PRESET = {
 					--Reviatalize (Druid)
 					--Soul Leech (Warlock)
 				}
-			},
+			}, 
+			]]--
 		},
 		{
 			[0] = L.DEFENSE,
@@ -431,24 +454,30 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_ARMOR,
 				{
+					--[[
 					35387, -- Corrosive Spit (Hunter: Serpent)
 					8647, -- Expose Armor (Rogue)
 					91565, -- Faerie Fire (Druid)
 					7386, -- Sunder Armor (Warrior)
 					50498, -- Tear Armor (Hunter: Raptor)
+					]]--
+					113746, -- Weakened Armor (Any druid, any rogue, any warrior)
 				}
 			},
 			{
 				[0] = L.PRESET_DEBUFF_PCTPHYSDMGTAKEN,
 				{
+					--[[
 					55749, -- Acid Spit (Hunter: Worm)
 					30069, -- Blood Frenzy (Warrior)
 					81326, -- Brittle Bones (Death Knight)
 					50518, -- Ravage (Hunter: Ravager)
 					58684, -- Savage Combat (Rogue)
+					]]-- 
+					81326, -- Brittle Bones (Frost and Unholy death knights, Retribution paladins, Arms and Fury warriors)
 				}
 			},
-			{
+			--[[ {
 				[0] = L.PRESET_DEBUFF_PCTBLEEDDMGTAKEN,
 				{
 					35290, -- Gore (Hunter: Boar)
@@ -459,7 +488,8 @@ local TRACKER_PRESET = {
 					50271, -- Tendon Rip (Hyena)
 					46857, -- Trauma (Warrior)
 				}
-			},
+			}, 
+			]]--
 --TODO				[0] = L.PRESET_DEBUFF_CRITTAKEN,
 		},
 		{
@@ -480,13 +510,15 @@ local TRACKER_PRESET = {
 --TODO				[0] = L.PRESET_DEBUFF_PCTDISEASEDMGTAKEN,
 --TODO				[0] = L.PRESET_DEBUFF_SPELLHITTAKEN,
 --TODO				[0] = L.PRESET_DEBUFF_CRITTAKEN,
+			--[[
 			{
 				[0] = L.PRESET_DEBUFF_SPELLCRITTAKEN,
 				{
 					11095, -- Critical Mass (Mage)
 					17800, -- Shadow and Flame (Warlock)
 				}
-			},
+			}, 
+			]]--
 		},
 		{
 			[0] = L.TACTICAL,
@@ -556,7 +588,7 @@ local TRACKER_PRESET = {
 					6552, -- Pummel (Warrior)
 					26090, -- Pummel (Hunter: Gorilla)
 					50318, -- Serenity Dust (Hunter: Moth)
-					72, -- Shield Bash (Warrior)
+					--72, -- Shield Bash (Warrior)
 					80964, -- Skull Bash (Bear) (Druid)
 					80965, -- Skull Bash (Cat) (Druid)
 					24259, -- Spell Lock (Warlock: Fel Hunter) --TODO: find SpellID for separate lockout component
@@ -624,7 +656,7 @@ local TRACKER_PRESET = {
 					3355, -- Freezing Trap (Hunter)
 					1776, -- Gouge (Rogue)
 					2637, -- Hibernate (Druid)
-					51209, -- Hungering Cold (Death Knight)
+					--51209, -- Hungering Cold (Death Knight)
 					13327, -- Reckless Charge (Goblin Rocket Helmet, Horned Viking Helmet items)
 					20066, -- Repentance (Paladin)
 					6770, -- Sap (Rogue)
@@ -1879,17 +1911,17 @@ end
 
 local sharedOptions_plrForm_set = function(i,v)
 	i.handler.db.visibility.plrForm[i.option.name] = not v -- backwards logic, so new forms default to visible
---@debug@
+--[===[@debug@
 --	print("Auracle.Window["..tostring(i.handler.db.label).."] plrForm["..tostring(i.option.name).."] = "..tostring(not v))
---@end-debug@
+--@end-debug@]===]
 	Auracle:UpdateEventListeners()
 	Auracle:UpdatePlayerStatus(i.handler)
 end
 
 function Window:UpdateFormOptions()
---@debug@
+--[===[@debug@
 --	print("Auracle.Window:UpdateFormOptions()")
---@end-debug@
+--@end-debug@]===]
 	-- get list of available forms
 	local forms = { [0] = L.HUMANOID }
 	local maxform = API_GetNumShapeshiftForms()
