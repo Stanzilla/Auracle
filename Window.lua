@@ -220,6 +220,7 @@ local TRACKER_PRESET = {
 					29801, -- Rampage (Warrior)
 					90309, -- Terrifying Roar (Hunter: Devilsaur)
 					]]--
+					116781, -- Legacy of the Whit Tiger (Monk)
 					90309, -- Terrifying Roar (Hunter Pet)
 					17007, -- Leader of the Pack (Guardian/Feral Druid)
 					1459, -- Arcane Brilliance (Mage)
@@ -237,7 +238,6 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_MASTERY,
 				{
-					116781, -- Legacy of the Whit Tiger (Monk)
 					19740, -- Blessing of Might (Paladin)
 					116956, -- Grace of Air (Shaman)
 					93435, -- Roar of Courage (Hunter Pet)
@@ -705,7 +705,7 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.ROOT,
 				{
-					19306, -- Counterattack (Hunter)
+					--19306, -- Counterattack (Hunter)
 					64695, -- Earthgrab (Shaman)
 					339, -- Entangling Roots (Druid)
 					19185, -- Entrapment (Hunter)
@@ -714,13 +714,13 @@ local TRACKER_PRESET = {
 					39965, -- Frost Grenade (item)
 					122, -- Frost Nova (Mage)
 					55536, -- Frostweave Net (item)
-					58373, -- Glyph of Hamstring (Warrior)
-					23694, -- Improved Hamstring (Warrior)
+					--58373, -- Glyph of Hamstring (Warrior)
+					--23694, -- Improved Hamstring (Warrior)
 					90327, -- Lock Jaw (Hunter: Dog)
 					13099, -- Net-o-Matic (Gnomish Net-o-Matic Projector item)
-					94358, -- Overgrowth (Druid)
+					--94358, -- Overgrowth (Druid)
 					50245, -- Pin (Hunter: Crab)
-					55080, -- Shattered Barrier (Mage)
+					--55080, -- Shattered Barrier (Mage)
 					54706, -- Venom Web Spray (Hunter: Silithid)
 					4167, -- Web (Hunter: Spider)
 				}
@@ -728,12 +728,12 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.SLOW,
 				{
-					18118, -- Aftermath (Warlock)
+					--18118, -- Aftermath (Warlock)
 					50433, -- Ankle Crack (Hunter: Crocolisk)
-					31126, -- Blade Twisting (Rogue)
+					--31126, -- Blade Twisting (Rogue)
 					11113, -- Blast Wave (Mage)
 					45524, -- Chains of Ice (Death Knight)
-					50434, -- Chilblains (Death Knight)
+					--50434, -- Chilblains (Death Knight)
 					6136, -- Chilled (Frost Armor) (Mage)
 					7321, -- Chilled (Ice Armor) (Mage)
 					20005, -- Chilled (Icy Chill enchantment)
@@ -746,7 +746,7 @@ local TRACKER_PRESET = {
 					1604, -- Dazed
 					50259, -- Dazed (Feral Charge Cat) (Druid)
 					26679, -- Deadly Throw (Rogue)
-					68766, -- Desecration (Death Knight)
+					--68766, -- Desecration (Death Knight)
 					3600, -- Earthbind (Shaman)
 					54644, -- Frost Breath (Hunter: Chimaera)
 					8056, -- Frost Shock (Shaman)
@@ -754,7 +754,7 @@ local TRACKER_PRESET = {
 					8034, -- Frostbrand Attack (Shaman)
 					44614, -- Frostfire Bolt (Mage)
 					61394, -- Frozen Wake (Glyph of Freezing Trap) (Hunter)
-					58617, -- Glyph of Heart Strike (Death Knight)
+					--58617, -- Glyph of Heart Strike (Death Knight)
 					1715, -- Hamstring (Warrior)
 					13810, -- Ice Trap (Hunter)
 					58180, -- Infected Wounds (Druid)
@@ -762,8 +762,8 @@ local TRACKER_PRESET = {
 					12323, -- Piercing Howl (Warrior)
 					31589, -- Slow (Mage)
 					35346, -- Time Warp (Hunter: Warp Stalker)
-					51693, -- Waylay (Rogue)
-					2974, -- Wing Clip (Hunter)
+					--51693, -- Waylay (Rogue)
+					--2974, -- Wing Clip (Hunter)
 				}
 			},
 		},
