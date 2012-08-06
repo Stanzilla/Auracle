@@ -25,11 +25,11 @@ local Tracker --,   DB_DEFAULT_TRACKER,      DB_VALID_TRACKER
 
 -- API function upvalues
 
-local API_GetActiveTalentGroup = GetActiveTalentGroup
+local API_GetActiveTalentGroup = GetActiveSpecGroup
 local API_GetCurrentResolution = GetCurrentResolution
 local API_GetItemInfo = GetItemInfo
-local API_GetNumPartyMembers = GetNumPartyMembers
-local API_GetNumRaidMembers = GetNumRaidMembers
+local API_GetNumPartyMembers = GetNumSubgroupMembers
+local API_GetNumRaidMembers = GetNumGroupMembers
 local API_GetNumShapeshiftForms = GetNumShapeshiftForms
 local API_GetScreenResolutions = GetScreenResolutions
 local API_GetShapeshiftForm = GetShapeshiftForm
@@ -427,17 +427,17 @@ do
 	
 	local function tooltip_left__index(t,k)
 		t[k] = _G["Auracle_Tooltip"..tooltip_rev[t].."TextLeft"..k]
---@debug@
+--[===[@debug@
 assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textleft "..k)
---@end-debug@
+--@end-debug@]===]
 		return t[k]
 	end -- tooltip_left__index()
 	
 	local function tooltip_right__index(t,k)
 		t[k] = _G["Auracle_Tooltip"..tooltip_rev[t].."TextRight"..k]
---@debug@
+--[===[@debug@
 assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
---@end-debug@
+--@end-debug@]===]
 		return t[k]
 	end -- tooltip_right__index()
 	
@@ -511,10 +511,10 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 		-- we also don't want to search for specific text in the current tooltip, because then we'd have to hardcode (and localize) every possible name
 		-- instead, we compare the current tooltip to the item's base tooltip, looking for any new green lines, which must be weapon buffs
 		local ttCur,ttBase = tooltip_cache[0],tooltip_cache[1]
---@debug@
+--[===[@debug@
 assert(ttCur, "failed to generate utility tooltip 0")
 assert(ttBase, "failed to generate utility tooltip 1")
---@end-debug@
+--@end-debug@]===]
 		ttCur:ClearLines()
 		ttCur:SetInventoryItem("player", slot)
 		local itemName,itemLink = ttCur:GetItem()
@@ -899,9 +899,9 @@ end -- ValidateSavedVars()
 --[[
 function Auracle:ConvertDataStore(dbProfile)
 	if (dbProfile.version < 4) then
---@debug@
+--[===[@debug@
 --		self:Print("Updating saved vars to version 4")
---@end-debug@
+--@end-debug@]===]
 		for _,wsdb in pairs(dbProfile.windowStyles) do
 			if (wsdb.background and wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
 				wsdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
@@ -988,9 +988,9 @@ function Auracle:ConvertDataStore(dbProfile)
 	end
 	-- version 6: abandoned AceDB's "intelligent" storage, so now we have to copy over anything which is missing as a result
 	if (dbProfile.version < 6) then
---@debug@
+--[===[@debug@
 --		self:Print("Updating saved vars to version 6")
---@end-debug@
+--@end-debug@]===]
 		local fix
 		fix = function(db, def)
 			for key,val in pairs(def) do
@@ -1014,9 +1014,9 @@ function Auracle:ConvertDataStore(dbProfile)
 	end
 	-- version 7: added window vis plrSpec,plrStance
 	if (dbProfile.version < 7) then
---@debug@
+--[===[@debug@
 --		self:Print("Updating saved vars to version 7")
---@end-debug@
+--@end-debug@]===]
 		for _,wdb in pairs(dbProfile.windows) do
 			if (wdb.visibility) then
 				if (type(wdb.visibility.plrSpec) ~= "table") then
@@ -1031,9 +1031,9 @@ function Auracle:ConvertDataStore(dbProfile)
 	end
 	-- version 8: renamed plrStance to plrForm to match event names
 	if (dbProfile.version < 8) then
---@debug@
+--[===[@debug@
 --		self:Print("Updating saved vars to version 8")
---@end-debug@
+--@end-debug@]===]
 		for _,wdb in pairs(dbProfile.windows) do
 			if (wdb.visibility and type(wdb.visibility.plrStance) == "table") then
 				wdb.visibility.plrForm = wdb.visibility.plrStance
@@ -1044,9 +1044,9 @@ function Auracle:ConvertDataStore(dbProfile)
 	end
 	-- version 9: double-check plrForm
 	if (dbProfile.version < 9) then
---@debug@
+--[===[@debug@
 --		self:Print("Updating saved vars to version 9")
---@end-debug@
+--@end-debug@]===]
 		for _,wdb in pairs(dbProfile.windows) do
 			if (type(wdb.visibility.plrForm) ~= "table") then
 				wdb.visibility.plrForm = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrForm, true)
