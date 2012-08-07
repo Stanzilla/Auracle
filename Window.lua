@@ -224,6 +224,7 @@ local TRACKER_PRESET = {
 					90309, -- Terrifying Roar (Hunter Pet)
 					17007, -- Leader of the Pack (Guardian/Feral Druid)
 					1459, -- Arcane Brilliance (Mage)
+					61316, -- Dalaran Brilliance (Mage)
 				}
 			},
 			{
@@ -283,6 +284,7 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_BUFF_PCTSP,
 				{
 					1459, -- Arcane Brilliance (Mage)
+					61316, -- Dalaran Brilliance (Mage)
 					77747, -- Burning Wrath (Shaman)
 					109773, -- Dark Intent (Warlock)
 				},
