@@ -178,49 +178,14 @@ local TRACKER_PRESET = {
 					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				}
 			},
---TODO				[0] = L.PRESET_BUFF_HEALTH,
-			--[[
-			{
-				[0] = L.PRESET_BUFF_MANA,
-				{
-					79057, -- Arcane Brilliance (Mage)
-					54424, -- Fel Intelligence (Warlock: Felhunter)
-				}
-			},
-			]]--
---TODO				[0] = L.PRESET_BUFF_INT,
---TODO				[0] = L.PRESET_BUFF_SPI,
 		},
 		{
 		 	[0] = L.GENERAL,
-			--[[
-			{
-				[0] = L.PRESET_BUFF_PCTDMG,
-				{
-					75447, -- Ferocious Inspiration (Hunter)
-					82930, -- Arcane Tactics (Mage)
-				},
-				{
-					465, -- Devotion Aura (Paladin w/ Communion)
-					7294, -- Retribution Aura (Paladin w/ Communion)
-					19746, -- Concentration Aura (Paladin w/ Communion)
-					19891, -- Resistance Aura (Paladin w/ Communion)
-					32223, -- Crusader Aura (Paladin w/ Communion)
-				}
-			},
-			]]--
 			{
 				[0] = L.PRESET_BUFF_CRIT,
 				{
-					--[[
-					51470, -- Elemental Oath (Shaman)
-					51698, -- Honor Among Thieves (Rogue)
-					24932, -- Leader of the Pack (Druid)
-					29801, -- Rampage (Warrior)
-					90309, -- Terrifying Roar (Hunter: Devilsaur)
-					]]--
 					24604, -- Furious Howl (Hunter: Wolf)
-					116781, -- Legacy of the Whit Tiger (Monk)
+					116781, -- Legacy of the White Tiger (Monk)
 					90309, -- Terrifying Roar (Hunter Pet)
 					17007, -- Leader of the Pack (Guardian/Feral Druid)
 					1459, -- Arcane Brilliance (Mage)
@@ -289,15 +254,6 @@ local TRACKER_PRESET = {
 					109773, -- Dark Intent (Warlock)
 				},
 			},
-			--[[
-			{
-				[0] = L.PRESET_BUFF_PCTSP,
-				{
-					47236, -- Demonic Pact (Warlock)
-					77747, -- Totemic Wrath (Shaman)
-				},
-			},
-			--]]
 			{
 				[0] = L.PRESET_BUFF_S_HASTE,
 				{
@@ -308,16 +264,7 @@ local TRACKER_PRESET = {
 					
 				}
 			},
-			--[[
-			{
-				[0] = L.PRESET_BUFF_PUSHBACK,
-				{
-					19746, -- Concentration Aura (Paladin)
-					87717, -- Tranquil Mind (Shaman)
-				}
-			},
-			]]--
---TODO				[0] = L.PRESET_BUFF_S_CRIT,
+			--TODO				[0] = L.PRESET_BUFF_S_CRIT,
 			{
 				[0] = L.PRESET_BUFF_BIGMANAREGEN,
 				{
@@ -327,42 +274,10 @@ local TRACKER_PRESET = {
 					29166, -- Innervate (Druid)
 					16191, -- Mana Tide (Shaman)
 				}
-			},
-			--[[
-			{
-				[0] = L.PRESET_BUFF_MANAREGEN,
-				{
-					79102, -- Blessing of Might (Paladin)
-					54424, -- Fel Intelligence (Warlock: Felhunter)
-					5677, -- Mana Spring (Shaman)
-				}
-			},
-			]]--
-			--[[
-			{
-				[0] = L.PRESET_BUFF_REPLEN,
-				{
-					57669, -- Replenishment (all spells/procs below give this same buff)
-					--Vampiric Touch (Priest)
-					--Enduring Winter (Mage)
-					--Communion (Paladin)
-					--Reviatalize (Druid)
-					--Soul Leech (Warlock)
-				}
-			}, 
-			]]--
+			},			
 		},
 		{
 			[0] = L.DEFENSE,
-			--[[
-			{
-				[0] = L.PRESET_BUFF_ARMOR,
-				{
-					465, -- Devotion Aura (Paladin)
-					8072, -- Stoneskin (Shaman)
-				}
-			},
-			]]--
 			{
 				[0] = L.PRESET_BUFF_BIGPCTDMGTAKEN,
 				{
@@ -380,8 +295,6 @@ local TRACKER_PRESET = {
 				}
 			},
 			]]--
---TODO				[0] = L.PRESET_BUFF_PCTARMOR,
---TODO				[0] = L.PRESET_BUFF_PCTHEALTAKEN,
 		},
 		{
 			[0] = L.TACTICAL,
@@ -464,8 +377,6 @@ local TRACKER_PRESET = {
 				}
 			},
 			]]--
---TODO				[0] = L.PRESET_DEBUFF_MR_HIT,
---TODO				[0] = L.PRESET_DEBUFF_R_HASTE,
 			{
 				[0] = L.PRESET_DEBUFF_S_HASTE,
 				{
@@ -485,46 +396,19 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_ARMOR,
 				{
-					--[[
-					35387, -- Corrosive Spit (Hunter: Serpent)
-					8647, -- Expose Armor (Rogue)
-					91565, -- Faerie Fire (Druid)
-					7386, -- Sunder Armor (Warrior)
-					50498, -- Tear Armor (Hunter: Raptor)
-					]]--
 					113746, -- Weakened Armor (Any druid, any rogue, any warrior)
 				}
 			},
 			{
 				[0] = L.PRESET_DEBUFF_PCTPHYSDMGTAKEN,
 				{
-					--[[
-					55749, -- Acid Spit (Hunter: Worm)
-					30069, -- Blood Frenzy (Warrior)
-					81326, -- Brittle Bones (Death Knight)
-					50518, -- Ravage (Hunter: Ravager)
-					58684, -- Savage Combat (Rogue)
-					]]-- 
 					57386, -- Stampede (Hunter: Rhino)
 					50518, -- Ravage (Hunter: Ravager)
 					35290, -- Gore (Hunter: Boar)
 					81326, -- Brittle Bones (Frost and Unholy death knights, Retribution paladins, Arms and Fury warriors)
 				}
 			},
-			--[[ {
-				[0] = L.PRESET_DEBUFF_PCTBLEEDDMGTAKEN,
-				{
-					35290, -- Gore (Hunter: Boar)
-					16511, -- Hemorrhage (Rogue)
-					33878, -- Mangle (Bear) (Druid)
-					33876, -- Mangle (Cat) (Druid)
-					57386, -- Stampede (Hunter: Rhino)
-					50271, -- Tendon Rip (Hyena)
-					46857, -- Trauma (Warrior)
-				}
-			}, 
-			]]--
---TODO				[0] = L.PRESET_DEBUFF_CRITTAKEN,
+			
 		},
 		{
 			[0] = L.CASTER_TANK,
@@ -543,18 +427,6 @@ local TRACKER_PRESET = {
 					24844, -- Lightning Breath (Hunter: Wind Serpent)
 				}
 			},
---TODO				[0] = L.PRESET_DEBUFF_PCTDISEASEDMGTAKEN,
---TODO				[0] = L.PRESET_DEBUFF_SPELLHITTAKEN,
---TODO				[0] = L.PRESET_DEBUFF_CRITTAKEN,
-			--[[
-			{
-				[0] = L.PRESET_DEBUFF_SPELLCRITTAKEN,
-				{
-					11095, -- Critical Mass (Mage)
-					17800, -- Shadow and Flame (Warlock)
-				}
-			}, 
-			]]--
 		},
 		{
 			[0] = L.TACTICAL,
@@ -578,17 +450,7 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_PCTHEALTAKEN,
 				{
-	 				--[[
-					56112, -- Furious Attacks (Warrior)
-					30213, -- Legion Strike (Warlock: Felguard)
-					48301, -- Mind Trauma (Priest)
-					54680, -- Monstrous Bite (Hunter: Devilsaur)
-					12294, -- Mortal Strike (Warrior)
-					68391, -- Permafrost (Mage)
-					82654, -- Widow Venom (Hunter)
-					13218, -- Wound Poison (Rogue)
-					]]--
-					54680, -- Monstrous Bite (Hunter: Devilsaur)
+	 				54680, -- Monstrous Bite (Hunter: Devilsaur)
 					115804, -- Mortal Wounds (Arms or Fury warrior, any rogue, any hunter)
 				}
 			},
