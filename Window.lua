@@ -304,6 +304,7 @@ local TRACKER_PRESET = {
 					24907, -- Moonkin Aura (Druid)
 					49868, -- Mind Quickening (Priest Shadowform)
 					51470, -- Elemental Oath (Shaman)
+					135678, -- Energizing Spores (Hunter: Sporebat)
 					
 				}
 			},
