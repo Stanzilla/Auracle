@@ -188,6 +188,7 @@ local TRACKER_PRESET = {
 					116781, -- Legacy of the White Tiger (Monk)
 					90309, -- Terrifying Roar (Hunter Pet)
 					17007, -- Leader of the Pack (Guardian/Feral Druid)
+					126309, -- Still Water (Hunter: Water Strider)
 					1459, -- Arcane Brilliance (Mage)
 					61316, -- Dalaran Brilliance (Mage)
 				}
@@ -250,6 +251,7 @@ local TRACKER_PRESET = {
 				{
 					1459, -- Arcane Brilliance (Mage)
 					61316, -- Dalaran Brilliance (Mage)
+					126309, -- Still Water (Hunter: Water Strider)
 					77747, -- Burning Wrath (Shaman)
 					109773, -- Dark Intent (Warlock)
 				},
