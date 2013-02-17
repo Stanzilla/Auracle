@@ -157,18 +157,6 @@ local TRACKER_PRESET = {
 					1126, -- Mark of the Wild (Druid)
 				}
 			},
---TODO				[0] = L.PRESET_BUFF_MISCSTATS,
-			--[[
-			{
-				[0] = L.PRESET_BUFF_AGISTR,
-				{
-					6673, -- Battle Shout (Warrior)
-					57330, -- Horn of Winter (Death Knight)
-					93435, -- Roar of Courage (Hunter: Cat, Spirit Beast)
-					8076, -- Strength of Earth (Shaman)
-				}
-			},
-			]]--
 			{
 				[0] = L.PRESET_BUFF_STA,
 				{
@@ -188,6 +176,8 @@ local TRACKER_PRESET = {
 					116781, -- Legacy of the White Tiger (Monk)
 					90309, -- Terrifying Roar (Hunter Pet)
 					17007, -- Leader of the Pack (Guardian/Feral Druid)
+					126373, -- Fearless Roar
+					97229, -- Bellowing Roar
 					126309, -- Still Water (Hunter: Water Strider)
 					1459, -- Arcane Brilliance (Mage)
 					61316, -- Dalaran Brilliance (Mage)
@@ -211,30 +201,20 @@ local TRACKER_PRESET = {
 					128997, -- Spirit Beast Blessing (Hunter: Spirit Beast)
 				}
 			},
---TODO			 	[0] = L.PRESET_BUFF_HASTE,
 		},
 		{
 		 	[0] = L.PHYSICAL,
 			{
 				[0] = L.PRESET_BUFF_PCTAP,
 				{
-					--[[
-					53137, -- Abomination's Might (Death Knight)
-					79102, -- Blessing of Might (Paladin)
-					19506, -- Trueshot Aura (Hunter)
-					30802, -- Unleashed Rage (Shaman)
-					]]--
 					57330, -- Horn of Winter (Death Knight)
 					19506, -- Trueshot Aura (Hunter)
 					6673, -- Battle Shout (Warrior)
 				}
 			},
---TODO				[0] = L.PRESET_BUFF_AP,
---TODO				[0] = L.PRESET_BUFF_M_HASTE,
 			{
 				[0] = L.PRESET_BUFF_P_HASTE,
 				{
-					--53290, -- Hunting Party (Hunter)
 					55610, -- Unholy Aura (Death Knight)
 					30809, -- Unleashed Rage (Shaman)
 					113742, -- Swiftblade's Cunning (Rogue)
@@ -242,7 +222,6 @@ local TRACKER_PRESET = {
 					128432, -- Cackling Howl (Hunter: Hyena)
 				}
 			},
---TODO				[0] = L.PRESET_BUFF_M_CRIT,
 		},
 		{
 			[0] = L.CASTER,
@@ -266,7 +245,6 @@ local TRACKER_PRESET = {
 					
 				}
 			},
-			--TODO				[0] = L.PRESET_BUFF_S_CRIT,
 			{
 				[0] = L.PRESET_BUFF_BIGMANAREGEN,
 				{
@@ -288,15 +266,6 @@ local TRACKER_PRESET = {
 					33206, -- Pain Suppression (Priest)
 				}
 			},
-			--[[
-			{
-				[0] = L.PRESET_BUFF_PCTDMGTAKEN,
-				{
-					16177, -- Ancestral Fortitude (Shaman)
-					14893, -- Inspiration (Priest)
-				}
-			},
-			]]--
 		},
 		{
 			[0] = L.TACTICAL,
@@ -352,13 +321,6 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_PCTDMG,
 				{
-					--[[
-					702, -- Curse of Weakness (Warlock)
-					99, -- Demoralizing Roar (Druid)
-					1160, -- Demoralizing Shout (Warrior)
-					81130, -- Scarlet Fever (Death Knight)
-					26017, -- Vindication (Paladin)
-					]]--
 					24423, -- Demoralizing Screech	 (Hunter: Fire Roc)
 					50256, -- Demoralizing Roar (Hunter: Bear)
 					115798, -- Weakened Blows (Blood death knight, Feral and Guardian druid, Brewmaster monk, Protection or Retribution paladin, any warrior (any tank))
@@ -394,7 +356,6 @@ local TRACKER_PRESET = {
 		},
 		{
 			[0] = L.PHYSICAL_TANK,
---TODO				[0] = L.PRESET_DEBUFF_BIGARMOR,
 			{
 				[0] = L.PRESET_DEBUFF_ARMOR,
 				{
@@ -414,7 +375,6 @@ local TRACKER_PRESET = {
 		},
 		{
 			[0] = L.CASTER_TANK,
---TODO				[0] = L.PRESET_DEBUFF_RESISTS,
 			{
 				[0] = L.PRESET_DEBUFF_PCTSPELLDMGTAKEN,
 				{
@@ -475,8 +435,6 @@ local TRACKER_PRESET = {
 					50479, -- Nether Shock (Hunter: Nether Ray)
 					15487, -- Silence (Priest)
 					18498, -- Silenced - Gag Order (Warrior)
-					--18469, -- Silenced - Improved Counterspell (Mage)
-					--18425, -- Silenced - Improved Kick (Rogue)
 					34490, -- Silencing Shot (Hunter)
 					81261, -- Solar Beam (Druid)
 					24259, -- Spell Lock (Warlock: Fel Hunter)
@@ -492,7 +450,6 @@ local TRACKER_PRESET = {
 					6552, -- Pummel (Warrior)
 					26090, -- Pummel (Hunter: Gorilla)
 					50318, -- Serenity Dust (Hunter: Moth)
-					--72, -- Shield Bash (Warrior)
 					80964, -- Skull Bash (Bear) (Druid)
 					80965, -- Skull Bash (Cat) (Druid)
 					24259, -- Spell Lock (Warlock: Fel Hunter) --TODO: find SpellID for separate lockout component
@@ -517,15 +474,12 @@ local TRACKER_PRESET = {
 					93433, -- Burrow Attack (Hunter: Worm)
 					7922, -- Charge Stun (Warrior)
 					1833, -- Cheap Shot (Rogue)
-					--12809, -- Concussion Blow (Warrior)
 					44572, -- Deep Freeze (Mage)
 					45334, -- Feral Charge (Bear) (Druid)
 					91800, -- Gnaw (Death Knight: Ghoul)
 					853, -- Hammer of Justice (Paladin)
 					88625, -- Holy Word: Chastise (Priest)
 					2812, -- Holy Wrath (Paladin)
-					--12355, -- Impact (Mage)
-					--20253, -- Intercept (Warrior)
 					19577, -- Intimidation (Hunter)
 					408, -- Kidney Shot (Rogue)
 					22570, -- Maim (Druid)
@@ -535,7 +489,6 @@ local TRACKER_PRESET = {
 					46968, -- Shockwave (Warrior)
 					50519, -- Sonic Blast (Hunter: Bat)
 					56626, -- Sting (Hunter: Wasp)
-					--85388, -- Throwdown (Warrior)
 					20549, -- War Stomp (Tauren racial)
 				}
 			},
@@ -562,7 +515,6 @@ local TRACKER_PRESET = {
 					3355, -- Freezing Trap (Hunter)
 					1776, -- Gouge (Rogue)
 					2637, -- Hibernate (Druid)
-					--51209, -- Hungering Cold (Death Knight)
 					13327, -- Reckless Charge (Goblin Rocket Helmet, Horned Viking Helmet items)
 					20066, -- Repentance (Paladin)
 					6770, -- Sap (Rogue)
@@ -585,7 +537,6 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.ROOT,
 				{
-					--19306, -- Counterattack (Hunter)
 					64695, -- Earthgrab (Shaman)
 					339, -- Entangling Roots (Druid)
 					19185, -- Entrapment (Hunter)
@@ -594,13 +545,9 @@ local TRACKER_PRESET = {
 					39965, -- Frost Grenade (item)
 					122, -- Frost Nova (Mage)
 					55536, -- Frostweave Net (item)
-					--58373, -- Glyph of Hamstring (Warrior)
-					--23694, -- Improved Hamstring (Warrior)
 					90327, -- Lock Jaw (Hunter: Dog)
 					13099, -- Net-o-Matic (Gnomish Net-o-Matic Projector item)
-					--94358, -- Overgrowth (Druid)
 					50245, -- Pin (Hunter: Crab)
-					--55080, -- Shattered Barrier (Mage)
 					54706, -- Venom Web Spray (Hunter: Silithid)
 					4167, -- Web (Hunter: Spider)
 					50245, -- Pin (Hunter: Crab)
