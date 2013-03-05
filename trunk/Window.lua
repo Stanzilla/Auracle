@@ -160,7 +160,7 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_STA,
 				{
-					6307, -- Blood Pact (Warlock: Imp)
+					109773, -- Dark Intent (Warlock)
 					469, -- Commanding Shout (Warrior)
 					21562, -- Power Word: Fortitude (Prist)
 					90364, -- Qiraji Fortitude (Hunter: Silithid)
