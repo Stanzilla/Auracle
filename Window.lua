@@ -379,10 +379,7 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_DEBUFF_PCTSPELLDMGTAKEN,
 				{
 					1490, -- Curse of the Elements (Warlock)
-					--60433, -- Earth and Moon (Druid)
-					--65142, -- Ebon Plague (Death Knight)
 					34889, -- Fire Breath (Hunter: Dragonhawk)
-					--85547, -- Jinx: Curse of the Elements (Warlock)
 					24844, -- Lightning Breath (Hunter: Wind Serpent)
 					58410, -- Master Poisoner (Rogue)
 					34889, -- Fire Breath (Hunter: Dragonhawk)
@@ -395,10 +392,9 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_TAUNTED,
 				{
-					--5209, -- Challenging Roar (Druid)
-					--1161, -- Challenging Shout (Warrior)
 					56222, -- Dark Command (Death Knight)
 					57603, -- Death Grip (Death Knight)
+					115546, -- Provoke (Monk)
 					20736, -- Distracting Shot (Hunter)
 					6795, -- Growl (Druid)
 					62124, -- Hand of Reckoning (Paladin)
@@ -406,7 +402,6 @@ local TRACKER_PRESET = {
 					17735, -- Suffering (Warlock: Voidwalker)
 					355, -- Taunt (Warrior)
 					53477, -- Taunt (Hunter: tenacity)
-					--58857, -- Twin Howl (Shaman: Spirit Wolves)
 				}
 			},
 			{
@@ -556,12 +551,9 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.SLOW,
 				{
-					--18118, -- Aftermath (Warlock)
 					50433, -- Ankle Crack (Hunter: Crocolisk)
-					--31126, -- Blade Twisting (Rogue)
 					11113, -- Blast Wave (Mage)
 					45524, -- Chains of Ice (Death Knight)
-					--50434, -- Chilblains (Death Knight)
 					6136, -- Chilled (Frost Armor) (Mage)
 					7321, -- Chilled (Ice Armor) (Mage)
 					20005, -- Chilled (Icy Chill enchantment)
@@ -574,7 +566,6 @@ local TRACKER_PRESET = {
 					1604, -- Dazed
 					50259, -- Dazed (Feral Charge Cat) (Druid)
 					26679, -- Deadly Throw (Rogue)
-					--68766, -- Desecration (Death Knight)
 					3600, -- Earthbind (Shaman)
 					54644, -- Frost Breath (Hunter: Chimaera)
 					8056, -- Frost Shock (Shaman)
@@ -582,7 +573,6 @@ local TRACKER_PRESET = {
 					8034, -- Frostbrand Attack (Shaman)
 					44614, -- Frostfire Bolt (Mage)
 					61394, -- Frozen Wake (Glyph of Freezing Trap) (Hunter)
-					--58617, -- Glyph of Heart Strike (Death Knight)
 					1715, -- Hamstring (Warrior)
 					13810, -- Ice Trap (Hunter)
 					58180, -- Infected Wounds (Druid)
@@ -590,8 +580,6 @@ local TRACKER_PRESET = {
 					12323, -- Piercing Howl (Warrior)
 					31589, -- Slow (Mage)
 					35346, -- Time Warp (Hunter: Warp Stalker)
-					--51693, -- Waylay (Rogue)
-					--2974, -- Wing Clip (Hunter)
 					54644, -- Frost Breath (Hunter: Chimaera)
 				}
 			},

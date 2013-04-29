@@ -14,7 +14,7 @@ local L = LIB_AceLocale:GetLocale("Auracle")
 
 local MAINHAND = GetInventorySlotInfo("MainHandSlot")
 local OFFHAND = GetInventorySlotInfo("SecondaryHandSlot")
-local MAX_SPELLID = 75000 -- 73190 were defined as of 2010-01-23
+local MAX_SPELLID = 105000 -- 73190 were defined as of 2010-01-23
 
 -- classes
 
