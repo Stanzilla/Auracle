@@ -1,4 +1,4 @@
-## Interface: 50200
+## Interface: 50300
 ## Title: Auracle
 ## Version: @project-version@
 ## Notes: Compact & customizable filtering, monitoring and grouping of buffs and debuffs
