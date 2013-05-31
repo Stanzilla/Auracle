@@ -160,8 +160,6 @@ function Auracle:OnInitialize()
 		-- register LDB launcher
 		LIB_LibDataBroker:NewDataObject("Auracle", {
 			type = "launcher",
-			--icon = "Interface\\Icons\\Spell_Arcane_FocusedPower",
-			--icon = "Interface\\Icons\\Spell_Holy_SpiritualGuidence",
 			icon = "Interface\\Icons\\Spell_Holy_AuraMastery",
 			OnClick = function(frame, button)
 				if (button == "RightButton") then
@@ -224,10 +222,11 @@ function Auracle:PET_BATTLE_OPENING_DONE()
 	self.db.profile.disabled = true
 	self:Shutdown()
 	self:UpdateConfig()
-end
+end -- PET_BATTLE_OPENING_DONE()
+
 function Auracle:PET_BATTLE_CLOSE()
 	self:Startup()
-end
+end-- PET_BATTLE_CLOSE()
 
 function Auracle:ACTIVE_TALENT_GROUP_CHANGED()
 	self.plrSpec = API_GetActiveTalentGroup()
@@ -905,167 +904,6 @@ function Auracle:ValidateSavedVars(db, default, valid)
 	end
 end -- ValidateSavedVars()
 
---[[
-function Auracle:ConvertDataStore(dbProfile)
-	if (dbProfile.version < 4) then
---[===[@debug@
---		self:Print("Updating saved vars to version 4")
---@end-debug@]===]
-		for _,wsdb in pairs(dbProfile.windowStyles) do
-			if (wsdb.background and wsdb.background.texture == "Interface\\ChatFrame\\ChatFrameBackground") then
-				wsdb.background.texture = "Interface\\Tooltips\\UI-Tooltip-Background"
-			end
-		end
-		for _,wdb in pairs(dbProfile.windows) do
-			-- visibility.plrInstance{}
-			if (wdb.visibility and type(wdb.visibility.plrInstance) ~= "table") then
-				wdb.visibility.plrInstance = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrInstance, true)
-			end
-			for _,tdb in pairs(wdb.trackers) do
-				-- trackOthers => showOthers
-				if (tdb.trackOthers ~= nil) then
-					tdb.showOthers = tdb.trackOthers
-					tdb.trackOthers = nil
-				end
-				-- trackMine => showMine
-				if (tdb.trackMine ~= nil) then
-					tdb.showMine = tdb.trackMine
-					tdb.trackMine = nil
-				end
-				-- spiral{} and text{}
-				local spiralReverse = tdb.spiralReverse
-				if (spiralReverse == nil) then spiralReverse = true end
-				local textColor = tdb.textColor or "time"
-				local maxTime = tdb.maxTime
-				if (maxTime == nil) then maxTime = false end
-				local maxTimeMode = "auto"
-				if (tdb.autoMaxTime == false) then maxTimeMode = "static" end
-				local maxStacks = tdb.maxStacks
-				if (maxStacks == nil) then maxStacks = false end
-				local maxStacksMode = "auto"
-				if (tdb.autoMaxStacks == false) then maxStacksMode = "static" end
-				if (type(tdb.spiral) ~= "table") then
-					local spiral = {
-						mode = tdb.spiral,
-						reverse = spiralReverse,
-						maxTime = maxTime,
-						maxTimeMode = maxTimeMode,
-						maxStacks = maxStacks,
-						maxStacksMode = maxStacksMode
-					}
-					tdb.spiral = spiral
-				end
-				if (type(tdb.text) ~= "table") then
-					local text = {
-						mode = tdb.text,
-						color = textColor,
-						maxTime = maxTime,
-						maxTimeMode = maxTimeMode,
-						maxStacks = maxStacks,
-						maxStacksMode = maxStacksMode
-					}
-					tdb.text = text
-				end
-				tdb.spiralReverse = nil
-				tdb.textColor = nil
-				tdb.maxTime = nil
-				tdb.autoMaxTime = nil
-				tdb.maxStacks = nil
-				tdb.autoMaxStacks = nil
-				-- icon{}
-				local autoIcon = tdb.autoIcon
-				if (autoIcon == nil) then autoIcon = true end
-				if (type(tdb.icon) ~= "table") then
-					local icon = {
-						texture = tdb.icon,
-						autoIcon = autoIcon
-					}
-					tdb.icon = icon
-				end
-				tdb.autoIcon = nil
-				-- tooltip{}
-				if (type(tdb.tooltip) ~= "table") then
-					tdb.tooltip = {
-						showMissing = "off",
-						showOthers = "off",
-						showMine = "off"
-					}
-				end
-			end
-		end
-		dbProfile.version = 4
-	end
-	-- version 6: abandoned AceDB's "intelligent" storage, so now we have to copy over anything which is missing as a result
-	if (dbProfile.version < 6) then
---[===[@debug@
---		self:Print("Updating saved vars to version 6")
---@end-debug@]===]
-		local fix
-		fix = function(db, def)
-			for key,val in pairs(def) do
-				if (type(val) == "table") then
-					if (type(db[key]) == "table") then
-						fix(db[key], val)
-					else
-						db[key] = self:__cloneTable(val, true)
-					end
-				elseif (db[key] == nil) then
-					db[key] = val
-				end
-			end
-		end
-		fix(dbProfile.windowStyles.Default, DB_DEFAULT_WINDOWSTYLE)
-		fix(dbProfile.trackerStyles.Default, DB_DEFAULT_TRACKERSTYLE)
-		for i = 1,#dbProfile.windows do
-			fix(dbProfile.windows[i], DB_DEFAULT_WINDOW)
-		end
-		dbProfile.version = 6
-	end
-	-- version 7: added window vis plrSpec,plrStance
-	if (dbProfile.version < 7) then
---[===[@debug@
---		self:Print("Updating saved vars to version 7")
---@end-debug@]===]
-		for _,wdb in pairs(dbProfile.windows) do
-			if (wdb.visibility) then
-				if (type(wdb.visibility.plrSpec) ~= "table") then
-					wdb.visibility.plrSpec = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrSpec, true)
-				end
-				if (type(DB_DEFAULT_WINDOW.visibility.plrStance) == "table" and type(wdb.visibility.plrStance) ~= "table") then
-					wdb.visibility.plrStance = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrStance, true)
-				end
-			end
-		end
-		dbProfile.version = 7
-	end
-	-- version 8: renamed plrStance to plrForm to match event names
-	if (dbProfile.version < 8) then
---[===[@debug@
---		self:Print("Updating saved vars to version 8")
---@end-debug@]===]
-		for _,wdb in pairs(dbProfile.windows) do
-			if (wdb.visibility and type(wdb.visibility.plrStance) == "table") then
-				wdb.visibility.plrForm = wdb.visibility.plrStance
-				wdb.visibility.plrStance = nil
-			end
-		end
-		dbProfile.version = 8
-	end
-	-- version 9: double-check plrForm
-	if (dbProfile.version < 9) then
---[===[@debug@
---		self:Print("Updating saved vars to version 9")
---@end-debug@]===]
-		for _,wdb in pairs(dbProfile.windows) do
-			if (type(wdb.visibility.plrForm) ~= "table") then
-				wdb.visibility.plrForm = self:__cloneTable(DB_DEFAULT_WINDOW.visibility.plrForm, true)
-			end
-		end
-		dbProfile.version = 9
-	end
-end -- ConvertDataStore()
---]]
-
 function Auracle:UpdateEventListeners()
 	-- clear them all and set the ones we always need
 	self:UnregisterAllEvents()
@@ -1152,6 +990,7 @@ function Auracle:UpdateEventListeners()
 	if (eWeaponBuffs) then self:RegisterBucketEvent("UNIT_INVENTORY_CHANGED", 0.25, "Bucket_UNIT_INVENTORY_CHANGED") end
 	self:RegisterEvent("PET_BATTLE_CLOSE")
 	self:RegisterEvent("PET_BATTLE_OPENING_DONE")
+
 end -- UpdateEventListeners()
 
 function Auracle:GetWindowPosition(window)
