@@ -220,6 +220,15 @@ end -- OnProfileChanged()
 
 --[[ WoW EVENT HANDLERS ]]--
 
+function Auracle:PET_BATTLE_OPENING_DONE()
+	self.db.profile.disabled = true
+	self:Shutdown()
+	self:UpdateConfig()
+end
+function Auracle:PET_BATTLE_CLOSE()
+	self:Startup()
+end
+
 function Auracle:ACTIVE_TALENT_GROUP_CHANGED()
 	self.plrSpec = API_GetActiveTalentGroup()
 	self:DispatchPlayerStatus()
@@ -1141,6 +1150,8 @@ function Auracle:UpdateEventListeners()
 	if (eAuras) then self:RegisterEvent("UNIT_AURA") end
 --	if (eWeaponBuffs) then self:RegisterEvent("UNIT_INVENTORY_CHANGED") end
 	if (eWeaponBuffs) then self:RegisterBucketEvent("UNIT_INVENTORY_CHANGED", 0.25, "Bucket_UNIT_INVENTORY_CHANGED") end
+	self:RegisterEvent("PET_BATTLE_CLOSE")
+	self:RegisterEvent("PET_BATTLE_OPENING_DONE")
 end -- UpdateEventListeners()
 
 function Auracle:GetWindowPosition(window)
