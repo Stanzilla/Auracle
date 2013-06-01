@@ -219,13 +219,11 @@ end -- OnProfileChanged()
 --[[ WoW EVENT HANDLERS ]]--
 
 function Auracle:PET_BATTLE_OPENING_DONE()
-	self.db.profile.disabled = true
 	self:Shutdown()
 end -- PET_BATTLE_OPENING_DONE()
 
 function Auracle:PET_BATTLE_CLOSE()
 	self:Enable()
-	self.db.profile.disabled = false
 	self:Startup()
 end-- PET_BATTLE_CLOSE()
 
