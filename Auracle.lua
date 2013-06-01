@@ -220,6 +220,8 @@ end -- OnProfileChanged()
 
 function Auracle:PET_BATTLE_OPENING_DONE()
 	self:Shutdown()
+	self:Disable()
+	self:RegisterEvent("PET_BATTLE_CLOSE")
 end -- PET_BATTLE_OPENING_DONE()
 
 function Auracle:PET_BATTLE_CLOSE()
