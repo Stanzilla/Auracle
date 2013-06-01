@@ -221,7 +221,6 @@ end -- OnProfileChanged()
 function Auracle:PET_BATTLE_OPENING_DONE()
 	self.db.profile.disabled = true
 	self:Shutdown()
-	self:UpdateConfig()
 end -- PET_BATTLE_OPENING_DONE()
 
 function Auracle:PET_BATTLE_CLOSE()
