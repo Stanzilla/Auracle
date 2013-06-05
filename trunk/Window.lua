@@ -33,7 +33,8 @@ local DB_DEFAULT_WINDOW = {
 			pvp = true, -- bg
 			arena = true,
 			party = true, -- 5-man instance
-			raid = true -- raid instance
+			raid = true, -- raid instance
+			scenario = true
 		},
 		plrGroup = {
 			solo = true,
@@ -87,7 +88,8 @@ local DB_VALID_WINDOW = {
 			pvp = "boolean",
 			arena = "boolean",
 			party = "boolean",
-			raid = "boolean"
+			raid = "boolean",
+			scenario ="boolean"
 		},
 		plrGroup = {
 			solo = "boolean",
@@ -1369,6 +1371,17 @@ local sharedOptions = {
 								Auracle:UpdatePlayerStatus(i.handler)
 							end,
 							order = 5
+						},
+						scenario = {
+							type = "toggle",
+							name = "Scenario", --L.SCENARIO_INSTANCE,
+							get = function(i) return i.handler.db.visibility.plrInstance.scenario end,
+							set = function(i,v)
+								i.handler.db.visibility.plrInstance.scenario = v
+								Auracle:UpdateEventListeners()
+								Auracle:UpdatePlayerStatus(i.handler)
+							end,
+							order = 6
 						}
 					}
 				},
