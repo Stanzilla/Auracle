@@ -218,6 +218,7 @@ L["OPT_INSTANCE_SHOW"] = "Show while in instance:"
 L["NO_INSTANCE"] = "No Instance"
 L["PARTY_INSTANCE"] = "Party Instance"
 L["RAID_INSTANCE"] = "Raid Instance"
+L["SCENARIO_INSTANCE"] = "Scenario"
 L["OPT_GROUP_SHOW"] = "Show while in group:"
 L["NONE_SOLO"] = "None (Solo)" -- i.e. ungrouped
 L["PARTY"] = "Party" -- noun (i.e. in a 5-person group)
