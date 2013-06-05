@@ -34,7 +34,7 @@ local DB_DEFAULT_WINDOW = {
 			arena = true,
 			party = true, -- 5-man instance
 			raid = true, -- raid instance
-			scenario = true
+			scenario = true -- scenario
 		},
 		plrGroup = {
 			solo = true,
