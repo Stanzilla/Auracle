@@ -154,17 +154,25 @@ local TRACKER_PRESET = {
 				[0] = L.PRESET_BUFF_PCTSTATS,
 				{
 					115921, -- Legacy of the Emperor (Monk)
+					116781, -- Legacy of the White Tiger (Monk)
 					20217, -- Blessing of Kings (Paladin)
+					160017, -- Blessing of Kongs (Hunter: Gorilla)
 					90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
+					160077, -- Strength of the Earth (Hunter: Worm)
+					159988, -- Bark of the Wild (Hunter: Dog)
+					69378, -- Blessing of Forgotten Kings (Leatherworking Drums)
 					1126, -- Mark of the Wild (Druid)
 				}
 			},
 			{
 				[0] = L.PRESET_BUFF_STA,
 				{
-					109773, -- Dark Intent (Warlock)
+					166928, -- Blood Pact (Warlock)
 					469, -- Commanding Shout (Warrior)
-					21562, -- Power Word: Fortitude (Prist)
+					21562, -- Power Word: Fortitude (Priest)
+					160003, -- Flourish (Hunter: Dragonfly)
+					160014, -- Sturdiness (Hunter: Goat)
+					111922, -- Fortitude (Inscription Scroll)
 					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				}
 			},
@@ -176,11 +184,12 @@ local TRACKER_PRESET = {
 				{
 					24604, -- Furious Howl (Hunter: Wolf)
 					116781, -- Legacy of the White Tiger (Monk)
-					90309, -- Terrifying Roar (Hunter Pet)
+					90309, -- Terrifying Roar (Hunter: Devilsaur)
 					17007, -- Leader of the Pack (Guardian/Feral Druid)
-					126373, -- Fearless Roar
-					97229, -- Bellowing Roar
+					126373, -- Fearless Roar (Hunter: Quillen)
+					97229, -- Bellowing Roar (Hunter: Hydra)
 					126309, -- Still Water (Hunter: Water Strider)
+					160052, -- Strength of the Pack (Hunter: Raptor)
 					1459, -- Arcane Brilliance (Mage)
 					61316, -- Dalaran Brilliance (Mage)
 				}
@@ -188,9 +197,11 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_BIGHASTE,
 				{
-					90355, -- Ancient Hysteria (Hunter: Corehound)
+					90355, -- Ancient Hysteria (Hunter: Core Hound)
 					2825, -- Bloodlust (Shaman)
+					160452, -- Netherwinds (Hunter: Nether Ray)
 					32182, -- Heroism (Shaman)
+					146555, -- Drums of Rage (Leatherworking)
 					80353, -- Time Warp (Mage)
 				}
 			},
@@ -199,8 +210,57 @@ local TRACKER_PRESET = {
 				{
 					19740, -- Blessing of Might (Paladin)
 					116956, -- Grace of Air (Shaman)
+					155522, -- Power of the Grave (Death Knight, Blood)
+					24907, -- Moonkin Aura (Druid, Balance)
 					93435, -- Roar of Courage (Hunter Pet)
+					160073, -- Plainswalking (Hunter: Tallstrider)
+					93435, -- Roar of Curage (Hunter: Cat)
+					160039, -- Keen Senses (Hunter: Hydra)
 					128997, -- Spirit Beast Blessing (Hunter: Spirit Beast)
+				}
+			},
+			{
+				[0] = L.PRESET_BUFF_HASTE,
+				{
+					55610, -- Unholy Aura (Death Knight, Frost/Unholy)
+					113742, -- Swiftblade's Cunning (Rogue)
+					116956, -- Grace of Air (Shaman)
+					160003, -- Flourish (Hunter: Dragonfly)
+					49868, -- Mind Quickening (Priest, Shadow)
+					160074, -- Speed of the Swarm (Hunter: Wasp)
+					135678, -- Energizing Spores (Hunter: Sporebat)
+				}
+			},
+			{
+				[0] = L.PRESET_BUFF_VERSATILITY,
+				{
+					55610, -- Unholy Aura (Death Knight, Frost/Unholy)
+					167187, -- Sanctity Aura (Paladin, Retribution)
+					167188, -- Inspiring Presence (Warrior, Arms/Fury)
+					1126, -- Mark of the Wild (Druid)
+					159733, -- Tenacity (Hunter: Bird of Prey)
+					35290, -- Indomitable (Hunter: Boar)
+					160045, -- Defensive Quills (Hunter: Porcupine)
+					50518, -- Chitinous Armor (Hunter: Ravager)
+					57386, -- Wild Strength (Hunter: Rino)
+					160077, -- Strength of the Earth (Hunter: Worm)
+					
+				}
+			},
+			{
+				[0] = L.PRESET_BUFF_MULTISTRIKE,
+				{
+					166916, -- Windflurry (Monk, Windwalker)
+					49868, -- Mind Quickening (Priest, Shadow)
+					113742, -- Swiftblade's Cunning (Rogue)
+					109773, -- Dark Intent (Warlock)
+					159733, -- Baleful Gaze (Hunter: Basilisk)
+					54644, -- Frost Breath (Hunter: Chimaera)
+					58604, -- Double Bite (Hunter: Core Hound)
+					34889, -- Spry Attacks (Hunter: Dragonhawk)
+					160011, -- Agile Reflexes (Hunter: Fox)
+					57386, -- Wild Strength (Hunter: Rino)
+					23844, -- Breath of the Winds (Hunter: Wind Serpent)			
 				}
 			},
 		},
@@ -213,17 +273,7 @@ local TRACKER_PRESET = {
 					19506, -- Trueshot Aura (Hunter)
 					6673, -- Battle Shout (Warrior)
 				}
-			},
-			{
-				[0] = L.PRESET_BUFF_P_HASTE,
-				{
-					55610, -- Unholy Aura (Death Knight)
-					30809, -- Unleashed Rage (Shaman)
-					113742, -- Swiftblade's Cunning (Rogue)
-					128433, -- Serpent's Swiftness (Hunter: Serpent)
-					128432, -- Cackling Howl (Hunter: Hyena)
-				}
-			},
+			},			
 		},
 		{
 			[0] = L.CASTER,
@@ -233,20 +283,10 @@ local TRACKER_PRESET = {
 					1459, -- Arcane Brilliance (Mage)
 					61316, -- Dalaran Brilliance (Mage)
 					126309, -- Still Water (Hunter: Water Strider)
-					77747, -- Burning Wrath (Shaman)
 					109773, -- Dark Intent (Warlock)
+					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				},
-			},
-			{
-				[0] = L.PRESET_BUFF_S_HASTE,
-				{
-					24907, -- Moonkin Aura (Druid)
-					49868, -- Mind Quickening (Priest Shadowform)
-					51470, -- Elemental Oath (Shaman)
-					135678, -- Energizing Spores (Hunter: Sporebat)
-					
-				}
-			},
+			},			
 			{
 				[0] = L.PRESET_BUFF_BIGMANAREGEN,
 				{
@@ -319,7 +359,6 @@ local TRACKER_PRESET = {
 		[0] = L.DEBUFFS_BY_TYPE,
 		{
 			[0] = L.DPS,
---TODO				[0] = L.PRESET_DEBUFF_AP,
 			{
 				[0] = L.PRESET_DEBUFF_PCTDMG,
 				{
@@ -327,34 +366,7 @@ local TRACKER_PRESET = {
 					50256, -- Demoralizing Roar (Hunter: Bear)
 					115798, -- Weakened Blows (Blood death knight, Feral and Guardian druid, Brewmaster monk, Protection or Retribution paladin, any warrior (any tank))
 				}
-			},
-			--[[
-			{
-				[0] = L.PRESET_DEBUFF_M_HASTE,
-				{
-					54404, -- Dust Cloud (Hunter: Tallstrider)
-					8042, -- Earth Shock (Shaman)
-					55095, -- Frost Fever (Death Knight)
-					58180, -- Infected Wounds (Druid)
-					68055, -- Judgements of the Just (Paladin)
-					90315, -- Tailspin (Hunter: Fox)
-					6343, -- Thunder Clap (Warrior)
-					51693, -- Waylay (Rogue)
-				}
-			},
-			]]--
-			{
-				[0] = L.PRESET_DEBUFF_S_HASTE,
-				{
-					109466, -- Curse of Curse of Enfeeblement (Warlock)
-					58604, -- Lava Breath (Hunter: Corehound)
-					5761, -- Mind-numbing Poison (Rogue)
-					73975, -- Necrotic Strike (Death Knight)
-					31589, -- Slow (Mage)
-					50274, -- Spore Cloud (Hunter: Sporebat)
-					58604, -- Lava Breath (Hunter: Core Hound)
-				}
-			},
+			},			
 		},
 		{
 			[0] = L.PHYSICAL_TANK,
@@ -409,18 +421,8 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_DEBUFF_PCTHEALTAKEN,
 				{
-	 				54680, -- Monstrous Bite (Hunter: Devilsaur)
+	 				54680, -- Monstrous Bite (Hunter: Devilsaur)	 				
 					115804, -- Mortal Wounds (Arms or Fury warrior, any rogue, any hunter)
-				}
-			},
-			{
-				[0] = L.DISARM,
-				{
-					50541, -- Clench (Hunter: Scorpid)
-					676, -- Disarm (Warrior)
-					51722, -- Dismantle (Rogue)
-					64058, -- Psychic Horror (Priest)
-					91644, -- Snatch (Hunter: Bird of Prey)
 				}
 			},
 			{
