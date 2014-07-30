@@ -357,7 +357,7 @@ local TRACKER_PRESET = {
 	},
 	{
 		{
-			[0] = L.TACTICAL,
+			[0] = L.TACTICAL, -- http://us.battle.net/wow/en/forum/topic/13509280909
 			{
 				[0] = L.PRESET_DEBUFF_TAUNTED,
 				{
@@ -386,30 +386,12 @@ local TRACKER_PRESET = {
 					25046, -- Arcane Torrent (Blood Elf racial)
 					31935, -- Avenger's Shield (Paladin)
 					1330, -- Garrote - Silence (Rogue)
-					50479, -- Nether Shock (Hunter: Nether Ray)
+					102051, -- Frostjaw (Mage)
 					15487, -- Silence (Priest)
 					18498, -- Silenced - Gag Order (Warrior)
-					34490, -- Silencing Shot (Hunter)
-					81261, -- Solar Beam (Druid)
+					114238, -- Fae Silence (Druid)					
 					24259, -- Spell Lock (Warlock: Fel Hunter)
 					47476, -- Strangulate (Death Knight)
-				}
-			},
-			{
-				[0] = L.SPELL_LOCKOUT,
-				{
-					2139, -- Counterspell (Mage)
-					1766, -- Kick (Rogue)
-					47528, -- Mind Freeze (Death Knight)
-					6552, -- Pummel (Warrior)
-					26090, -- Pummel (Hunter: Gorilla)
-					50318, -- Serenity Dust (Hunter: Moth)
-					80964, -- Skull Bash (Bear) (Druid)
-					80965, -- Skull Bash (Cat) (Druid)
-					24259, -- Spell Lock (Warlock: Fel Hunter) --TODO: find SpellID for separate lockout component
-					57994, -- Wind Shear (Shaman)
-					50479, -- Nether Shock (Hunter: Nether Ray)
-					50318, -- Serenity Dust (Hunter: Moth)
 				}
 			},
 			{
@@ -422,42 +404,25 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.STUN,
 				{
-					85387, -- Aftermath (Warlock)
 					89766, -- Axe Toss (Warlock: Felguard)
-					5211, -- Bash (Druid)
-					93433, -- Burrow Attack (Hunter: Worm)
+					108194, -- Asphyxiate (Death Knight)
+					91800, -- Gnaw (Death Knight: Ghoul)
+					91797, -- Monstrous Blow (Ghoul w/ Dark Transformation active)
+					115001, -- Remorseless Winter (Death Knight)
+					5211, -- Mighty Bash (Druid)
+					22570, -- Maim (Druid)
+					9005, -- Pounce (Druid)
 					7922, -- Charge Stun (Warrior)
 					1833, -- Cheap Shot (Rogue)
 					44572, -- Deep Freeze (Mage)
-					45334, -- Feral Charge (Bear) (Druid)
-					91800, -- Gnaw (Death Knight: Ghoul)
 					853, -- Hammer of Justice (Paladin)
-					88625, -- Holy Word: Chastise (Priest)
 					2812, -- Holy Wrath (Paladin)
 					19577, -- Intimidation (Hunter)
-					408, -- Kidney Shot (Rogue)
-					22570, -- Maim (Druid)
-					9005, -- Pounce (Druid)
+					408, -- Kidney Shot (Rogue)					
 					82691, -- Ring of Frost (Mage)
 					30283, -- Shadowfury (Warlock)
 					46968, -- Shockwave (Warrior)
-					50519, -- Sonic Blast (Hunter: Bat)
-					56626, -- Sting (Hunter: Wasp)
 					20549, -- War Stomp (Tauren racial)
-				}
-			},
-			{
-				[0] = L.FEAR,
-				{
-					6789, -- Death Coil (Warlock)
-					5782, -- Fear (Warlock)
-					5484, -- Howl of Terror (Warlock)
-					5246, -- Intimidating Shout (Warrior)
-					65545, -- Psychic Horror (Priest)
-					8122, -- Psychic Scream (Priest)
-					1513, -- Scare Beast (Hunter)
-					10326, -- Turn Evil (Paladin)
-					19725, -- Turn Undead
 				}
 			},
 			{
@@ -468,6 +433,8 @@ local TRACKER_PRESET = {
 					30216, -- Fel Iron Bomb (item)
 					3355, -- Freezing Trap (Hunter)
 					1776, -- Gouge (Rogue)
+					88625, -- Holy Word: Chastise (Priest)
+					65545, -- Psychic Horror (Priest)
 					2637, -- Hibernate (Druid)
 					13327, -- Reckless Charge (Goblin Rocket Helmet, Horned Viking Helmet items)
 					20066, -- Repentance (Paladin)
@@ -484,8 +451,14 @@ local TRACKER_PRESET = {
 					2094, -- Blind (Rogue)
 					31661, -- Dragon's Breath (Mage)
 					51514, -- Hex (Shaman)
+					10326, -- Turn Evil (Paladin)
+					33786, -- Cyclone (Druid)
+					8122, -- Psychic Scream (Priest)
+					5782, -- Fear (Warlock)
+					5484, -- Howl of Terror (Warlock)
 					118, -- Polymorph (Mage)
 					19503, -- Scatter Shot (Hunter)
+					5246, -- Intimidating Shout (Warrior)
 				}
 			},
 			{
@@ -496,15 +469,11 @@ local TRACKER_PRESET = {
 					19185, -- Entrapment (Hunter)
 					63685, -- Freeze [Frost Shock] (Shaman)
 					33395, -- Freeze [Water Elemental] (Mage)
+					111340, -- Ice Ward (Mage)
 					39965, -- Frost Grenade (item)
 					122, -- Frost Nova (Mage)
 					55536, -- Frostweave Net (item)
-					90327, -- Lock Jaw (Hunter: Dog)
 					13099, -- Net-o-Matic (Gnomish Net-o-Matic Projector item)
-					50245, -- Pin (Hunter: Crab)
-					54706, -- Venom Web Spray (Hunter: Silithid)
-					4167, -- Web (Hunter: Spider)
-					50245, -- Pin (Hunter: Crab)
 				}
 			},
 			{
