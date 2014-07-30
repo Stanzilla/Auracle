@@ -356,8 +356,9 @@ local TRACKER_PRESET = {
 		},
 	},
 	{
+		[0] = L.DEBUFFS_BY_TYPE, -- http://us.battle.net/wow/en/forum/topic/13509280909
 		{
-			[0] = L.TACTICAL, -- http://us.battle.net/wow/en/forum/topic/13509280909
+			[0] = L.TACTICAL, 
 			{
 				[0] = L.PRESET_DEBUFF_TAUNTED,
 				{
