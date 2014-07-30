@@ -356,51 +356,6 @@ local TRACKER_PRESET = {
 		},
 	},
 	{
-		[0] = L.DEBUFFS_BY_TYPE,
-		{
-			[0] = L.DPS,
-			{
-				[0] = L.PRESET_DEBUFF_PCTDMG,
-				{
-					24423, -- Demoralizing Screech	 (Hunter: Fire Roc)
-					50256, -- Demoralizing Roar (Hunter: Bear)
-					115798, -- Weakened Blows (Blood death knight, Feral and Guardian druid, Brewmaster monk, Protection or Retribution paladin, any warrior (any tank))
-				}
-			},			
-		},
-		{
-			[0] = L.PHYSICAL_TANK,
-			{
-				[0] = L.PRESET_DEBUFF_ARMOR,
-				{
-					113746, -- Weakened Armor (Any druid, any rogue, any warrior)
-				}
-			},
-			{
-				[0] = L.PRESET_DEBUFF_PCTPHYSDMGTAKEN,
-				{
-					57386, -- Stampede (Hunter: Rhino)
-					50518, -- Ravage (Hunter: Ravager)
-					35290, -- Gore (Hunter: Boar)
-					81326, -- Brittle Bones (Frost and Unholy death knights, Retribution paladins, Arms and Fury warriors)
-				}
-			},
-			
-		},
-		{
-			[0] = L.CASTER_TANK,
-			{
-				[0] = L.PRESET_DEBUFF_PCTSPELLDMGTAKEN,
-				{
-					1490, -- Curse of the Elements (Warlock)
-					34889, -- Fire Breath (Hunter: Dragonhawk)
-					24844, -- Lightning Breath (Hunter: Wind Serpent)
-					58410, -- Master Poisoner (Rogue)
-					34889, -- Fire Breath (Hunter: Dragonhawk)
-					24844, -- Lightning Breath (Hunter: Wind Serpent)
-				}
-			},
-		},
 		{
 			[0] = L.TACTICAL,
 			{
