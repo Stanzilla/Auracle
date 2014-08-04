@@ -160,6 +160,7 @@ local TRACKER_PRESET = {
 					90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
 					160077, -- Strength of the Earth (Hunter: Worm)
 					159988, -- Bark of the Wild (Hunter: Dog)
+					160206, -- Lone Wolf: Power of the Primates (Hunter)
 					69378, -- Blessing of Forgotten Kings (Leatherworking Drums)
 					1126, -- Mark of the Wild (Druid)
 				}
@@ -172,6 +173,7 @@ local TRACKER_PRESET = {
 					21562, -- Power Word: Fortitude (Priest)
 					160003, -- Flourish (Hunter: Dragonfly)
 					160014, -- Sturdiness (Hunter: Goat)
+					160199, -- Lone Wolf: Fortitude of the Bear (Hunter)
 					111922, -- Fortitude (Inscription Scroll)
 					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				}
@@ -190,6 +192,7 @@ local TRACKER_PRESET = {
 					97229, -- Bellowing Roar (Hunter: Hydra)
 					126309, -- Still Water (Hunter: Water Strider)
 					160052, -- Strength of the Pack (Hunter: Raptor)
+					160200, -- Lone Wolf: Ferocity of the Raptor (Hunter)
 					1459, -- Arcane Brilliance (Mage)
 					61316, -- Dalaran Brilliance (Mage)
 				}
@@ -216,6 +219,7 @@ local TRACKER_PRESET = {
 					160073, -- Plainswalking (Hunter: Tallstrider)
 					93435, -- Roar of Curage (Hunter: Cat)
 					160039, -- Keen Senses (Hunter: Hydra)
+					160198, -- Lone Wolf: Grace of the Cat (Hunter)
 					128997, -- Spirit Beast Blessing (Hunter: Spirit Beast)
 				}
 			},
@@ -228,6 +232,7 @@ local TRACKER_PRESET = {
 					160003, -- Flourish (Hunter: Dragonfly)
 					49868, -- Mind Quickening (Priest, Shadow)
 					160074, -- Speed of the Swarm (Hunter: Wasp)
+					160203, -- Lone Wolf: Haste of the Hyena (Hunter)
 					135678, -- Energizing Spores (Hunter: Sporebat)
 				}
 			},
@@ -284,6 +289,7 @@ local TRACKER_PRESET = {
 					61316, -- Dalaran Brilliance (Mage)
 					126309, -- Still Water (Hunter: Water Strider)
 					109773, -- Dark Intent (Warlock)
+					160205, -- Lone Wolf: Wisdom of the Serpent (Hunter)
 					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				},
 			},			
