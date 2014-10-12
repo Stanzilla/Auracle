@@ -265,7 +265,7 @@ local TRACKER_PRESET = {
 					34889, -- Spry Attacks (Hunter: Dragonhawk)
 					160011, -- Agile Reflexes (Hunter: Fox)
 					57386, -- Wild Strength (Hunter: Rino)
-					23844, -- Breath of the Winds (Hunter: Wind Serpent)			
+					--23844, -- Breath of the Winds (Hunter: Wind Serpent)			
 				}
 			},
 		},
@@ -296,11 +296,11 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_BIGMANAREGEN,
 				{
-					54428, -- Divine Plea (Paladin)
+					--54428, -- Divine Plea (Paladin)
 					12051, -- Evocation (Mage)
-					64904, -- Hymn of Hope (Priest)
-					29166, -- Innervate (Druid)
-					16191, -- Mana Tide (Shaman)
+					--64904, -- Hymn of Hope (Priest)
+					--29166, -- Innervate (Druid)
+					--16191, -- Mana Tide (Shaman)
 				}
 			},			
 		},
@@ -377,7 +377,7 @@ local TRACKER_PRESET = {
 					31790, -- Righteous Defense (Paladin)
 					17735, -- Suffering (Warlock: Voidwalker)
 					355, -- Taunt (Warrior)
-					53477, -- Taunt (Hunter: tenacity)
+					--53477, -- Taunt (Hunter: tenacity)
 				}
 			},
 			{
@@ -397,7 +397,7 @@ local TRACKER_PRESET = {
 					15487, -- Silence (Priest)
 					18498, -- Silenced - Gag Order (Warrior)
 					114238, -- Fae Silence (Druid)					
-					24259, -- Spell Lock (Warlock: Fel Hunter)
+					--24259, -- Spell Lock (Warlock: Fel Hunter)
 					47476, -- Strangulate (Death Knight)
 				}
 			},
@@ -418,7 +418,7 @@ local TRACKER_PRESET = {
 					115001, -- Remorseless Winter (Death Knight)
 					5211, -- Mighty Bash (Druid)
 					22570, -- Maim (Druid)
-					9005, -- Pounce (Druid)
+					--9005, -- Pounce (Druid)
 					7922, -- Charge Stun (Warrior)
 					1833, -- Cheap Shot (Rogue)
 					44572, -- Deep Freeze (Mage)
@@ -436,13 +436,13 @@ local TRACKER_PRESET = {
 				[0] = L.INCAPACITATE,
 				{
 					30217, -- Adamantite Grenade (item)
-					76780, -- Bind Elemental (Shaman)
+					--76780, -- Bind Elemental (Shaman)
 					30216, -- Fel Iron Bomb (item)
 					3355, -- Freezing Trap (Hunter)
 					1776, -- Gouge (Rogue)
 					88625, -- Holy Word: Chastise (Priest)
 					65545, -- Psychic Horror (Priest)
-					2637, -- Hibernate (Druid)
+					--2637, -- Hibernate (Druid)
 					13327, -- Reckless Charge (Goblin Rocket Helmet, Horned Viking Helmet items)
 					20066, -- Repentance (Paladin)
 					6770, -- Sap (Rogue)
@@ -454,7 +454,7 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.DISORIENT,
 				{
-					90337, -- Bad Mannger (Hunter: Monkey)
+					--90337, -- Bad Mannger (Hunter: Monkey)
 					2094, -- Blind (Rogue)
 					31661, -- Dragon's Breath (Mage)
 					51514, -- Hex (Shaman)
@@ -464,7 +464,7 @@ local TRACKER_PRESET = {
 					5782, -- Fear (Warlock)
 					5484, -- Howl of Terror (Warlock)
 					118, -- Polymorph (Mage)
-					19503, -- Scatter Shot (Hunter)
+					--19503, -- Scatter Shot (Hunter)
 					5246, -- Intimidating Shout (Warrior)
 				}
 			},
@@ -473,7 +473,7 @@ local TRACKER_PRESET = {
 				{
 					64695, -- Earthgrab (Shaman)
 					339, -- Entangling Roots (Druid)
-					19185, -- Entrapment (Hunter)
+					--19185, -- Entrapment (Hunter)
 					63685, -- Freeze [Frost Shock] (Shaman)
 					33395, -- Freeze [Water Elemental] (Mage)
 					111340, -- Ice Ward (Mage)
@@ -487,17 +487,17 @@ local TRACKER_PRESET = {
 				[0] = L.SLOW,
 				{
 					50433, -- Ankle Crack (Hunter: Crocolisk)
-					11113, -- Blast Wave (Mage)
+					157981, -- Blast Wave (Mage)
 					45524, -- Chains of Ice (Death Knight)
 					6136, -- Chilled (Frost Armor) (Mage)
 					7321, -- Chilled (Ice Armor) (Mage)
 					20005, -- Chilled (Icy Chill enchantment)
 					16927, -- Chilled (Frostguard item)
-					35101, -- Concussive Barrage (Hunter)
+					--35101, -- Concussive Barrage (Hunter)
 					5116, -- Concussive Shot (Hunter)
 					120, -- Cone of Cold (Mage)
 					3409, -- Crippling Poison (Rogue)
-					18223, -- Curse of Exhaustion (Warlock)
+					--18223, -- Curse of Exhaustion (Warlock)
 					1604, -- Dazed
 					50259, -- Dazed (Feral Charge Cat) (Druid)
 					26679, -- Deadly Throw (Rogue)
@@ -505,7 +505,7 @@ local TRACKER_PRESET = {
 					54644, -- Frost Breath (Hunter: Chimaera)
 					8056, -- Frost Shock (Shaman)
 					116, -- Frostbolt (Mage)
-					8034, -- Frostbrand Attack (Shaman)
+					--8034, -- Frostbrand Attack (Shaman)
 					44614, -- Frostfire Bolt (Mage)
 					61394, -- Frozen Wake (Glyph of Freezing Trap) (Hunter)
 					1715, -- Hamstring (Warrior)
