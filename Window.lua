@@ -233,6 +233,7 @@ local TRACKER_PRESET = {
 					49868, -- Mind Quickening (Priest, Shadow)
 					160074, -- Speed of the Swarm (Hunter: Wasp)
 					160203, -- Lone Wolf: Haste of the Hyena (Hunter)
+					128432, -- Cackling Howl (Hunter: Hyena)
 					135678, -- Energizing Spores (Hunter: Sporebat)
 				}
 			},
