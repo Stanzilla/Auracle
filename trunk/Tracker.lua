@@ -317,7 +317,7 @@ do
 			tracker.uiFrame.Auracle_tracker = tracker
 			tracker.uiIcon = tracker.uiFrame:CreateTexture(nil, "BACKGROUND") -- UIObject,Region,LayeredRegion
 			tracker.uiIcon:SetAllPoints()
-			tracker.uiCooldown = CreateFrame("Cooldown", nil, tracker.uiFrame) -- UIObject,Region,Frame
+			tracker.uiCooldown = CreateFrame("Cooldown", nil, tracker.uiFrame, "CooldownFrameTemplate") -- UIObject,Region,Frame
 			tracker.uiCooldown:SetAllPoints()
 			tracker.uiCooldown.Auracle_tracker = tracker
 			tracker.uiOverlay = CreateFrame("Frame", nil, tracker.uiFrame) -- UIObject,Region
@@ -674,6 +674,8 @@ function Tracker.prototype:UpdateSpiral()
 		self.uiCooldown.noCooldownCount = sdb.noCC or nil
 		self.uiCooldown.noOmniCC = sdb.noCC or nil
 		self.uiCooldown:SetReverse(dbspiral.reverse)
+		self.uiCooldown:SetHideCountdownNumbers(true)
+		self.uiCooldown:SetDrawEdge(false)
 		if (dbspiral.mode == "time" and self.auraExpires) then
 			self.uiCooldown:Show()
 			self.uiCooldown:SetScript("OnUpdate", nil)
