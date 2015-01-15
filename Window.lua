@@ -266,6 +266,7 @@ local TRACKER_PRESET = {
 					34889, -- Spry Attacks (Hunter: Dragonhawk)
 					160011, -- Agile Reflexes (Hunter: Fox)
 					57386, -- Wild Strength (Hunter: Rino)
+					172968, -- Lone Wolf: Quickness of the Dragonhawk (Hunter)
 					--23844, -- Breath of the Winds (Hunter: Wind Serpent)			
 				}
 			},
@@ -293,17 +294,7 @@ local TRACKER_PRESET = {
 					160205, -- Lone Wolf: Wisdom of the Serpent (Hunter)
 					90364, -- Qiraji Fortitude (Hunter: Silithid)
 				},
-			},			
-			{
-				[0] = L.PRESET_BUFF_BIGMANAREGEN,
-				{
-					--54428, -- Divine Plea (Paladin)
-					12051, -- Evocation (Mage)
-					--64904, -- Hymn of Hope (Priest)
-					--29166, -- Innervate (Druid)
-					--16191, -- Mana Tide (Shaman)
-				}
-			},			
+			},
 		},
 		{
 			[0] = L.DEFENSE,
