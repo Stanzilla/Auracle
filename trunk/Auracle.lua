@@ -1,7 +1,6 @@
 assert(LibStub, "Auracle requires LibStub.")
 local LIB_AceAddon = LibStub("AceAddon-3.0") or error("Auracle: Required library AceAddon-3.0 not found")
-Auracle = LIB_AceAddon:NewAddon("Auracle",
-	"AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0")
+Auracle = LIB_AceAddon:NewAddon("Auracle", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0")
 local Auracle = Auracle
 
 local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
@@ -9,6 +8,8 @@ local L = LIB_AceLocale:GetLocale("Auracle")
 
 
 --[[ DECLARATIONS ]]--
+
+-- GLOBALS: LibStub Auracle UIParent GameFontNormal
 
 -- constants
 
@@ -45,6 +46,7 @@ local API_UnitExists = UnitExists
 local API_UnitIsEnemy = UnitIsEnemy
 local API_UnitIsFriend = UnitIsFriend
 local API_UnitPlayerControlled = UnitPlayerControlled
+local _G = _G
 
 -- library references
 
@@ -73,7 +75,7 @@ local blizOptionsFrame
 
 do
 	local flag = {}
-	
+
 	function Auracle:__cloneTable(tbl, cloneV, cloneK)
 		assert(not flag[tbl], "Auracle:__cloneTable(): cannot deep-clone a table that contains a reference to itself")
 		flag[tbl] = 1
@@ -86,7 +88,7 @@ do
 		flag[tbl] = nil
 		return newtbl
 	end -- __cloneTable()
-	
+
 end
 
 function Auracle:__windowstyle(class, db_default, db_valid)
@@ -433,7 +435,7 @@ do
 	local tooltip_left = {}
 	local tooltip_right = {}
 	local tooltip_rev = {}
-	
+
 	local function tooltip_left__index(t,k)
 		t[k] = _G["Auracle_Tooltip"..tooltip_rev[t].."TextLeft"..k]
 --[===[@debug@
@@ -441,7 +443,7 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textleft "..k)
 --@end-debug@]===]
 		return t[k]
 	end -- tooltip_left__index()
-	
+
 	local function tooltip_right__index(t,k)
 		t[k] = _G["Auracle_Tooltip"..tooltip_rev[t].."TextRight"..k]
 --[===[@debug@
@@ -449,7 +451,7 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 --@end-debug@]===]
 		return t[k]
 	end -- tooltip_right__index()
-	
+
 	local function tooltip_cache__index(t,k)
 		-- create the tooltip
 		t[k] = CreateFrame("GameTooltip", "Auracle_Tooltip"..k)
@@ -469,15 +471,15 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 		end
 		return t[k]
 	end -- tooltip_cache__index()
-	
+
 	local tooltip_cache = setmetatable({}, { __index = tooltip_cache__index })
-	
+
 	--[[
 	this method for guessing weapon buff icons is based on Shefki's version in Pitbull4 (no general license to copy; All Rights Reserved)
 	on 2010-01-19 ckknight (Pitbull4 project manager) granted an MIT license for this routine only
 	my version adds an initial lookup in case there's a spell with the same exact name, and a more easily configurable maximum spellID
 	--]]
-	
+
 	local function weaponbuff_icon_cache__index(t,k)
 		if (not k) then return end
 		-- try the search key itself as a spell name first, maybe we get lucky
@@ -494,24 +496,24 @@ assert(t[k], "failed to fetch tooltip "..tooltip_rev[t].." textright "..k)
 		t[k] = icon or false
 		return t[k]
 	end -- weaponbuff_icon_cache__index()
-	
+
 	local weaponbuff_icon_cache = setmetatable({}, { __index = weaponbuff_icon_cache__index })
-	
+
 	--[[ END Pitbull4-inspired code ]]
-	
+
 	local duration_unit_seconds = setmetatable({}, { __index = function() return 1 end })
-	
+
 	for abbr in ITEM_ENCHANT_TIME_LEFT_DAYS:gmatch( "[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 86400 end
 	for abbr in ITEM_ENCHANT_TIME_LEFT_HOURS:gmatch("[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 3600 end
 	for abbr in ITEM_ENCHANT_TIME_LEFT_MIN:gmatch(  "[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 60 end
 	for abbr in ITEM_ENCHANT_TIME_LEFT_SEC:gmatch(  "[^%%](%a+%.?)") do duration_unit_seconds[abbr] = 1 end
-	
-	
+
+
 	--[[
 	this method for getting weapon buff names is inspired by Kitjan's NeedToKnow.DetermineTempEnchantFromTooltip in NeedToKnow 2.8.6 (licensed under GPLv3)
 	my version has been restructured and optimized somewhat, but uses the same basic algorithm (2010-01-19)
 	--]]
-	
+
 	function Auracle:GetWeaponBuffDetails(slot) -- return name,rank,icon,duration
 		if (slot ~= MAINHAND and slot ~= OFFHAND) then
 			return
@@ -576,7 +578,7 @@ assert(ttBase, "failed to generate utility tooltip 1")
 			end
 		end
 	end -- GetWeaponBuffDetails()
-	
+
 	--[[ END NeedToKnow-inspired code ]]
 end
 
@@ -803,7 +805,7 @@ end -- Shutdown()
 function Auracle:UpdateSavedVars(dbProfile)
 	local version = dbProfile.version or 0
 	local newVersion = 09080201
-	
+
 	-- update windowStyles
 	if (type(dbProfile.windowStyles) == "table") then
 		for name,wsdb in pairs(dbProfile.windowStyles) do
@@ -816,7 +818,7 @@ function Auracle:UpdateSavedVars(dbProfile)
 	else
 		dbProfile.windowStyles = {}
 	end
-	
+
 	-- update trackerStyles
 	if (type(dbProfile.trackerStyles) == "table") then
 		for name,tsdb in pairs(dbProfile.trackerStyles) do
@@ -829,7 +831,7 @@ function Auracle:UpdateSavedVars(dbProfile)
 	else
 		dbProfile.trackerStyles = {}
 	end
-	
+
 	-- update windows
 	local newWindows = {}
 	if (type(dbProfile.windows) == "table") then
@@ -841,7 +843,7 @@ function Auracle:UpdateSavedVars(dbProfile)
 		end
 	end
 	dbProfile.windows = newWindows
-	
+
 	-- validate windowStyles
 	for name,wsdb in pairs(dbProfile.windowStyles) do
 		self:ValidateSavedVars(wsdb, DB_DEFAULT_WINDOWSTYLE, DB_VALID_WINDOWSTYLE)
@@ -852,7 +854,7 @@ function Auracle:UpdateSavedVars(dbProfile)
 	if (not dbProfile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name]) then
 		dbProfile.windowStyles[DB_DEFAULT_WINDOWSTYLE.name] = self:__cloneTable(DB_DEFAULT_WINDOWSTYLE, true)
 	end
-	
+
 	-- validate trackerStyles
 	for name,tsdb in pairs(dbProfile.trackerStyles) do
 		self:ValidateSavedVars(tsdb, DB_DEFAULT_TRACKERSTYLE, DB_VALID_TRACKERSTYLE)
@@ -863,7 +865,7 @@ function Auracle:UpdateSavedVars(dbProfile)
 	if (not dbProfile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name]) then
 		dbProfile.trackerStyles[DB_DEFAULT_TRACKERSTYLE.name] = self:__cloneTable(DB_DEFAULT_TRACKERSTYLE, true)
 	end
-	
+
 	-- validate windows
 	for n,wdb in ipairs(dbProfile.windows) do
 		self:ValidateSavedVars(wdb, DB_DEFAULT_WINDOW, DB_VALID_WINDOW)
@@ -871,7 +873,7 @@ function Auracle:UpdateSavedVars(dbProfile)
 	if (not dbProfile.windows[1]) then
 		dbProfile.windows[1] = self:__cloneTable(DB_DEFAULT_WINDOW, true)
 	end
-	
+
 	-- store version tag
 	dbProfile.version = newVersion
 end -- UpdateSavedVars()
