@@ -250,6 +250,7 @@ local TRACKER_PRESET = {
 					50518, -- Chitinous Armor (Hunter: Ravager)
 					57386, -- Wild Strength (Hunter: Rino)
 					160077, -- Strength of the Earth (Hunter: Worm)
+					172967, -- Lone Wolf: Versatility of the Ravager
 					
 				}
 			},
