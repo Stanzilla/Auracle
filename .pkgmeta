@@ -1,33 +1,22 @@
+package-as: Auracle
+
 externals:
-  libs/LibStub:
-        url: svn://svn.wowace.com/wow/libstub/mainline/trunk
-        tag: latest
-  libs/CallbackHandler-1.0:
-        url: svn://svn.wowace.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
-        tag: latest
-  libs/AceAddon-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceAddon-3.0
-  libs/AceEvent-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceEvent-3.0
-  libs/AceTimer-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTimer-3.0
-  libs/AceBucket-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceBucket-3.0
-  libs/AceDB-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
-  libs/AceDBOptions-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDBOptions-3.0
-  libs/AceLocale-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceLocale-3.0
-  libs/AceConsole-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConsole-3.0
-  libs/AceGUI-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
-  libs/AceConfig-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
-  libs/LibDataBroker-1.1:
-    url: git://github.com/tekkub/libdatabroker-1-1.git
-    tag: v1.1.4
-  libs/LibDualSpec-1.0:
-        url: git://git.wowace.com/wow/libdualspec-1-0/mainline.git
-  libs/LibOOP-1.0: svn://svn.wowace.com/wow/liboop/mainline/tags/1.0.0/LibOOP
-  libs/LibSharedMedia-3.0:
-        url: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/trunk
-        tag: latest
-  libs/AceGUI-3.0-SharedMediaWidgets:
-        url: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/trunk/AceGUI-3.0-SharedMediaWidgets
-        tag: latest
+  libs/LibStub: http://repos.wowace.com/wow/libstub/trunk
+  libs/CallbackHandler-1.0: http://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+  libs/AceAddon-3.0: http://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
+  libs/AceEvent-3.0: http://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
+  libs/AceTimer-3.0: http://repos.wowace.com/wow/ace3/trunk/AceTimer-3.0
+  libs/AceBucket-3.0: http://repos.wowace.com/wow/ace3/trunk/AceBucket-3.0
+  libs/AceDB-3.0: http://repos.wowace.com/wow/ace3/trunk/AceDB-3.0
+  libs/AceDBOptions-3.0: http://repos.wowace.com/wow/ace3/trunk/AceDBOptions-3.0
+  libs/AceLocale-3.0: http://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
+  libs/AceConsole-3.0: http://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
+  libs/AceGUI-3.0: http://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
+  libs/AceConfig-3.0: http://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
+  libs/LibDataBroker-1.1: git://github.com/tekkub/libdatabroker-1-1.git
+  libs/LibDualSpec-1.0: git://git.wowace.com/wow/libdualspec-1-0/mainline.git
+  libs/LibOOP-1.0: http://repos.wowace.com/wow/liboop/tags/1.0.0/LibOOP
+  libs/AceGUI-3.0-SharedMediaWidgets: http://repos.wowace.com/wow/ace-gui-3-0-shared-media-widgets/trunk/AceGUI-3.0-SharedMediaWidgets
 
 ignore:
   - locales/base.lua
-
