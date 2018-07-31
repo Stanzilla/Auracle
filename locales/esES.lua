@@ -1,5 +1,5 @@
--- Auracle Locale 
--- Please use the Localization App on WoWAce to update this 
+-- Auracle Locale
+-- Please use the Localization App on WoWAce to update this
 -- http://www.wowace.com/addons/auracle/localization/
 
 local L = LibStub("AceLocale-3.0"):NewLocale("Auracle", "esES")
@@ -25,5 +25,5 @@ L["PET"] = PET -- i.e. the "pet" unitid
 L["PLAYER"] = PLAYER -- i.e. the "player" unitid
 L["TARGET"] = TARGET -- i.e. the "target" unitid
 
---@localization(locale="esES", format="lua_additive_table", handle-unlocalized="english")@ 
+--@localization(locale="esES", format="lua_additive_table", handle-unlocalized="english")@
 
