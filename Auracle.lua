@@ -386,7 +386,7 @@ function Auracle:UpdateUnitAuras(unit)
 	local ipairs = ipairs
 	local now = API_GetTime()
 	local index, totalBuffs, totalDebuffs, origin
-	local name, rank, icon, count, atype, duration, expires, caster, stealable
+	local name, icon, count, atype, duration, expires, caster, stealable
 	-- reset window states
 	for _,window in ipairs(self.windows) do
 		if (window.db.unit == unit) then
@@ -395,31 +395,31 @@ function Auracle:UpdateUnitAuras(unit)
 	end
 	-- parse buffs
 	index = 1
-	name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
+	name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
 	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	while (name) do
 		for _,window in ipairs(self.windows) do
 			if (window.db.unit == unit) then
-				window:UpdateBuff(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+				window:UpdateBuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 			end
 		end
 		index = index + 1
-		name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
+		name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
 		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalBuffs = index - 1
 	-- parse debuffs
 	index = 1
-	name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
+	name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
 	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	while (name) do
 		for _,window in ipairs(self.windows) do
 			if (window.db.unit == unit) then
-				window:UpdateDebuff(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+				window:UpdateDebuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 			end
 		end
 		index = index + 1
-		name,rank,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
+		name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
 		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalDebuffs = index - 1
