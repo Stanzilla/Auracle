@@ -1,4 +1,3 @@
-assert(LibStub, "Auracle requires LibStub.")
 local LIB_AceAddon = LibStub("AceAddon-3.0") or error("Auracle: Required library AceAddon-3.0 not found")
 Auracle = LIB_AceAddon:NewAddon("Auracle", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0")
 local Auracle = Auracle
@@ -15,7 +14,7 @@ local L = LIB_AceLocale:GetLocale("Auracle")
 
 local MAINHAND = GetInventorySlotInfo("MainHandSlot")
 local OFFHAND = GetInventorySlotInfo("SecondaryHandSlot")
-local MAX_SPELLID = 105000 -- 73190 were defined as of 2010-01-23
+local MAX_SPELLID = 364761 -- 2018-08-01
 
 -- classes
 
@@ -40,7 +39,6 @@ local API_GetTime = GetTime
 local API_GetWeaponEnchantInfo = GetWeaponEnchantInfo
 local API_InCombatLockdown = InCombatLockdown
 local API_IsInInstance = IsInInstance
-local API_UnitAura = UnitAura
 local API_UnitClassification = UnitClassification
 local API_UnitExists = UnitExists
 local API_UnitIsEnemy = UnitIsEnemy
@@ -59,16 +57,12 @@ local LIB_AceConfigRegistry
 local LIB_AceTimer
 local LIB_LibDataBroker
 local LIB_LibDualSpec
---local LIB_LibUnitID
---local LIB_LibUnitAura
---local LIB_LibButtonFacade
 
 -- options tables
 
 local commandTable = { type="group", handler=Auracle, args={} }
 local optionsTable = { type="group", handler=Auracle, childGroups="tab", args={} }
 local blizOptionsTable = { type="group", handler=Auracle, args={} }
-local blizOptionsFrame
 
 
 --[[ UTILITY FUNCTIONS ]]--
@@ -156,7 +150,7 @@ function Auracle:OnInitialize()
 	if (LIB_AceConfigDialog) then
 		LIB_AceConfig:RegisterOptionsTable("Auracle Setup", optionsTable)
 		LIB_AceConfig:RegisterOptionsTable("Auracle Blizzard Setup", blizOptionsTable)
-		blizOptionsFrame = LIB_AceConfigDialog:AddToBlizOptions("Auracle Blizzard Setup", "Auracle")
+		LIB_AceConfigDialog:AddToBlizOptions("Auracle Blizzard Setup", "Auracle")
 	end
 	if (LIB_LibDataBroker) then
 		-- register LDB launcher
@@ -273,7 +267,7 @@ function Auracle:PLAYER_TARGET_CHANGED()
 end -- PLAYER_TARGET_CHANGED()
 
 function Auracle:UNIT_AURA(event, unit)
-	self:UpdateUnitAuras(unit)
+    self:UpdateUnitAuras(unit)
 end -- UNIT_AURA()
 
 function Auracle:UNIT_INVENTORY_CHANGED(event, unit)
@@ -388,43 +382,43 @@ function Auracle:UpdateUnitAuras(unit)
 	local index, totalBuffs, totalDebuffs, origin
 	local name, icon, count, atype, duration, expires, caster, stealable
 	-- reset window states
-	for _,window in ipairs(self.windows) do
+	for _, window in ipairs(self.windows) do
 		if (window.db.unit == unit) then
 			window:BeginAuraUpdate(now)
 		end
 	end
 	-- parse buffs
 	index = 1
-	name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
+	name, icon, count, atype, duration, expires, caster, stealable = UnitAura(unit, index, "HELPFUL")
 	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
-	while (name) do
-		for _,window in ipairs(self.windows) do
+    while (name) do
+		for _, window in ipairs(self.windows) do
 			if (window.db.unit == unit) then
-				window:UpdateBuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
+				window:UpdateBuff(now, index, name, icon, count, atype, duration, expires, origin, stealable)
 			end
 		end
 		index = index + 1
-		name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HELPFUL")
-		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
+		name, icon, count, atype, duration, expires, caster, stealable = UnitAura(unit, index, "HELPFUL")
+        origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalBuffs = index - 1
 	-- parse debuffs
 	index = 1
-	name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
+	name, icon, count, atype, duration, expires, caster, stealable = UnitAura(unit, index, "HARMFUL")
 	origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	while (name) do
-		for _,window in ipairs(self.windows) do
+		for _, window in ipairs(self.windows) do
 			if (window.db.unit == unit) then
-				window:UpdateDebuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
+				window:UpdateDebuff(now, index, name, icon, count, atype, duration, expires, origin, stealable)
 			end
 		end
 		index = index + 1
-		name,icon,count,atype,duration,expires,caster,stealable = API_UnitAura(unit, index, "HARMFUL")
+		name, icon, count, atype, duration, expires, caster, stealable = UnitAura(unit, index, "HARMFUL")
 		origin = ((caster == "player" or caster == "pet" or caster == "vehicle") and "mine") or "others"
 	end
 	totalDebuffs = index - 1
 	-- update windows
-	for _,window in ipairs(self.windows) do
+	for _, window in ipairs(self.windows) do
 		if (window.db.unit == unit) then
 			window:EndAuraUpdate(now, totalBuffs, totalDebuffs)
 		end
