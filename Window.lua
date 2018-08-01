@@ -1,13 +1,10 @@
-local LibOOP
---[===[@alpha@
-LibOOP = LibStub("LibOOP-1.0-alpha", true)
---@end-alpha@]===]
-LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
+local LibOOP = LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
 local Window = LibOOP:Class()
 
 local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
 local L = LIB_AceLocale:GetLocale("Auracle")
 
+-- luacheck: globals Auracle
 
 --[[ DECLARATIONS ]]--
 
@@ -153,48 +150,23 @@ local TRACKER_PRESET = {
 			{
 				[0] = L.PRESET_BUFF_PCTSTATS,
 				{
-					115921, -- Legacy of the Emperor (Monk)
-					116781, -- Legacy of the White Tiger (Monk)
-					20217, -- Blessing of Kings (Paladin)
-					160017, -- Blessing of Kongs (Hunter: Gorilla)
-					90363, -- Embrace of the Shale Spider (Hunter: Shale Spider)
-					160077, -- Strength of the Earth (Hunter: Worm)
-					159988, -- Bark of the Wild (Hunter: Dog)
-					160206, -- Lone Wolf: Power of the Primates (Hunter)
-					69378, -- Blessing of Forgotten Kings (Leatherworking Drums)
-					1126, -- Mark of the Wild (Druid)
+
 				}
 			},
 			{
 				[0] = L.PRESET_BUFF_STA,
 				{
-					166928, -- Blood Pact (Warlock)
-					469, -- Commanding Shout (Warrior)
-					21562, -- Power Word: Fortitude (Priest)
-					160003, -- Flourish (Hunter: Dragonfly)
-					160014, -- Sturdiness (Hunter: Goat)
-					160199, -- Lone Wolf: Fortitude of the Bear (Hunter)
-					111922, -- Fortitude (Inscription Scroll)
-					90364, -- Qiraji Fortitude (Hunter: Silithid)
+                    21562, -- Power Word: Fortitude (Priest)
+                    264764, -- War-Scroll of Fortitude (Inscription)
 				}
 			},
 		},
 		{
-		 	[0] = L.GENERAL,
+			[0] = L.GENERAL,
 			{
 				[0] = L.PRESET_BUFF_CRIT,
 				{
-					24604, -- Furious Howl (Hunter: Wolf)
-					116781, -- Legacy of the White Tiger (Monk)
-					90309, -- Terrifying Roar (Hunter: Devilsaur)
-					17007, -- Leader of the Pack (Guardian/Feral Druid)
-					126373, -- Fearless Roar (Hunter: Quillen)
-					97229, -- Bellowing Roar (Hunter: Hydra)
-					126309, -- Still Water (Hunter: Water Strider)
-					160052, -- Strength of the Pack (Hunter: Raptor)
-					160200, -- Lone Wolf: Ferocity of the Raptor (Hunter)
-					1459, -- Arcane Brilliance (Mage)
-					61316, -- Dalaran Brilliance (Mage)
+
 				}
 			},
 			{
@@ -208,92 +180,24 @@ local TRACKER_PRESET = {
 					80353, -- Time Warp (Mage)
 				}
 			},
-			{
-				[0] = L.PRESET_BUFF_MASTERY,
-				{
-					19740, -- Blessing of Might (Paladin)
-					116956, -- Grace of Air (Shaman)
-					155522, -- Power of the Grave (Death Knight, Blood)
-					24907, -- Moonkin Aura (Druid, Balance)
-					93435, -- Roar of Courage (Hunter Pet)
-					160073, -- Plainswalking (Hunter: Tallstrider)
-					93435, -- Roar of Curage (Hunter: Cat)
-					160039, -- Keen Senses (Hunter: Hydra)
-					160198, -- Lone Wolf: Grace of the Cat (Hunter)
-					128997, -- Spirit Beast Blessing (Hunter: Spirit Beast)
-				}
-			},
-			{
-				[0] = L.PRESET_BUFF_HASTE,
-				{
-					55610, -- Unholy Aura (Death Knight, Frost/Unholy)
-					113742, -- Swiftblade's Cunning (Rogue)
-					116956, -- Grace of Air (Shaman)
-					160003, -- Flourish (Hunter: Dragonfly)
-					49868, -- Mind Quickening (Priest, Shadow)
-					160074, -- Speed of the Swarm (Hunter: Wasp)
-					160203, -- Lone Wolf: Haste of the Hyena (Hunter)
-					128432, -- Cackling Howl (Hunter: Hyena)
-					135678, -- Energizing Spores (Hunter: Sporebat)
-				}
-			},
-			{
-				[0] = L.PRESET_BUFF_VERSATILITY,
-				{
-					55610, -- Unholy Aura (Death Knight, Frost/Unholy)
-					167187, -- Sanctity Aura (Paladin, Retribution)
-					167188, -- Inspiring Presence (Warrior, Arms/Fury)
-					1126, -- Mark of the Wild (Druid)
-					159733, -- Tenacity (Hunter: Bird of Prey)
-					35290, -- Indomitable (Hunter: Boar)
-					160045, -- Defensive Quills (Hunter: Porcupine)
-					50518, -- Chitinous Armor (Hunter: Ravager)
-					57386, -- Wild Strength (Hunter: Rino)
-					160077, -- Strength of the Earth (Hunter: Worm)
-					172967, -- Lone Wolf: Versatility of the Ravager
-					
-				}
-			},
-			{
-				[0] = L.PRESET_BUFF_MULTISTRIKE,
-				{
-					166916, -- Windflurry (Monk, Windwalker)
-					49868, -- Mind Quickening (Priest, Shadow)
-					113742, -- Swiftblade's Cunning (Rogue)
-					109773, -- Dark Intent (Warlock)
-					159733, -- Baleful Gaze (Hunter: Basilisk)
-					54644, -- Frost Breath (Hunter: Chimaera)
-					58604, -- Double Bite (Hunter: Core Hound)
-					34889, -- Spry Attacks (Hunter: Dragonhawk)
-					160011, -- Agile Reflexes (Hunter: Fox)
-					57386, -- Wild Strength (Hunter: Rino)
-					172968, -- Lone Wolf: Quickness of the Dragonhawk (Hunter)
-					--23844, -- Breath of the Winds (Hunter: Wind Serpent)			
-				}
-			},
 		},
 		{
-		 	[0] = L.PHYSICAL,
+			[0] = L.PHYSICAL,
 			{
 				[0] = L.PRESET_BUFF_PCTAP,
 				{
-					57330, -- Horn of Winter (Death Knight)
-					19506, -- Trueshot Aura (Hunter)
-					6673, -- Battle Shout (Warrior)
+                    6673, -- Battle Shout (Warrior)
+                    264761, -- War-Scroll of Battle Shout (Inscription)
 				}
-			},			
+			},
 		},
 		{
 			[0] = L.CASTER,
 			{
 				[0] = L.PRESET_BUFF_PCTSP,
 				{
-					1459, -- Arcane Brilliance (Mage)
-					61316, -- Dalaran Brilliance (Mage)
-					126309, -- Still Water (Hunter: Water Strider)
-					109773, -- Dark Intent (Warlock)
-					160205, -- Lone Wolf: Wisdom of the Serpent (Hunter)
-					90364, -- Qiraji Fortitude (Hunter: Silithid)
+					1459, -- Arcane Intellect (Mage)
+					264760, -- War-Scroll of Intellect (Inscription)
 				},
 			},
 		},
@@ -357,7 +261,7 @@ local TRACKER_PRESET = {
 	{
 		[0] = L.DEBUFFS_BY_TYPE, -- http://us.battle.net/wow/en/forum/topic/13509280909
 		{
-			[0] = L.TACTICAL, 
+			[0] = L.TACTICAL,
 			{
 				[0] = L.PRESET_DEBUFF_TAUNTED,
 				{
@@ -374,24 +278,28 @@ local TRACKER_PRESET = {
 				}
 			},
 			{
-				[0] = L.PRESET_DEBUFF_PCTHEALTAKEN,
+				[0] = L.PRESET_DEBUFF_PCTPHYSDMGTAKEN,
 				{
-	 				54680, -- Monstrous Bite (Hunter: Devilsaur)	 				
-					115804, -- Mortal Wounds (Arms or Fury warrior, any rogue, any hunter)
+					113746, -- Mystic Touch (Monk)
 				}
-			},
+            },
+            {
+                [0] = L.PRESET_DEBUFF_PCTSPELLDMGTAKEN,
+                {
+                    255260, -- Chaos Brand (Demon Hunter)
+                },
+            },
 			{
 				[0] = L.SILENCE,
 				{
-					25046, -- Arcane Torrent (Blood Elf racial)
 					31935, -- Avenger's Shield (Paladin)
 					1330, -- Garrote - Silence (Rogue)
 					102051, -- Frostjaw (Mage)
 					15487, -- Silence (Priest)
 					18498, -- Silenced - Gag Order (Warrior)
-					114238, -- Fae Silence (Druid)					
+					114238, -- Fae Silence (Druid)
 					--24259, -- Spell Lock (Warlock: Fel Hunter)
-					47476, -- Strangulate (Death Knight)
+					47476 -- Strangulate (Death Knight)
 				}
 			},
 			{
@@ -418,7 +326,7 @@ local TRACKER_PRESET = {
 					853, -- Hammer of Justice (Paladin)
 					2812, -- Holy Wrath (Paladin)
 					19577, -- Intimidation (Hunter)
-					408, -- Kidney Shot (Rogue)					
+					408, -- Kidney Shot (Rogue)
 					82691, -- Ring of Frost (Mage)
 					30283, -- Shadowfury (Warlock)
 					46968, -- Shockwave (Warrior)
@@ -584,7 +492,7 @@ end -- Frame_OnSizeChanged()
 
 do
 	local objectPool = {}
-	
+
 	function Window:New(db)
 		-- re-use a window from the pool, or create a new one
 		local window = next(objectPool)
@@ -596,7 +504,7 @@ do
 			window.uiFrame:SetClampedToScreen(true) -- so WoW polices position, no matter how it changes (StartMoving,SetPoint,etc)
 		end
 		objectPool[window] = nil
-		
+
 		-- (re?)initialize window
 		window.db = db
 		window.style = Auracle.windowStyles[db.style]
@@ -613,21 +521,21 @@ do
 		window.tgtReact = "neutral"
 		window.trackersLocked = true
 		window.trackers = {}
-		
+
 		-- (re?)initialize frame
 		window.uiFrame:SetPoint("TOPLEFT", UIParent,"TOPLEFT", db.pos.x, db.pos.y) -- TODO pref anchor points
-		
+
 		-- create and initialize trackers
 		local tracker
 		for n,tdb in ipairs(db.trackers) do
 			tracker = Tracker(tdb, window, window.uiFrame)
 			window.trackers[n] = tracker
 		end
-		
+
 		-- (re?)apply preferences
 		window:UpdateStyle()
 		window:UpdateVisibility()
-		
+
 		return window
 	end -- New()
 
@@ -661,7 +569,7 @@ do
 		-- add object to the pool for later re-use
 		objectPool[self] = true
 	end -- Destroy()
-	
+
 end
 
 function Window.prototype:Remove()
@@ -751,20 +659,20 @@ function Window.prototype:BeginAuraUpdate(now)
 	end
 end -- BeginAuraUpdate()
 
-function Window.prototype:UpdateBuff(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+function Window.prototype:UpdateBuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
 		if (tracker.db.auratype == "buff") then
-			tracker:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+			tracker:UpdateTracker(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 		end
 	end
 end -- UpdateBuff()
 
-function Window.prototype:UpdateDebuff(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+function Window.prototype:UpdateDebuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
 		if (tracker.db.auratype == "debuff") then
-			tracker:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+			tracker:UpdateTracker(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 		end
 	end
 end -- UpdateDebuff()
@@ -796,11 +704,11 @@ function Window.prototype:BeginWeaponBuffUpdate(now)
 	end
 end -- BeginWeaponBuffUpdate()
 
-function Window.prototype:UpdateWeaponBuff(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+function Window.prototype:UpdateWeaponBuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 	local ipairs = ipairs
 	for n,tracker in ipairs(self.trackers) do
 		if (tracker.db.auratype == "weaponbuff") then
-			tracker:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+			tracker:UpdateTracker(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 		end
 	end
 end -- UpdateWeaponBuff()
@@ -1593,7 +1501,7 @@ do
 		end
 		return TRACKER_PRESET[type][group][set][1]
 	end -- get_auras()
-	
+
 	local function add_preset(i)
 		local type = tonumber(i[#i-2])
 		local group = tonumber(i[#i-1])
@@ -1609,15 +1517,15 @@ do
 		end
 		i.handler:AddPresetTracker(label, auratype, auras)
 	end -- add_preset()
-	
+
 	local GetSpellInfo = GetSpellInfo
 	local tsort = table.sort
 	local tconcat = table.concat
-	
+
 	local typeopt,groupopt
 	local normal,talented,tbl,spellname
 	local invalid = {}
-	
+
 	for t,typetable in ipairs(TRACKER_PRESET) do
 		-- create AceOptions entry
 		typeopt = {
@@ -1677,7 +1585,7 @@ do
 			end
 		end
 	end
-	
+
 	-- warn about invalid SpellIDs
 	if (#invalid > 0) then
 		Auracle:Print("Warning: These preset SpellIDs are no longer valid.\n", tconcat(invalid, ", "))

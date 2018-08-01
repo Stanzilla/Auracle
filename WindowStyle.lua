@@ -1,13 +1,10 @@
-local LibOOP
---@alpha@
-LibOOP = LibStub("LibOOP-1.0-alpha", true)
---@end-alpha@
-LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
+local LibOOP = LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
 local WindowStyle = LibOOP:Class()
 
 local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
 local L = LIB_AceLocale:GetLocale("Auracle")
 
+-- luacheck: globals Auracle
 
 --[[ DECLARATIONS ]]--
 
@@ -103,7 +100,7 @@ end -- Destroy()
 do
 	local backdrop = {}
 	local insets = {}
-	
+
 	function WindowStyle.prototype:GetBackdropTable()
 		-- build config table
 		wipe(backdrop)
@@ -129,7 +126,7 @@ do
 		end
 		return backdrop
 	end -- GetBackdropTable()
-	
+
 end
 
 

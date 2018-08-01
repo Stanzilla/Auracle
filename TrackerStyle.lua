@@ -8,6 +8,7 @@ local TrackerStyle = LibOOP:Class()
 local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
 local L = LIB_AceLocale:GetLocale("Auracle")
 
+-- luacheck: globals Auracle
 
 --[[ DECLARATIONS ]]--
 

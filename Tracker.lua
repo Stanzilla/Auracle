@@ -1,13 +1,10 @@
-local LibOOP
---@alpha@
-LibOOP = LibStub("LibOOP-1.0-alpha", true)
---@end-alpha@
-LibOOP = LibOOP or LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
+local LibOOP = LibStub("LibOOP-1.0") or error("Auracle: Required library LibOOP not found")
 local Tracker = LibOOP:Class()
 
 local LIB_AceLocale = LibStub("AceLocale-3.0") or error("Auracle: Required library AceLocale-3.0 not found")
 local L = LIB_AceLocale:GetLocale("Auracle")
 
+-- luacheck: globals Auracle
 
 --[[ DECLARATIONS ]]--
 
@@ -305,7 +302,7 @@ end -- TrackerOverlay_OnUpdate()
 
 do
 	local objectPool = {}
-	
+
 	function Tracker:New(db, window, parentFrame)
 		-- re-use a tracker from the pool, or create a new one
 		local tracker = next(objectPool)
@@ -330,7 +327,7 @@ do
 			tracker.uiText:SetJustifyV("MIDDLE")
 		end
 		objectPool[tracker] = nil
-		
+
 		-- (re?)initialize tracker
 		tracker.window = window
 		tracker.db = db
@@ -347,19 +344,19 @@ do
 		tracker.auraStacks = false
 		tracker.auralist = false
 		tracker.summary = {}
-		
+
 		-- (re?)initialize frames
 		tracker.uiFrame:SetParent(parentFrame)
 		tracker.uiFrame:SetScript("OnSizeChanged", Frame_OnSizeChanged)
 		tracker.uiFrame:Show()
 		tracker:Lock()
-		
+
 		-- (re?)apply preferences
 		tracker:UpdateStyle()
-		
+
 		return tracker
 	end -- New()
-	
+
 	function Tracker.prototype:Destroy()
 		self:StopMoving()
 		-- clean up frame
@@ -395,7 +392,7 @@ do
 		-- add object to the pool for later re-use
 		objectPool[self] = true
 	end -- Destroy()
-	
+
 end
 
 function Tracker.prototype:Remove()
@@ -494,7 +491,7 @@ function Tracker.prototype:BeginTrackerUpdate(now)
 	wipe(self.summary)
 end -- BeginTrackerUpdate()
 
-function Tracker.prototype:UpdateTracker(now,index,name,rank,icon,count,atype,duration,expires,origin,stealable)
+function Tracker.prototype:UpdateTracker(now,index,name,icon,count,atype,duration,expires,origin,stealable)
 	-- if we already have a qualifying, non-expiring aura, we don't care about anything else
 	if (self.update_applied and not self.update_expires) then
 		return
