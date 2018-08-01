@@ -688,41 +688,6 @@ function Window.prototype:EndAuraUpdate(now, totalBuffs, totalDebuffs)
 	end
 end -- EndAuraUpdate()
 
-
---[[ WEAPON BUFF UPDATE METHODS ]]--
-
-function Window.prototype:UpdateUnitWeaponBuffs()
-	Auracle:UpdateUnitWeaponBuffs(self.db.unit)
-end -- UpdateUnitWeaponBuffs()
-
-function Window.prototype:BeginWeaponBuffUpdate(now)
-	local ipairs = ipairs
-	for n,tracker in ipairs(self.trackers) do
-		if (tracker.db.auratype == "weaponbuff") then
-			tracker:BeginTrackerUpdate(now)
-		end
-	end
-end -- BeginWeaponBuffUpdate()
-
-function Window.prototype:UpdateWeaponBuff(now,index,name,icon,count,atype,duration,expires,origin,stealable)
-	local ipairs = ipairs
-	for n,tracker in ipairs(self.trackers) do
-		if (tracker.db.auratype == "weaponbuff") then
-			tracker:UpdateTracker(now,index,name,icon,count,atype,duration,expires,origin,stealable)
-		end
-	end
-end -- UpdateWeaponBuff()
-
-function Window.prototype:EndWeaponBuffUpdate(now, totalWeaponBuffs)
-	local ipairs = ipairs
-	for n,tracker in ipairs(self.trackers) do
-		if (tracker.db.auratype == "weaponbuff") then
-			tracker:EndTrackerUpdate(now, totalWeaponBuffs)
-		end
-	end
-end -- EndWeaponBuffUpdate()
-
-
 --[[ SITUATION UPDATE METHODS ]]--
 
 function Window.prototype:SetPlayerStatus(plrSpec, plrInstance, plrGroup, plrCombat, plrForm)
@@ -973,7 +938,6 @@ function Window.prototype:AddTracker()
 	Auracle:UpdateEventListeners()
 	self:UpdateLayout()
 	self:UpdateUnitAuras()
-	-- don't need weapon buffs yet, new trackers track auras
 end -- AddTracker()
 
 function Window.prototype:AddPresetTracker(label, auratype, auras)
@@ -998,7 +962,6 @@ function Window.prototype:AddPresetTracker(label, auratype, auras)
 	Auracle:UpdateEventListeners()
 	self:UpdateLayout()
 	self:UpdateUnitAuras()
-	-- don't need weapon buffs yet, presets only track auras
 end -- AddPresetTracker()
 
 function Window.prototype:RemoveTracker(tracker)

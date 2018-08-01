@@ -23,7 +23,7 @@ local UNLOCKED_BACKDROP = { bgFile="Interface\\Buttons\\WHITE8X8", tile=false, i
 local DB_DEFAULT_TRACKER = {
 	label = false,
 	style = L.DEFAULT,
-	auratype = "debuff", -- buff|debuff|weaponbuff
+	auratype = "debuff", -- buff|debuff
 	auras = {},
 	showOthers = true,
 	showMine = true,
@@ -215,8 +215,6 @@ local function Frame_OnEnter(self)
 				tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, "HELPFUL")
 			elseif auratype == "debuff" then
 				tt:SetUnitAura(tracker.window.db.unit, tracker.auraIndex, "HARMFUL")
-			elseif auratype == "weaponbuff" then
-				tt:SetInventoryItem(tracker.window.db.unit, tracker.auraIndex)
 			else
 				-- should never happen
 			end
@@ -469,11 +467,7 @@ end -- StopMoving()
 --[[ TRACKER UPDATE METHODS ]]--
 
 function Tracker.prototype:ReScanTrackedUnit()
-	if (self.db.auratype == "weaponbuff") then
-		self.window:UpdateUnitWeaponBuffs()
-	else
-		self.window:UpdateUnitAuras()
-	end
+	self.window:UpdateUnitAuras()
 end -- ReScanTrackedUnit()
 
 function Tracker.prototype:ResetTrackerState()
@@ -835,8 +829,7 @@ local sharedOptions = {
 				name = L.AURA_TYPE,
 				values = {
 					buff = L.BUFFS,
-					debuff = L.DEBUFFS,
-					weaponbuff = L.WEAPON_BUFFS
+					debuff = L.DEBUFFS
 				},
 				get = function(i) return i.handler.db.auratype end,
 				set = function(i,v)
